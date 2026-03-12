@@ -97,7 +97,7 @@ export default function ProofsTab({ product }: Props) {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const matchText =
-        p.content_text.Valid && p.content_text.String.toLowerCase().includes(q);
+        p.content_text && p.content_text.toLowerCase().includes(q);
       const matchAuthor = p.author_name.toLowerCase().includes(q);
       if (!matchText && !matchAuthor) return false;
     }
@@ -186,24 +186,24 @@ export default function ProofsTab({ product }: Props) {
                     <span className="text-sm font-medium text-[#F1F1F3]">
                       {proof.author_name}
                     </span>
-                    {proof.author_title.Valid && (
+                    {proof.author_title && (
                       <span className="text-xs text-[#6B7280]">
-                        {proof.author_title.String}
+                        {proof.author_title}
                       </span>
                     )}
                   </div>
 
                   {/* Content */}
-                  {proof.content_text.Valid && (
+                  {proof.content_text && (
                     <p className="text-sm text-[#9CA3AF] mb-2 line-clamp-3">
-                      {proof.content_text.String}
+                      {proof.content_text}
                     </p>
                   )}
 
-                  {proof.content_image_url.Valid && (
+                  {proof.content_image_url && (
                     <div className="mb-2">
                       <img
-                        src={proof.content_image_url.String}
+                        src={proof.content_image_url}
                         alt="Proof screenshot"
                         className="max-h-40 rounded-lg border border-[#2A2A30]"
                       />
@@ -225,9 +225,9 @@ export default function ProofsTab({ product }: Props) {
                   )}
 
                   {/* Source URL */}
-                  {proof.source_url.Valid && (
+                  {proof.source_url && (
                     <a
-                      href={proof.source_url.String}
+                      href={proof.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-[#6366F1] hover:text-[#818CF8]"
@@ -342,15 +342,9 @@ function ProofModal({
 
   // Form fields
   const [authorName, setAuthorName] = useState(proof?.author_name || "");
-  const [authorTitle, setAuthorTitle] = useState(
-    proof?.author_title.Valid ? proof.author_title.String : "",
-  );
-  const [contentText, setContentText] = useState(
-    proof?.content_text.Valid ? proof.content_text.String : "",
-  );
-  const [sourceURL, setSourceURL] = useState(
-    proof?.source_url.Valid ? proof.source_url.String : "",
-  );
+  const [authorTitle, setAuthorTitle] = useState(proof?.author_title || "");
+  const [contentText, setContentText] = useState(proof?.content_text || "");
+  const [sourceURL, setSourceURL] = useState(proof?.source_url || "");
   const [sourcePlatform, setSourcePlatform] = useState(
     proof?.source_platform || "other",
   );

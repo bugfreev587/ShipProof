@@ -472,9 +472,9 @@ function WallCard({
                     <span className="text-sm text-[#F1F1F3]">
                       {proof.author_name}
                     </span>
-                    {proof.content_text.Valid && (
+                    {proof.content_text && (
                       <p className="text-xs text-[#6B7280] truncate">
-                        {proof.content_text.String}
+                        {proof.content_text}
                       </p>
                     )}
                   </div>

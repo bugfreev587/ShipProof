@@ -100,20 +100,20 @@ export default async function EmbedPage({
                   >
                     {proof.author_name}
                   </div>
-                  {proof.author_title.Valid && (
+                  {proof.author_title && (
                     <div
                       style={{
                         fontSize: "11px",
                         color: isDark ? "#6B7280" : "#9CA3AF",
                       }}
                     >
-                      {proof.author_title.String}
+                      {proof.author_title}
                     </div>
                   )}
                 </div>
               </div>
 
-              {proof.content_text.Valid && (
+              {proof.content_text && (
                 <p
                   style={{
                     fontSize: "13px",
@@ -122,13 +122,13 @@ export default async function EmbedPage({
                     margin: 0,
                   }}
                 >
-                  {proof.content_text.String}
+                  {proof.content_text}
                 </p>
               )}
 
-              {proof.content_image_url.Valid && (
+              {proof.content_image_url && (
                 <img
-                  src={proof.content_image_url.String}
+                  src={proof.content_image_url}
                   alt="Proof"
                   style={{
                     marginTop: "8px",

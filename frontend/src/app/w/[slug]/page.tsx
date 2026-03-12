@@ -96,24 +96,24 @@ export default async function WallPage({
                     <div className="text-sm font-medium text-[#F1F1F3]">
                       {proof.author_name}
                     </div>
-                    {proof.author_title.Valid && (
+                    {proof.author_title && (
                       <div className="text-xs text-[#6B7280]">
-                        {proof.author_title.String}
+                        {proof.author_title}
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Content */}
-                {proof.content_text.Valid && (
+                {proof.content_text && (
                   <p className="text-sm text-[#9CA3AF] leading-relaxed">
-                    {proof.content_text.String}
+                    {proof.content_text}
                   </p>
                 )}
 
-                {proof.content_image_url.Valid && (
+                {proof.content_image_url && (
                   <img
-                    src={proof.content_image_url.String}
+                    src={proof.content_image_url}
                     alt="Proof"
                     className="mt-3 w-full rounded-lg border border-[#2A2A30]"
                   />
