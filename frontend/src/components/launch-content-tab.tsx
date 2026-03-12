@@ -550,6 +550,7 @@ function DraftEditor({
       <ContentEditor
         platform={activePlatform}
         content={editedContent}
+        originalContent={draft.content as Record<string, unknown>}
         onChange={setEditedContent}
         copyToClipboard={copyToClipboard}
         productId={draft.product_id}
@@ -565,6 +566,12 @@ function DraftEditor({
           className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:bg-[#2A2A30] hover:text-[#F1F1F3] disabled:opacity-50 transition-colors"
         >
           {generating ? "Regenerating..." : "Regenerate All"}
+        </button>
+        <button
+          onClick={() => setEditedContent(draft.content as Record<string, unknown>)}
+          className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:bg-[#2A2A30] hover:text-[#F1F1F3] transition-colors"
+        >
+          Discard All
         </button>
         <button
           onClick={onSave}
@@ -587,12 +594,14 @@ function DraftEditor({
 function ContentEditor({
   platform,
   content,
+  originalContent,
   onChange,
   copyToClipboard,
   productId,
 }: {
   platform: string;
   content: Record<string, unknown>;
+  originalContent: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
   copyToClipboard: (text: string) => void;
   productId: string;
@@ -647,6 +656,21 @@ function ContentEditor({
     );
   };
 
+  const discardField = (field: string) => {
+    const original = (originalContent[platform] || {}) as Record<string, unknown>;
+    const current = (content[platform] || {}) as Record<string, unknown>;
+    onChange({ ...content, [platform]: { ...current, [field]: original[field] } });
+  };
+
+  const discardButton = (field: string) => (
+    <button
+      onClick={() => discardField(field)}
+      className="shrink-0 rounded px-2 py-1 text-xs text-[#9CA3AF] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+    >
+      Discard
+    </button>
+  );
+
   if (!platformContent) {
     return (
       <div className="text-sm text-[#9CA3AF]">
@@ -667,12 +691,20 @@ function ContentEditor({
         <Field label="Maker Comment" value={ph.maker_comment || ""} onChange={(v) => updateField("maker_comment", v)} onCopy={copyToClipboard} multiline rows={10}
           extraAction={regenButton("maker_comment", (t) => updateField("maker_comment", t))}
         />
+        <div className="flex justify-end">
+          {discardButton("maker_comment")}
+        </div>
       </div>
     );
   }
 
   if (platform === "reddit") {
     const posts = platformContent as Array<{
+      subreddit: string;
+      title: string;
+      body: string;
+    }>;
+    const originalPosts = (originalContent.reddit || []) as Array<{
       subreddit: string;
       title: string;
       body: string;
@@ -684,15 +716,10 @@ function ContentEditor({
             key={i}
             className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-4"
           >
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2">
               <span className="text-sm font-medium text-[#6366F1]">
                 {post.subreddit}
               </span>
-              {regenButton("body", (t) => {
-                const updated = [...posts];
-                updated[i] = { ...updated[i], body: t };
-                onChange({ ...content, reddit: updated });
-              }, { index: i, subreddit: post.subreddit })}
             </div>
             <Field
               label="Title"
@@ -718,6 +745,25 @@ function ContentEditor({
                 rows={12}
               />
             </div>
+            <div className="mt-2 flex justify-end gap-1">
+              {regenButton("body", (t) => {
+                const updated = [...posts];
+                updated[i] = { ...updated[i], body: t };
+                onChange({ ...content, reddit: updated });
+              }, { index: i, subreddit: post.subreddit })}
+              <button
+                onClick={() => {
+                  if (originalPosts[i]) {
+                    const updated = [...posts];
+                    updated[i] = { ...originalPosts[i] };
+                    onChange({ ...content, reddit: updated });
+                  }
+                }}
+                className="shrink-0 rounded px-2 py-1 text-xs text-[#9CA3AF] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+              >
+                Discard
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -729,9 +775,11 @@ function ContentEditor({
     return (
       <div className="space-y-4">
         <Field label="Title" value={hn.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
-        <Field label="First Comment" value={hn.first_comment || ""} onChange={(v) => updateField("first_comment", v)} onCopy={copyToClipboard} multiline rows={12}
-          extraAction={regenButton("first_comment", (t) => updateField("first_comment", t))}
-        />
+        <Field label="First Comment" value={hn.first_comment || ""} onChange={(v) => updateField("first_comment", v)} onCopy={copyToClipboard} multiline rows={12} />
+        <div className="flex justify-end gap-1">
+          {regenButton("first_comment", (t) => updateField("first_comment", t))}
+          {discardButton("first_comment")}
+        </div>
       </div>
     );
   }
@@ -739,6 +787,7 @@ function ContentEditor({
   if (platform === "twitter") {
     const tw = platformContent as { thread: string[] };
     const thread = tw.thread || [];
+    const originalThread = ((originalContent.twitter as { thread?: string[] })?.thread) || [];
     return (
       <div className="space-y-3">
         {thread.map((tweet, i) => (
@@ -753,6 +802,18 @@ function ContentEditor({
                   updated[i] = t;
                   onChange({ ...content, twitter: { thread: updated } });
                 }, { index: i })}
+                <button
+                  onClick={() => {
+                    if (originalThread[i] !== undefined) {
+                      const updated = [...thread];
+                      updated[i] = originalThread[i];
+                      onChange({ ...content, twitter: { thread: updated } });
+                    }
+                  }}
+                  className="shrink-0 rounded px-2 py-1 text-xs text-[#9CA3AF] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                >
+                  Discard
+                </button>
                 <span
                   className={`text-xs ${tweet.length > 280 ? "text-[#EF4444]" : "text-[#9CA3AF]"}`}
                 >
