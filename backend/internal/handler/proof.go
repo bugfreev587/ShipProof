@@ -403,6 +403,29 @@ func (h *ProofHandler) AddTag(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(tag)
 }
 
+// GET /api/products/{id}/tags
+func (h *ProofHandler) ListProductTags(w http.ResponseWriter, r *http.Request) {
+	productID, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid product id"}`, http.StatusBadRequest)
+		return
+	}
+
+	_, _, ok := h.verifyProductOwnership(w, r, productID)
+	if !ok {
+		return
+	}
+
+	rows, err := h.queries.ListDistinctTagsByProductID(r.Context(), productID)
+	if err != nil {
+		http.Error(w, `{"error":"failed to list tags"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(rows)
+}
+
 func (h *ProofHandler) RemoveTag(w http.ResponseWriter, r *http.Request) {
 	proofID, err := uuid.Parse(chi.URLParam(r, "pid"))
 	if err != nil {

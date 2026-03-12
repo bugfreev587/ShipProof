@@ -197,10 +197,11 @@ export function saveDraft(
   productId: string,
   content: Record<string, unknown>,
   token: string,
+  platforms?: string[],
 ) {
-  return fetchApi<LaunchDraft>(
+  return fetchApi<LaunchDraft | void>(
     `/api/products/${productId}/draft`,
-    { method: "PUT", body: JSON.stringify({ content }) },
+    { method: "PUT", body: JSON.stringify({ content, platforms }) },
     token,
   );
 }
@@ -430,6 +431,14 @@ export function removeProofTag(proofId: string, tag: string, token: string) {
   return fetchApi<void>(
     `/api/proofs/${proofId}/tags/${encodeURIComponent(tag)}`,
     { method: "DELETE" },
+    token,
+  );
+}
+
+export function listProductTags(productId: string, token: string) {
+  return fetchApi<string[]>(
+    `/api/products/${productId}/tags`,
+    {},
     token,
   );
 }

@@ -14,7 +14,7 @@ RETURNING *;
 
 -- name: UpdateDraftContent :one
 UPDATE launch_drafts
-SET content = $2, updated_at = now()
+SET content = $2, platforms = $3, updated_at = now()
 WHERE product_id = $1
 RETURNING *;
 

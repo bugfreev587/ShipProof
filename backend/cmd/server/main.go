@@ -143,6 +143,7 @@ func main() {
 			r.Delete("/api/proofs/{pid}", proofHandler.Delete)
 			r.Put("/api/proofs/{pid}/featured", proofHandler.ToggleFeatured)
 			r.Put("/api/proofs/{pid}/order", proofHandler.UpdateOrder)
+			r.Get("/api/products/{id}/tags", proofHandler.ListProductTags)
 			r.Post("/api/proofs/{pid}/tags", proofHandler.AddTag)
 			r.Delete("/api/proofs/{pid}/tags/{tag}", proofHandler.RemoveTag)
 

@@ -57,7 +57,7 @@ func (q *Queries) GetDraftByProductID(ctx context.Context, productID uuid.UUID) 
 
 const updateDraftContent = `-- name: UpdateDraftContent :one
 UPDATE launch_drafts
-SET content = $2, updated_at = now()
+SET content = $2, platforms = $3, updated_at = now()
 WHERE product_id = $1
 RETURNING id, product_id, launch_type, platforms, content, created_at, updated_at, launch_notes
 `
@@ -65,10 +65,11 @@ RETURNING id, product_id, launch_type, platforms, content, created_at, updated_a
 type UpdateDraftContentParams struct {
 	ProductID uuid.UUID       `json:"product_id"`
 	Content   json.RawMessage `json:"content"`
+	Platforms json.RawMessage `json:"platforms"`
 }
 
 func (q *Queries) UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) (LaunchDraft, error) {
-	row := q.db.QueryRow(ctx, updateDraftContent, arg.ProductID, arg.Content)
+	row := q.db.QueryRow(ctx, updateDraftContent, arg.ProductID, arg.Content, arg.Platforms)
 	var i LaunchDraft
 	err := row.Scan(
 		&i.ID,

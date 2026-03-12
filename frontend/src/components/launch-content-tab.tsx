@@ -59,6 +59,9 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
     {},
   );
 
+  // Draft preview mode (State B — collapsed after Save)
+  const [draftPreview, setDraftPreview] = useState(false);
+
   // Confirm modal
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [versionTitle, setVersionTitle] = useState("");
@@ -83,6 +86,8 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
         if (draftRes.draft.launch_notes?.Valid) {
           setLaunchNotes(draftRes.draft.launch_notes.String);
         }
+        // Show saved drafts in preview mode by default
+        setDraftPreview(true);
       }
       setVersions(versionsRes);
     } catch {
@@ -134,6 +139,7 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
       setDraft(result);
       setEditedContent(result.content as Record<string, unknown>);
       setActivePlatform(selectedPlatforms[0]);
+      setDraftPreview(false);
     } catch (err) {
       if (err instanceof ApiError && err.status === 402 && onPlanLimit) {
         onPlanLimit(err.message);
@@ -152,9 +158,31 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
     try {
       const token = await getToken();
       if (!token) return;
-      const updated = await saveDraft(product.id, editedContent, token);
-      setDraft(updated);
-      setEditedContent(updated.content as Record<string, unknown>);
+      // Compute remaining platforms from editedContent keys
+      const remainingPlatforms = Object.keys(editedContent).filter(
+        (k) => editedContent[k] != null,
+      );
+      if (remainingPlatforms.length === 0) {
+        // All content discarded — delete the draft
+        await deleteDraft(product.id, token);
+        setDraft(null);
+        setEditedContent({});
+        setDraftPreview(false);
+        return;
+      }
+      const updated = await saveDraft(
+        product.id,
+        editedContent,
+        token,
+        remainingPlatforms,
+      );
+      if (updated) {
+        setDraft(updated as LaunchDraft);
+        setEditedContent(
+          (updated as LaunchDraft).content as Record<string, unknown>,
+        );
+      }
+      setDraftPreview(true);
     } catch {
       setError("Failed to save draft");
     } finally {
@@ -238,6 +266,14 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
           generating={generating}
           onGenerate={handleGenerate}
           error={error}
+        />
+      ) : draftPreview ? (
+        <DraftPreviewCard
+          draft={draft}
+          editedContent={editedContent}
+          onEdit={() => setDraftPreview(false)}
+          onConfirm={() => setShowConfirmModal(true)}
+          onDiscard={handleCancelDraft}
         />
       ) : (
         <DraftEditor
@@ -530,6 +566,75 @@ function GenerateForm({
   );
 }
 
+function DraftPreviewCard({
+  draft,
+  editedContent,
+  onEdit,
+  onConfirm,
+  onDiscard,
+}: {
+  draft: LaunchDraft;
+  editedContent: Record<string, unknown>;
+  onEdit: () => void;
+  onConfirm: () => void;
+  onDiscard: () => void;
+}) {
+  const remainingPlatforms = Object.keys(editedContent).filter(
+    (k) => editedContent[k] != null,
+  );
+
+  return (
+    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-semibold text-[#F1F1F3]">
+          Saved Draft{" "}
+          <span className="text-sm font-normal text-[#9CA3AF]">
+            ({draft.launch_type.replace("_", " ")})
+          </span>
+        </h3>
+        <span className="text-xs text-[#6B7280]">
+          Saved {new Date(draft.updated_at).toLocaleString()}
+        </span>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {remainingPlatforms.map((p) => {
+          const label = PLATFORMS.find((pl) => pl.key === p)?.label || p;
+          return (
+            <span
+              key={p}
+              className="rounded-md bg-[#6366F1]/10 border border-[#6366F1]/30 px-2.5 py-1 text-xs font-medium text-[#6366F1]"
+            >
+              {label}
+            </span>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onEdit}
+          className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
+        >
+          Continue Editing
+        </button>
+        <button
+          onClick={onConfirm}
+          className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
+        >
+          Confirm & Save Version
+        </button>
+        <button
+          onClick={onDiscard}
+          className="rounded-lg border border-red-500/30 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+        >
+          Discard
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DraftEditor({
   draft,
   editedContent,
@@ -563,14 +668,39 @@ function DraftEditor({
   setSelectedPlatforms: (v: string[]) => void;
   setLaunchType: (v: string) => void;
 }) {
-  const platforms = draft.platforms || [];
+  const [showDiscardAllConfirm, setShowDiscardAllConfirm] = useState(false);
+  const [discardPlatformConfirm, setDiscardPlatformConfirm] = useState<
+    string | null
+  >(null);
+
+  // Compute remaining platforms from editedContent (not draft.platforms)
+  const remainingPlatforms = (draft.platforms || []).filter(
+    (p) => editedContent[p] != null,
+  );
 
   // Sync generate form state so Regenerate works
   useEffect(() => {
-    setSelectedPlatforms(platforms);
+    setSelectedPlatforms(remainingPlatforms);
     setLaunchType(draft.launch_type);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
+
+  const handleDiscardPlatform = (platform: string) => {
+    const newContent = { ...editedContent };
+    delete newContent[platform];
+    setEditedContent(newContent);
+    setDiscardPlatformConfirm(null);
+    // Switch to another platform tab if discarding the active one
+    if (activePlatform === platform) {
+      const remaining = remainingPlatforms.filter((p) => p !== platform);
+      setActivePlatform(remaining[0] || "");
+    }
+  };
+
+  const handleDiscardAll = () => {
+    setEditedContent({});
+    setShowDiscardAllConfirm(false);
+  };
 
   return (
     <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
@@ -583,35 +713,66 @@ function DraftEditor({
         </h3>
       </div>
 
-      {/* Platform tabs */}
-      <div className="mb-4 flex gap-1 border-b border-[#2A2A30]">
-        {platforms.map((p) => {
-          const label =
-            PLATFORMS.find((pl) => pl.key === p)?.label || p;
-          return (
-            <button
-              key={p}
-              onClick={() => setActivePlatform(p)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activePlatform === p
-                  ? "border-b-2 border-[#6366F1] text-[#F1F1F3]"
-                  : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
+      {remainingPlatforms.length === 0 ? (
+        <div className="text-sm text-[#9CA3AF] py-8 text-center">
+          All platforms have been discarded. Save to delete this draft, or
+          regenerate content.
+        </div>
+      ) : (
+        <>
+          {/* Platform tabs */}
+          <div className="mb-4 flex gap-1 border-b border-[#2A2A30]">
+            {remainingPlatforms.map((p) => {
+              const label =
+                PLATFORMS.find((pl) => pl.key === p)?.label || p;
+              return (
+                <div key={p} className="flex items-center">
+                  <button
+                    onClick={() => setActivePlatform(p)}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      activePlatform === p
+                        ? "border-b-2 border-[#6366F1] text-[#F1F1F3]"
+                        : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                  {remainingPlatforms.length > 1 && (
+                    <button
+                      onClick={() => setDiscardPlatformConfirm(p)}
+                      className="ml-0.5 rounded p-0.5 text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      title={`Discard ${label}`}
+                    >
+                      <svg
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
-      {/* Content editor */}
-      <ContentEditor
-        platform={activePlatform}
-        content={editedContent}
-        onChange={setEditedContent}
-        copyToClipboard={copyToClipboard}
-        productId={draft.product_id}
-      />
+          {/* Content editor */}
+          <ContentEditor
+            platform={activePlatform}
+            content={editedContent}
+            onChange={setEditedContent}
+            copyToClipboard={copyToClipboard}
+            productId={draft.product_id}
+          />
+        </>
+      )}
 
       {error && <p className="mt-4 text-sm text-[#EF4444]">{error}</p>}
 
@@ -625,8 +786,9 @@ function DraftEditor({
           {generating ? "Regenerating..." : "Regenerate All"}
         </button>
         <button
-          onClick={() => setEditedContent({})}
-          className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:bg-[#2A2A30] hover:text-[#F1F1F3] transition-colors"
+          onClick={() => setShowDiscardAllConfirm(true)}
+          disabled={remainingPlatforms.length === 0}
+          className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:bg-[#2A2A30] hover:text-[#F1F1F3] disabled:opacity-50 transition-colors"
         >
           Discard All
         </button>
@@ -645,11 +807,75 @@ function DraftEditor({
         </button>
         <button
           onClick={onConfirm}
-          className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
+          disabled={remainingPlatforms.length === 0}
+          className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
         >
           Confirm & Save Version
         </button>
       </div>
+
+      {/* Discard All Confirmation */}
+      {showDiscardAllConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-sm rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
+            <h4 className="mb-2 text-base font-semibold text-[#F1F1F3]">
+              Discard all content?
+            </h4>
+            <p className="mb-4 text-sm text-[#9CA3AF]">
+              This will remove generated content for all platforms. This
+              cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDiscardAllConfirm(false)}
+                className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30]"
+              >
+                Keep
+              </button>
+              <button
+                onClick={handleDiscardAll}
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+              >
+                Discard All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Per-platform Discard Confirmation */}
+      {discardPlatformConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-sm rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
+            <h4 className="mb-2 text-base font-semibold text-[#F1F1F3]">
+              Discard{" "}
+              {PLATFORMS.find((pl) => pl.key === discardPlatformConfirm)
+                ?.label || discardPlatformConfirm}
+              ?
+            </h4>
+            <p className="mb-4 text-sm text-[#9CA3AF]">
+              This will remove all generated content for this platform. This
+              cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDiscardPlatformConfirm(null)}
+                className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30]"
+              >
+                Keep
+              </button>
+              <button
+                onClick={() =>
+                  handleDiscardPlatform(discardPlatformConfirm)
+                }
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

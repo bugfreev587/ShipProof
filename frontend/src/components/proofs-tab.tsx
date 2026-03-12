@@ -11,6 +11,7 @@ import {
   toggleProofFeatured,
   addProofTag,
   removeProofTag,
+  listProductTags,
   type Proof,
   type Product,
   ApiError,
@@ -355,6 +356,20 @@ function ProofModal({
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(proof?.tags || []);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [existingTags, setExistingTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const result = await listProductTags(product.id, token);
+        setExistingTags(result || []);
+      } catch {
+        // ignore
+      }
+    })();
+  }, [getToken, product.id]);
 
   const handleAddTag = () => {
     const t = tagInput.trim();
@@ -363,6 +378,11 @@ function ProofModal({
     }
     setTagInput("");
   };
+
+  // Suggestions: existing tags not yet selected, filtered by input
+  const tagSuggestions = existingTags.filter(
+    (t) => !tags.includes(t) && (!tagInput || t.toLowerCase().includes(tagInput.toLowerCase())),
+  );
 
   const handleSubmit = async () => {
     if (!authorName.trim()) {
@@ -639,6 +659,23 @@ function ProofModal({
                 placeholder="Type tag + Enter"
               />
             </div>
+            {tagSuggestions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                <span className="text-xs text-[#6B7280] mr-1 self-center">
+                  Existing:
+                </span>
+                {tagSuggestions.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTags([...tags, t])}
+                    className="rounded-full border border-[#2A2A30] bg-[#0F0F10] px-2 py-0.5 text-xs text-[#9CA3AF] hover:border-[#6366F1] hover:text-[#6366F1] transition-colors"
+                  >
+                    + {t}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

@@ -158,16 +158,45 @@ func (h *LaunchHandler) SaveDraft(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body struct {
-		Content json.RawMessage `json:"content"`
+		Content   json.RawMessage `json:"content"`
+		Platforms []string        `json:"platforms"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
 		return
 	}
 
+	// If platforms provided, use them; otherwise keep existing
+	var platformsJSON json.RawMessage
+	if len(body.Platforms) > 0 {
+		platformsJSON, _ = json.Marshal(body.Platforms)
+	} else {
+		// Fetch existing draft to preserve platforms
+		existing, err := h.queries.GetDraftByProductID(r.Context(), product.ID)
+		if err != nil {
+			http.Error(w, `{"error":"no draft to update"}`, http.StatusNotFound)
+			return
+		}
+		platformsJSON = existing.Platforms
+	}
+
+	// If content is empty (all platforms discarded), delete the draft
+	if body.Content != nil {
+		var contentMap map[string]interface{}
+		if err := json.Unmarshal(body.Content, &contentMap); err == nil && len(contentMap) == 0 {
+			if err := h.queries.DeleteDraftByProductID(r.Context(), product.ID); err != nil {
+				http.Error(w, `{"error":"failed to delete draft"}`, http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
+
 	draft, err := h.queries.UpdateDraftContent(r.Context(), db.UpdateDraftContentParams{
 		ProductID: product.ID,
 		Content:   body.Content,
+		Platforms: platformsJSON,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"no draft to update"}`, http.StatusNotFound)
