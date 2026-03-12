@@ -27,3 +27,9 @@ VALUES ($1, $2, $3)
 ON CONFLICT (clerk_id) DO UPDATE
 SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = now()
 RETURNING *;
+
+-- name: GetUserByStripeCustomerID :one
+SELECT * FROM users WHERE stripe_customer_id = $1;
+
+-- name: CountProductsByUserID :one
+SELECT COUNT(*) FROM products WHERE user_id = $1;

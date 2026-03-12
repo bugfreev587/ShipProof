@@ -17,10 +17,11 @@ import (
 type WallHandler struct {
 	queries     *db.Queries
 	userService *service.UserService
+	planService *service.PlanService
 }
 
-func NewWallHandler(queries *db.Queries, userService *service.UserService) *WallHandler {
-	return &WallHandler{queries: queries, userService: userService}
+func NewWallHandler(queries *db.Queries, userService *service.UserService, planService *service.PlanService) *WallHandler {
+	return &WallHandler{queries: queries, userService: userService, planService: planService}
 }
 
 var wallSlugRegex = regexp.MustCompile(`[^a-z0-9]+`)
@@ -109,9 +110,11 @@ func (h *WallHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Plan limit: Free users cannot create walls
-	if user.Plan == db.UserPlanFree {
-		http.Error(w, `{"error":"Wall of Love is a Pro feature. Upgrade to create walls."}`, http.StatusPaymentRequired)
+	// Plan limit check
+	if err := h.planService.CheckWallLimit(user.Plan); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusPaymentRequired)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 

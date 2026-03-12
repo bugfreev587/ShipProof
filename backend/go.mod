@@ -33,6 +33,7 @@ require (
 	github.com/samber/lo v1.52.0 // indirect
 	github.com/samber/slog-betterstack v1.4.3 // indirect
 	github.com/samber/slog-common v0.20.0 // indirect
+	github.com/stripe/stripe-go/v82 v82.5.1 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/text v0.31.0 // indirect

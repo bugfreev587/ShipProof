@@ -18,10 +18,11 @@ type ProofHandler struct {
 	queries        *db.Queries
 	userService    *service.UserService
 	storageService *service.StorageService
+	planService    *service.PlanService
 }
 
-func NewProofHandler(queries *db.Queries, userService *service.UserService, storageService *service.StorageService) *ProofHandler {
-	return &ProofHandler{queries: queries, userService: userService, storageService: storageService}
+func NewProofHandler(queries *db.Queries, userService *service.UserService, storageService *service.StorageService, planService *service.PlanService) *ProofHandler {
+	return &ProofHandler{queries: queries, userService: userService, storageService: storageService, planService: planService}
 }
 
 // verifyProductOwnership returns the product if the current user owns it.
@@ -91,17 +92,12 @@ func (h *ProofHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Plan limit: Free users max 1 proof
-	if user.Plan == db.UserPlanFree {
-		count, err := h.queries.CountProofsByProductID(r.Context(), product.ID)
-		if err != nil {
-			http.Error(w, `{"error":"failed to check proof limit"}`, http.StatusInternalServerError)
-			return
-		}
-		if count >= 1 {
-			http.Error(w, `{"error":"Free plan allows 1 proof per product. Upgrade to Pro for unlimited proofs."}`, http.StatusPaymentRequired)
-			return
-		}
+	// Plan limit check
+	if err := h.planService.CheckProofLimit(r.Context(), product.ID, user.Plan); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusPaymentRequired)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
 	}
 
 	var req createProofRequest

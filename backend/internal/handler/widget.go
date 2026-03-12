@@ -15,10 +15,11 @@ import (
 type WidgetHandler struct {
 	queries     *db.Queries
 	userService *service.UserService
+	planService *service.PlanService
 }
 
-func NewWidgetHandler(queries *db.Queries, userService *service.UserService) *WidgetHandler {
-	return &WidgetHandler{queries: queries, userService: userService}
+func NewWidgetHandler(queries *db.Queries, userService *service.UserService, planService *service.PlanService) *WidgetHandler {
+	return &WidgetHandler{queries: queries, userService: userService, planService: planService}
 }
 
 func (h *WidgetHandler) verifyProductOwnership(w http.ResponseWriter, r *http.Request, productID uuid.UUID) (*db.Product, *db.User, bool) {
@@ -91,8 +92,8 @@ func (h *WidgetHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Force show_branding for Free and Pro plans
-	if user.Plan != db.UserPlanBusiness {
+	// Force show_branding for plans that don't allow removal
+	if h.planService.ForceShowBranding(user.Plan) {
 		req.ShowBranding = true
 	}
 

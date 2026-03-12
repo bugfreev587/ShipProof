@@ -8,12 +8,14 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	AddProofToWall(ctx context.Context, arg AddProofToWallParams) (WallProof, error)
 	AddTagToProof(ctx context.Context, arg AddTagToProofParams) (ProofTag, error)
 	CountDraftsThisMonth(ctx context.Context, userID uuid.UUID) (int64, error)
+	CountProductsByUserID(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountProofsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountVersionsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountWallsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
@@ -34,6 +36,7 @@ type Querier interface {
 	GetProofByID(ctx context.Context, id uuid.UUID) (Proof, error)
 	GetUserByClerkID(ctx context.Context, clerkID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetUserByStripeCustomerID(ctx context.Context, stripeCustomerID pgtype.Text) (User, error)
 	GetVersionByID(ctx context.Context, id uuid.UUID) (LaunchVersion, error)
 	GetWallByID(ctx context.Context, id uuid.UUID) (Wall, error)
 	GetWallBySlug(ctx context.Context, slug string) (Wall, error)

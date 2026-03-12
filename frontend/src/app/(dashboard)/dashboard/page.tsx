@@ -3,13 +3,18 @@
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listProducts, createProduct, type Product } from "@/lib/api";
+import { listProducts, createProduct, ApiError, type Product } from "@/lib/api";
+import UpgradeNudgeModal from "@/components/upgrade-nudge-modal";
 
 export default function DashboardPage() {
   const { getToken } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [nudge, setNudge] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: "",
+  });
 
   const fetchProducts = async () => {
     try {
@@ -79,8 +84,18 @@ export default function DashboardPage() {
             setShowModal(false);
             fetchProducts();
           }}
+          onPlanLimit={(msg) => {
+            setShowModal(false);
+            setNudge({ open: true, message: msg });
+          }}
         />
       )}
+
+      <UpgradeNudgeModal
+        open={nudge.open}
+        onClose={() => setNudge({ open: false, message: "" })}
+        message={nudge.message}
+      />
     </div>
   );
 }
@@ -88,9 +103,11 @@ export default function DashboardPage() {
 function NewProductModal({
   onClose,
   onCreated,
+  onPlanLimit,
 }: {
   onClose: () => void;
   onCreated: () => void;
+  onPlanLimit: (message: string) => void;
 }) {
   const { getToken } = useAuth();
   const [name, setName] = useState("");
@@ -113,7 +130,11 @@ function NewProductModal({
         token,
       );
       onCreated();
-    } catch {
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 402) {
+        onPlanLimit(err.message);
+        return;
+      }
       setError("Failed to create product. Please try again.");
     } finally {
       setSubmitting(false);

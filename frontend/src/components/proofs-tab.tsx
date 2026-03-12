@@ -39,9 +39,10 @@ function PlatformBadge({ platform }: { platform: string }) {
 
 interface Props {
   product: Product;
+  onPlanLimit?: (message: string) => void;
 }
 
-export default function ProofsTab({ product }: Props) {
+export default function ProofsTab({ product, onPlanLimit }: Props) {
   const { getToken } = useAuth();
   const [proofs, setProofs] = useState<Proof[]>([]);
   const [loading, setLoading] = useState(true);
@@ -285,6 +286,7 @@ export default function ProofsTab({ product }: Props) {
             setEditingProof(null);
             fetchProofs();
           }}
+          onPlanLimit={onPlanLimit}
         />
       )}
 
@@ -327,11 +329,13 @@ function ProofModal({
   proof,
   onClose,
   onSaved,
+  onPlanLimit,
 }: {
   product: Product;
   proof: Proof | null;
   onClose: () => void;
   onSaved: () => void;
+  onPlanLimit?: (message: string) => void;
 }) {
   const { getToken } = useAuth();
   const isEdit = !!proof;
@@ -423,6 +427,11 @@ function ProofModal({
 
       onSaved();
     } catch (err) {
+      if (err instanceof ApiError && err.status === 402 && onPlanLimit) {
+        onClose();
+        onPlanLimit(err.message);
+        return;
+      }
       if (err instanceof ApiError) {
         setError(err.message);
       } else {

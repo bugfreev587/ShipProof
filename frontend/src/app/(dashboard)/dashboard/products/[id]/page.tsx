@@ -9,6 +9,7 @@ import LaunchContentTab from "@/components/launch-content-tab";
 import ProofsTab from "@/components/proofs-tab";
 import WidgetWallTab from "@/components/widget-wall-tab";
 import ProductInfoEditor from "@/components/product-info-editor";
+import UpgradeNudgeModal from "@/components/upgrade-nudge-modal";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,14 @@ export default function ProductDetailPage() {
   const [activeTab, setActiveTab] = useState<"proofs" | "launch" | "widget">(
     "launch",
   );
+  const [nudge, setNudge] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: "",
+  });
+
+  const handlePlanLimit = (message: string) => {
+    setNudge({ open: true, message });
+  };
 
   useEffect(() => {
     async function fetchProduct() {
@@ -82,9 +91,21 @@ export default function ProductDetailPage() {
         ))}
       </div>
 
-      {activeTab === "proofs" && <ProofsTab product={product} />}
-      {activeTab === "launch" && <LaunchContentTab product={product} />}
-      {activeTab === "widget" && <WidgetWallTab product={product} />}
+      {activeTab === "proofs" && (
+        <ProofsTab product={product} onPlanLimit={handlePlanLimit} />
+      )}
+      {activeTab === "launch" && (
+        <LaunchContentTab product={product} onPlanLimit={handlePlanLimit} />
+      )}
+      {activeTab === "widget" && (
+        <WidgetWallTab product={product} onPlanLimit={handlePlanLimit} />
+      )}
+
+      <UpgradeNudgeModal
+        open={nudge.open}
+        onClose={() => setNudge({ open: false, message: "" })}
+        message={nudge.message}
+      />
     </div>
   );
 }

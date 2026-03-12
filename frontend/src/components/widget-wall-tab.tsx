@@ -21,9 +21,10 @@ import {
 
 interface Props {
   product: Product;
+  onPlanLimit?: (message: string) => void;
 }
 
-export default function WidgetWallTab({ product }: Props) {
+export default function WidgetWallTab({ product, onPlanLimit }: Props) {
   const { getToken } = useAuth();
   const [config, setConfig] = useState<WidgetConfig | null>(null);
   const [walls, setWalls] = useState<Wall[]>([]);
@@ -252,6 +253,7 @@ export default function WidgetWallTab({ product }: Props) {
             product={product}
             onCreated={fetchData}
             setError={setError}
+            onPlanLimit={onPlanLimit}
           />
         </div>
 
@@ -280,10 +282,12 @@ function CreateWallButton({
   product,
   onCreated,
   setError,
+  onPlanLimit,
 }: {
   product: Product;
   onCreated: () => void;
   setError: (e: string) => void;
+  onPlanLimit?: (message: string) => void;
 }) {
   const { getToken } = useAuth();
   const [showInput, setShowInput] = useState(false);
@@ -302,7 +306,9 @@ function CreateWallButton({
       setShowInput(false);
       onCreated();
     } catch (err) {
-      if (err instanceof ApiError) {
+      if (err instanceof ApiError && err.status === 402 && onPlanLimit) {
+        onPlanLimit(err.message);
+      } else if (err instanceof ApiError) {
         setError(err.message);
       }
     } finally {

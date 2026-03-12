@@ -29,9 +29,10 @@ const SUBREDDITS = ["r/SaaS", "r/startups", "r/sideproject", "r/webdev"];
 
 interface Props {
   product: Product;
+  onPlanLimit?: (message: string) => void;
 }
 
-export default function LaunchContentTab({ product }: Props) {
+export default function LaunchContentTab({ product, onPlanLimit }: Props) {
   const { getToken } = useAuth();
   const [draft, setDraft] = useState<LaunchDraft | null>(null);
   const [versions, setVersions] = useState<LaunchVersion[]>([]);
@@ -134,7 +135,9 @@ export default function LaunchContentTab({ product }: Props) {
       setEditedContent(result.content as Record<string, unknown>);
       setActivePlatform(selectedPlatforms[0]);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 402) {
+      if (err instanceof ApiError && err.status === 402 && onPlanLimit) {
+        onPlanLimit(err.message);
+      } else if (err instanceof ApiError && err.status === 402) {
         setError(err.message);
       } else {
         setError("Failed to generate content. Please try again.");
@@ -171,7 +174,10 @@ export default function LaunchContentTab({ product }: Props) {
       setVersionTitle("");
       fetchData();
     } catch (err) {
-      if (err instanceof ApiError && err.status === 402) {
+      if (err instanceof ApiError && err.status === 402 && onPlanLimit) {
+        setShowConfirmModal(false);
+        onPlanLimit(err.message);
+      } else if (err instanceof ApiError && err.status === 402) {
         setError(err.message);
       } else {
         setError("Failed to confirm version");

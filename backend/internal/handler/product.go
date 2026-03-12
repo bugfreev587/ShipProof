@@ -18,10 +18,11 @@ import (
 type ProductHandler struct {
 	queries     *db.Queries
 	userService *service.UserService
+	planService *service.PlanService
 }
 
-func NewProductHandler(queries *db.Queries, userService *service.UserService) *ProductHandler {
-	return &ProductHandler{queries: queries, userService: userService}
+func NewProductHandler(queries *db.Queries, userService *service.UserService, planService *service.PlanService) *ProductHandler {
+	return &ProductHandler{queries: queries, userService: userService, planService: planService}
 }
 
 type createProductRequest struct {
@@ -73,6 +74,14 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user, err := h.userService.EnsureUser(r.Context(), clerkID)
 	if err != nil {
 		http.Error(w, `{"error":"user not found"}`, http.StatusNotFound)
+		return
+	}
+
+	// Plan limit: check product count
+	if err := h.planService.CheckProductLimit(r.Context(), user.ID, user.Plan); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusPaymentRequired)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 

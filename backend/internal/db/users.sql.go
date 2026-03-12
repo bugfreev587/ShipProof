@@ -12,6 +12,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countProductsByUserID = `-- name: CountProductsByUserID :one
+SELECT COUNT(*) FROM products WHERE user_id = $1
+`
+
+func (q *Queries) CountProductsByUserID(ctx context.Context, userID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countProductsByUserID, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (clerk_id, email, name, avatar_url)
 VALUES ($1, $2, $3, $4)
@@ -76,6 +87,28 @@ SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_s
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.ClerkID,
+		&i.Email,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.Plan,
+		&i.StripeCustomerID,
+		&i.StripeSubscriptionID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserByStripeCustomerID = `-- name: GetUserByStripeCustomerID :one
+SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at FROM users WHERE stripe_customer_id = $1
+`
+
+func (q *Queries) GetUserByStripeCustomerID(ctx context.Context, stripeCustomerID pgtype.Text) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByStripeCustomerID, stripeCustomerID)
 	var i User
 	err := row.Scan(
 		&i.ID,

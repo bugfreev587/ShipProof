@@ -1,0 +1,143 @@
+package service
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/google/uuid"
+
+	db "github.com/xiaobo/shipproof/internal/db"
+)
+
+// PlanLimits defines the limits for each plan tier.
+type PlanLimits struct {
+	MaxProducts       int  // -1 = unlimited
+	MaxProofs         int  // per product; -1 = unlimited
+	MaxGenerations    int  // per month; -1 = unlimited
+	MaxVersions       int  // per product; -1 = unlimited
+	CanCreateWall     bool
+	CanRemoveBranding bool
+}
+
+// LimitsFor returns the plan limits for a given plan.
+func LimitsFor(plan db.UserPlan) PlanLimits {
+	switch plan {
+	case db.UserPlanPro:
+		return PlanLimits{
+			MaxProducts:       1,
+			MaxProofs:         -1,
+			MaxGenerations:    -1,
+			MaxVersions:       -1,
+			CanCreateWall:     true,
+			CanRemoveBranding: false,
+		}
+	case db.UserPlanBusiness:
+		return PlanLimits{
+			MaxProducts:       10,
+			MaxProofs:         -1,
+			MaxGenerations:    -1,
+			MaxVersions:       -1,
+			CanCreateWall:     true,
+			CanRemoveBranding: true,
+		}
+	default: // free
+		return PlanLimits{
+			MaxProducts:       1,
+			MaxProofs:         1,
+			MaxGenerations:    3,
+			MaxVersions:       3,
+			CanCreateWall:     false,
+			CanRemoveBranding: false,
+		}
+	}
+}
+
+type PlanService struct {
+	queries *db.Queries
+}
+
+func NewPlanService(queries *db.Queries) *PlanService {
+	return &PlanService{queries: queries}
+}
+
+func (s *PlanService) CheckProductLimit(ctx context.Context, userID uuid.UUID, plan db.UserPlan) error {
+	limits := LimitsFor(plan)
+	if limits.MaxProducts < 0 {
+		return nil
+	}
+	count, err := s.queries.CountProductsByUserID(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("failed to check product limit: %w", err)
+	}
+	if int(count) >= limits.MaxProducts {
+		return &PlanLimitError{
+			Message: fmt.Sprintf("Product limit reached (%d). Upgrade your plan to create more products.", limits.MaxProducts),
+		}
+	}
+	return nil
+}
+
+func (s *PlanService) CheckProofLimit(ctx context.Context, productID uuid.UUID, plan db.UserPlan) error {
+	limits := LimitsFor(plan)
+	if limits.MaxProofs < 0 {
+		return nil
+	}
+	count, err := s.queries.CountProofsByProductID(ctx, productID)
+	if err != nil {
+		return fmt.Errorf("failed to check proof limit: %w", err)
+	}
+	if int(count) >= limits.MaxProofs {
+		return &PlanLimitError{
+			Message: fmt.Sprintf("Proof limit reached (%d per product). Upgrade to Pro for unlimited proofs.", limits.MaxProofs),
+		}
+	}
+	return nil
+}
+
+func (s *PlanService) CheckGenerationLimit(ctx context.Context, userID uuid.UUID, plan db.UserPlan) error {
+	limits := LimitsFor(plan)
+	if limits.MaxGenerations < 0 {
+		return nil
+	}
+	count, err := s.queries.CountDraftsThisMonth(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("failed to check generation limit: %w", err)
+	}
+	if int(count) >= limits.MaxGenerations {
+		return &PlanLimitError{
+			Message: "Monthly generation limit reached. Upgrade to Pro for unlimited generations.",
+		}
+	}
+	return nil
+}
+
+func (s *PlanService) CheckVersionLimit(ctx context.Context, productID uuid.UUID, plan db.UserPlan) error {
+	limits := LimitsFor(plan)
+	if limits.MaxVersions < 0 {
+		return nil
+	}
+	count, err := s.queries.CountVersionsByProductID(ctx, productID)
+	if err != nil {
+		return fmt.Errorf("failed to check version count: %w", err)
+	}
+	if int(count) >= limits.MaxVersions {
+		return &PlanLimitError{
+			Message: "Version limit reached. Upgrade to Pro for unlimited versions.",
+		}
+	}
+	return nil
+}
+
+func (s *PlanService) CheckWallLimit(plan db.UserPlan) error {
+	limits := LimitsFor(plan)
+	if !limits.CanCreateWall {
+		return &PlanLimitError{
+			Message: "Wall of Love is a Pro feature. Upgrade to create walls.",
+		}
+	}
+	return nil
+}
+
+func (s *PlanService) ForceShowBranding(plan db.UserPlan) bool {
+	return !LimitsFor(plan).CanRemoveBranding
+}

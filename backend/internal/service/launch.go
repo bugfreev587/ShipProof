@@ -18,16 +18,18 @@ import (
 )
 
 type LaunchService struct {
-	queries    *db.Queries
-	apiKey     string
-	httpClient *http.Client
+	queries     *db.Queries
+	planService *PlanService
+	apiKey      string
+	httpClient  *http.Client
 }
 
-func NewLaunchService(queries *db.Queries) *LaunchService {
+func NewLaunchService(queries *db.Queries, planService *PlanService) *LaunchService {
 	return &LaunchService{
-		queries:    queries,
-		apiKey:     os.Getenv("ANTHROPIC_API_KEY"),
-		httpClient: &http.Client{Timeout: 120 * time.Second},
+		queries:     queries,
+		planService: planService,
+		apiKey:      os.Getenv("ANTHROPIC_API_KEY"),
+		httpClient:  &http.Client{Timeout: 120 * time.Second},
 	}
 }
 
@@ -45,14 +47,8 @@ type GenerateResult struct {
 
 func (s *LaunchService) Generate(ctx context.Context, req GenerateRequest, product db.Product, user db.User) (*GenerateResult, error) {
 	// Plan limit check for generation
-	if user.Plan == db.UserPlanFree {
-		count, err := s.queries.CountDraftsThisMonth(ctx, user.ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check generation limit: %w", err)
-		}
-		if count >= 3 {
-			return nil, &PlanLimitError{Message: "Monthly generation limit reached. Upgrade to Pro for unlimited generations."}
-		}
+	if err := s.planService.CheckGenerationLimit(ctx, user.ID, user.Plan); err != nil {
+		return nil, err
 	}
 
 	content, err := s.callClaudeAPI(ctx, req, product)
@@ -79,14 +75,8 @@ func (s *LaunchService) Generate(ctx context.Context, req GenerateRequest, produ
 
 func (s *LaunchService) ConfirmVersion(ctx context.Context, productID uuid.UUID, title string, user db.User, timezoneOffset int) (*db.LaunchVersion, error) {
 	// Plan limit check for versions
-	if user.Plan == db.UserPlanFree {
-		versionCount, err := s.queries.CountVersionsByProductID(ctx, productID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check version count: %w", err)
-		}
-		if versionCount >= 3 {
-			return nil, &PlanLimitError{Message: "Version limit reached. Upgrade to Pro for unlimited versions."}
-		}
+	if err := s.planService.CheckVersionLimit(ctx, productID, user.Plan); err != nil {
+		return nil, err
 	}
 
 	draft, err := s.queries.GetDraftByProductID(ctx, productID)

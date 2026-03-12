@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	slogbetterstack "github.com/samber/slog-betterstack"
+	"github.com/stripe/stripe-go/v82"
 
 	db "github.com/xiaobo/shipproof/internal/db"
 	"github.com/xiaobo/shipproof/internal/handler"
@@ -82,19 +83,26 @@ func main() {
 	if queries != nil {
 		webhookHandler := handler.NewWebhookHandler(queries)
 		userService := service.NewUserService(queries)
-		productHandler := handler.NewProductHandler(queries, userService)
-		launchService := service.NewLaunchService(queries)
+		planService := service.NewPlanService(queries)
+		productHandler := handler.NewProductHandler(queries, userService, planService)
+		launchService := service.NewLaunchService(queries, planService)
 		launchHandler := handler.NewLaunchHandler(queries, launchService, userService)
 
 		// Storage service (graceful: nil if R2 not configured)
 		storageService, _ := service.NewStorageService()
 
-		proofHandler := handler.NewProofHandler(queries, userService, storageService)
-		widgetHandler := handler.NewWidgetHandler(queries, userService)
-		wallHandler := handler.NewWallHandler(queries, userService)
+		proofHandler := handler.NewProofHandler(queries, userService, storageService, planService)
+		widgetHandler := handler.NewWidgetHandler(queries, userService, planService)
+		wallHandler := handler.NewWallHandler(queries, userService, planService)
 		publicHandler := handler.NewPublicHandler(queries)
+		stripeHandler := handler.NewStripeHandler(queries, userService)
+		userHandler := handler.NewUserHandler(userService)
+
+		// Set Stripe API key
+		stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 		r.Post("/api/webhooks/clerk", webhookHandler.HandleClerkWebhook)
+		r.Post("/api/webhooks/stripe", stripeHandler.HandleWebhook)
 
 		// Public API routes (no auth)
 		r.Get("/api/public/products/{slug}/proofs", publicHandler.GetProductProofs)
@@ -103,6 +111,13 @@ func main() {
 		// Authenticated routes
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.Auth)
+
+			// User
+			r.Get("/api/user/me", userHandler.GetCurrentUser)
+
+			// Stripe
+			r.Post("/api/stripe/create-checkout", stripeHandler.CreateCheckout)
+			r.Post("/api/stripe/create-portal", stripeHandler.CreatePortal)
 
 			// Products
 			r.Get("/api/products", productHandler.List)

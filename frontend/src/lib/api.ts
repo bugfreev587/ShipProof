@@ -81,6 +81,44 @@ export interface LaunchVersion {
   created_at: string;
 }
 
+// --- User ---
+
+export interface User {
+  id: string;
+  clerk_id: string;
+  email: string;
+  name: string;
+  avatar_url: PgText;
+  plan: "free" | "pro" | "business";
+  stripe_customer_id: PgText;
+  stripe_subscription_id: PgText;
+  created_at: string;
+  updated_at: string;
+}
+
+export function getCurrentUser(token: string) {
+  return fetchApi<User>("/api/user/me", {}, token);
+}
+
+export function createCheckoutSession(
+  data: { price_id: string; plan: string },
+  token: string,
+) {
+  return fetchApi<{ url: string }>(
+    "/api/stripe/create-checkout",
+    { method: "POST", body: JSON.stringify(data) },
+    token,
+  );
+}
+
+export function createBillingPortalSession(token: string) {
+  return fetchApi<{ url: string }>(
+    "/api/stripe/create-portal",
+    { method: "POST" },
+    token,
+  );
+}
+
 // --- Products ---
 
 export function listProducts(token: string) {
