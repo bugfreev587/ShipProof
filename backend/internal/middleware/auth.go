@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/clerk/clerk-sdk-go/v2"
@@ -12,6 +14,13 @@ import (
 type contextKey string
 
 const UserIDKey contextKey = "user_id"
+
+func init() {
+	key := os.Getenv("CLERK_SECRET_KEY")
+	if key != "" {
+		clerk.SetKey(key)
+	}
+}
 
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +40,7 @@ func Auth(next http.Handler) http.Handler {
 			Token: token,
 		})
 		if err != nil {
+			slog.Error("JWT verification failed", "error", err)
 			http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
 			return
 		}
@@ -45,9 +55,4 @@ func GetClerkUserID(ctx context.Context) string {
 		return v
 	}
 	return ""
-}
-
-func init() {
-	// clerk SDK reads CLERK_SECRET_KEY from env automatically
-	_ = clerk.String("")
 }
