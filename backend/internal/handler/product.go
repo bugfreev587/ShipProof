@@ -29,9 +29,11 @@ type createProductRequest struct {
 }
 
 type updateProductRequest struct {
-	Name        string `json:"name"`
-	URL         string `json:"url,omitempty"`
-	Description string `json:"description,omitempty"`
+	Name            string `json:"name"`
+	URL             string `json:"url,omitempty"`
+	Description     string `json:"description,omitempty"`
+	DescriptionLong string `json:"description_long,omitempty"`
+	TargetAudience  string `json:"target_audience,omitempty"`
 }
 
 var slugRegex = regexp.MustCompile(`[^a-z0-9]+`)
@@ -156,10 +158,12 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updated, err := h.queries.UpdateProduct(r.Context(), db.UpdateProductParams{
-		ID:          id,
-		Name:        req.Name,
-		Url:         pgtype.Text{String: req.URL, Valid: req.URL != ""},
-		Description: pgtype.Text{String: req.Description, Valid: req.Description != ""},
+		ID:              id,
+		Name:            req.Name,
+		Url:             pgtype.Text{String: req.URL, Valid: req.URL != ""},
+		Description:     pgtype.Text{String: req.Description, Valid: req.Description != ""},
+		DescriptionLong: pgtype.Text{String: req.DescriptionLong, Valid: req.DescriptionLong != ""},
+		TargetAudience:  pgtype.Text{String: req.TargetAudience, Valid: req.TargetAudience != ""},
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update product"}`, http.StatusInternalServerError)

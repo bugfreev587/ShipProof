@@ -11,7 +11,7 @@ RETURNING *;
 
 -- name: UpdateProduct :one
 UPDATE products
-SET name = $2, url = $3, description = $4, updated_at = now()
+SET name = $2, url = $3, description = $4, description_long = $5, target_audience = $6, updated_at = now()
 WHERE id = $1
 RETURNING *;
 

@@ -11,16 +11,26 @@ import (
 )
 
 type Querier interface {
+	CountDraftsThisMonth(ctx context.Context, userID uuid.UUID) (int64, error)
+	CountVersionsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateVersion(ctx context.Context, arg CreateVersionParams) (LaunchVersion, error)
+	DeleteDraftByProductID(ctx context.Context, productID uuid.UUID) error
 	DeleteProduct(ctx context.Context, id uuid.UUID) error
+	GetDraftByProductID(ctx context.Context, productID uuid.UUID) (LaunchDraft, error)
+	GetMaxVersionNumber(ctx context.Context, productID uuid.UUID) (int32, error)
 	GetProductByID(ctx context.Context, id uuid.UUID) (Product, error)
 	GetUserByClerkID(ctx context.Context, clerkID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetVersionByID(ctx context.Context, id uuid.UUID) (LaunchVersion, error)
 	ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([]Product, error)
+	ListVersionsByProductID(ctx context.Context, productID uuid.UUID) ([]ListVersionsByProductIDRow, error)
+	UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) (LaunchDraft, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPlan(ctx context.Context, arg UpdateUserPlanParams) (User, error)
+	UpsertDraft(ctx context.Context, arg UpsertDraftParams) (LaunchDraft, error)
 }
 
 var _ Querier = (*Queries)(nil)

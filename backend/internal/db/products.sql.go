@@ -118,16 +118,18 @@ func (q *Queries) ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([
 
 const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
-SET name = $2, url = $3, description = $4, updated_at = now()
+SET name = $2, url = $3, description = $4, description_long = $5, target_audience = $6, updated_at = now()
 WHERE id = $1
 RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at
 `
 
 type UpdateProductParams struct {
-	ID          uuid.UUID   `json:"id"`
-	Name        string      `json:"name"`
-	Url         pgtype.Text `json:"url"`
-	Description pgtype.Text `json:"description"`
+	ID              uuid.UUID   `json:"id"`
+	Name            string      `json:"name"`
+	Url             pgtype.Text `json:"url"`
+	Description     pgtype.Text `json:"description"`
+	DescriptionLong pgtype.Text `json:"description_long"`
+	TargetAudience  pgtype.Text `json:"target_audience"`
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
@@ -136,6 +138,8 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		arg.Name,
 		arg.Url,
 		arg.Description,
+		arg.DescriptionLong,
+		arg.TargetAudience,
 	)
 	var i Product
 	err := row.Scan(

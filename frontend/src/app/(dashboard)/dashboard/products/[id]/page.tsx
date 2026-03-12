@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getProduct, type Product } from "@/lib/api";
+import LaunchContentTab from "@/components/launch-content-tab";
+import ProductInfoEditor from "@/components/product-info-editor";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -12,7 +14,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"proofs" | "launch" | "widget">(
-    "proofs",
+    "launch",
   );
 
   useEffect(() => {
@@ -57,24 +59,10 @@ export default function ProductDetailPage() {
         </Link>
       </div>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#F1F1F3]">{product.name}</h1>
-        {product.description?.Valid && (
-          <p className="mt-1 text-sm text-[#9CA3AF]">
-            {product.description.String}
-          </p>
-        )}
-        {product.url?.Valid && (
-          <a
-            href={product.url.String}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 inline-block text-sm text-[#6366F1] hover:text-[#818CF8]"
-          >
-            {product.url.String}
-          </a>
-        )}
-      </div>
+      <ProductInfoEditor
+        product={product}
+        onUpdated={(updated) => setProduct(updated)}
+      />
 
       <div className="mb-6 flex gap-1 border-b border-[#2A2A30]">
         {tabs.map((tab) => (
@@ -92,17 +80,17 @@ export default function ProductDetailPage() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
-        {activeTab === "proofs" && (
-          <p>Proofs will be available in Phase 3.</p>
-        )}
-        {activeTab === "launch" && (
-          <p>Launch Content Generator will be available in Phase 2.</p>
-        )}
-        {activeTab === "widget" && (
-          <p>Widget & Wall configuration will be available in Phase 3.</p>
-        )}
-      </div>
+      {activeTab === "proofs" && (
+        <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
+          Proofs will be available in Phase 3.
+        </div>
+      )}
+      {activeTab === "launch" && <LaunchContentTab product={product} />}
+      {activeTab === "widget" && (
+        <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
+          Widget & Wall configuration will be available in Phase 3.
+        </div>
+      )}
     </div>
   );
 }

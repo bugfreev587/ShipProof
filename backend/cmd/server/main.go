@@ -18,6 +18,7 @@ import (
 	db "github.com/xiaobo/shipproof/internal/db"
 	"github.com/xiaobo/shipproof/internal/handler"
 	"github.com/xiaobo/shipproof/internal/middleware"
+	"github.com/xiaobo/shipproof/internal/service"
 )
 
 func main() {
@@ -67,6 +68,8 @@ func main() {
 	if queries != nil {
 		webhookHandler := handler.NewWebhookHandler(queries)
 		productHandler := handler.NewProductHandler(queries)
+		launchService := service.NewLaunchService(queries)
+		launchHandler := handler.NewLaunchHandler(queries, launchService)
 
 		r.Post("/api/webhooks/clerk", webhookHandler.HandleClerkWebhook)
 
@@ -74,11 +77,20 @@ func main() {
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.Auth)
 
+			// Products
 			r.Get("/api/products", productHandler.List)
 			r.Post("/api/products", productHandler.Create)
 			r.Get("/api/products/{id}", productHandler.Get)
 			r.Put("/api/products/{id}", productHandler.Update)
 			r.Delete("/api/products/{id}", productHandler.Delete)
+
+			// Launch Content
+			r.Post("/api/products/{id}/generate", launchHandler.Generate)
+			r.Get("/api/products/{id}/draft", launchHandler.GetDraft)
+			r.Put("/api/products/{id}/draft", launchHandler.SaveDraft)
+			r.Post("/api/products/{id}/confirm", launchHandler.ConfirmVersion)
+			r.Get("/api/products/{id}/versions", launchHandler.ListVersions)
+			r.Get("/api/products/{id}/versions/{vid}", launchHandler.GetVersion)
 		})
 	}
 

@@ -40,16 +40,46 @@ async function fetchApi<T>(
   return res.json();
 }
 
+// --- Types ---
+
+type PgText = { String: string; Valid: boolean };
+
 export interface Product {
   id: string;
   user_id: string;
   name: string;
   slug: string;
-  url: { String: string; Valid: boolean };
-  description: { String: string; Valid: boolean };
+  url: PgText;
+  description: PgText;
+  description_long: PgText;
+  target_audience: PgText;
   created_at: string;
   updated_at: string;
 }
+
+export interface LaunchDraft {
+  id: string;
+  product_id: string;
+  launch_type: string;
+  platforms: string[];
+  content: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LaunchVersion {
+  id: string;
+  product_id: string;
+  version_number: number;
+  version_label: string;
+  title: string;
+  launch_type: string;
+  platforms: string[];
+  content?: Record<string, unknown>;
+  created_at: string;
+}
+
+// --- Products ---
 
 export function listProducts(token: string) {
   return fetchApi<Product[]>("/api/products", {}, token);
@@ -72,7 +102,13 @@ export function createProduct(
 
 export function updateProduct(
   id: string,
-  data: { name: string; url?: string; description?: string },
+  data: {
+    name: string;
+    url?: string;
+    description?: string;
+    description_long?: string;
+    target_audience?: string;
+  },
   token: string,
 ) {
   return fetchApi<Product>(
@@ -86,6 +122,76 @@ export function deleteProduct(id: string, token: string) {
   return fetchApi<void>(
     `/api/products/${id}`,
     { method: "DELETE" },
+    token,
+  );
+}
+
+// --- Launch Content ---
+
+export function generateLaunchContent(
+  productId: string,
+  data: {
+    launch_type: string;
+    platforms: string[];
+    reddit_subreddits?: string[];
+  },
+  token: string,
+) {
+  return fetchApi<LaunchDraft>(
+    `/api/products/${productId}/generate`,
+    { method: "POST", body: JSON.stringify(data) },
+    token,
+  );
+}
+
+export function getDraft(productId: string, token: string) {
+  return fetchApi<{ draft: LaunchDraft | null }>(
+    `/api/products/${productId}/draft`,
+    {},
+    token,
+  );
+}
+
+export function saveDraft(
+  productId: string,
+  content: Record<string, unknown>,
+  token: string,
+) {
+  return fetchApi<LaunchDraft>(
+    `/api/products/${productId}/draft`,
+    { method: "PUT", body: JSON.stringify({ content }) },
+    token,
+  );
+}
+
+export function confirmVersion(
+  productId: string,
+  title: string,
+  token: string,
+) {
+  return fetchApi<LaunchVersion>(
+    `/api/products/${productId}/confirm`,
+    { method: "POST", body: JSON.stringify({ title }) },
+    token,
+  );
+}
+
+export function listVersions(productId: string, token: string) {
+  return fetchApi<LaunchVersion[]>(
+    `/api/products/${productId}/versions`,
+    {},
+    token,
+  );
+}
+
+export function getVersion(
+  productId: string,
+  versionId: string,
+  token: string,
+) {
+  return fetchApi<LaunchVersion>(
+    `/api/products/${productId}/versions/${versionId}`,
+    {},
     token,
   );
 }

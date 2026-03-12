@@ -1,0 +1,382 @@
+package service
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+
+	db "github.com/xiaobo/shipproof/internal/db"
+)
+
+type LaunchService struct {
+	queries    *db.Queries
+	apiKey     string
+	httpClient *http.Client
+}
+
+func NewLaunchService(queries *db.Queries) *LaunchService {
+	return &LaunchService{
+		queries:    queries,
+		apiKey:     os.Getenv("ANTHROPIC_API_KEY"),
+		httpClient: &http.Client{Timeout: 120 * time.Second},
+	}
+}
+
+type GenerateRequest struct {
+	ProductID        uuid.UUID `json:"product_id"`
+	LaunchType       string    `json:"launch_type"`
+	Platforms        []string  `json:"platforms"`
+	RedditSubreddits []string  `json:"reddit_subreddits"`
+}
+
+type GenerateResult struct {
+	Draft db.LaunchDraft
+}
+
+func (s *LaunchService) Generate(ctx context.Context, req GenerateRequest, product db.Product, user db.User) (*GenerateResult, error) {
+	// Plan limit check for generation
+	if user.Plan == db.UserPlanFree {
+		count, err := s.queries.CountDraftsThisMonth(ctx, user.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check generation limit: %w", err)
+		}
+		if count >= 3 {
+			return nil, &PlanLimitError{Message: "Monthly generation limit reached. Upgrade to Pro for unlimited generations."}
+		}
+	}
+
+	content, err := s.callClaudeAPI(ctx, req, product)
+	if err != nil {
+		return nil, fmt.Errorf("AI generation failed: %w", err)
+	}
+
+	platformsJSON, _ := json.Marshal(req.Platforms)
+	contentJSON := json.RawMessage(content)
+
+	draft, err := s.queries.UpsertDraft(ctx, db.UpsertDraftParams{
+		ProductID:  req.ProductID,
+		LaunchType: db.LaunchType(req.LaunchType),
+		Platforms:  platformsJSON,
+		Content:    contentJSON,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to save draft: %w", err)
+	}
+
+	return &GenerateResult{Draft: draft}, nil
+}
+
+func (s *LaunchService) ConfirmVersion(ctx context.Context, productID uuid.UUID, title string, user db.User) (*db.LaunchVersion, error) {
+	// Plan limit check for versions
+	if user.Plan == db.UserPlanFree {
+		versionCount, err := s.queries.CountVersionsByProductID(ctx, productID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check version count: %w", err)
+		}
+		if versionCount >= 3 {
+			return nil, &PlanLimitError{Message: "Version limit reached. Upgrade to Pro for unlimited versions."}
+		}
+	}
+
+	draft, err := s.queries.GetDraftByProductID(ctx, productID)
+	if err != nil {
+		return nil, fmt.Errorf("no draft found: %w", err)
+	}
+
+	maxNum, err := s.queries.GetMaxVersionNumber(ctx, productID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get max version number: %w", err)
+	}
+	nextNum := maxNum + 1
+
+	now := time.Now().UTC()
+	versionLabel := fmt.Sprintf("v%d.x_%s", nextNum, now.Format("01022006150405")[:12])
+	// Format: v{N}.x_{MMDDYYYYHHmm}
+	versionLabel = fmt.Sprintf("v%d.x_%s%s%s%s%s",
+		nextNum,
+		now.Format("01"),   // MM
+		now.Format("02"),   // DD
+		now.Format("2006"), // YYYY
+		now.Format("15"),   // HH
+		now.Format("04"),   // mm
+	)
+
+	version, err := s.queries.CreateVersion(ctx, db.CreateVersionParams{
+		ProductID:     productID,
+		VersionNumber: nextNum,
+		VersionLabel:  versionLabel,
+		Title:         title,
+		LaunchType:    draft.LaunchType,
+		Platforms:     draft.Platforms,
+		Content:       draft.Content,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create version: %w", err)
+	}
+
+	_ = s.queries.DeleteDraftByProductID(ctx, productID)
+
+	return &version, nil
+}
+
+type PlanLimitError struct {
+	Message string
+}
+
+func (e *PlanLimitError) Error() string {
+	return e.Message
+}
+
+// Claude API types
+
+type claudeRequest struct {
+	Model     string           `json:"model"`
+	MaxTokens int              `json:"max_tokens"`
+	System    string           `json:"system"`
+	Messages  []claudeMessage  `json:"messages"`
+}
+
+type claudeMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type claudeResponse struct {
+	Content []struct {
+		Text string `json:"text"`
+	} `json:"content"`
+	Usage struct {
+		InputTokens  int `json:"input_tokens"`
+		OutputTokens int `json:"output_tokens"`
+	} `json:"usage"`
+}
+
+func (s *LaunchService) callClaudeAPI(ctx context.Context, req GenerateRequest, product db.Product) ([]byte, error) {
+	systemPrompt := buildSystemPrompt(req.Platforms, req.RedditSubreddits)
+	userPrompt := buildUserPrompt(req, product)
+
+	body := claudeRequest{
+		Model:     "claude-sonnet-4-20250514",
+		MaxTokens: 4096,
+		System:    systemPrompt,
+		Messages: []claudeMessage{
+			{Role: "user", Content: userPrompt},
+		},
+	}
+
+	bodyJSON, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", "https://api.anthropic.com/v1/messages", bytes.NewReader(bodyJSON))
+	if err != nil {
+		return nil, err
+	}
+
+	httpReq.Header.Set("x-api-key", s.apiKey)
+	httpReq.Header.Set("anthropic-version", "2023-06-01")
+	httpReq.Header.Set("content-type", "application/json")
+
+	start := time.Now()
+	resp, err := s.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("Claude API request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		slog.Error("Claude API error", "status", resp.StatusCode, "body", string(respBody))
+		return nil, fmt.Errorf("Claude API returned status %d", resp.StatusCode)
+	}
+
+	var claudeResp claudeResponse
+	if err := json.Unmarshal(respBody, &claudeResp); err != nil {
+		return nil, fmt.Errorf("failed to parse Claude response: %w", err)
+	}
+
+	duration := time.Since(start)
+	slog.Info("Claude API call",
+		"prompt_tokens", claudeResp.Usage.InputTokens,
+		"completion_tokens", claudeResp.Usage.OutputTokens,
+		"duration_ms", duration.Milliseconds(),
+	)
+
+	if len(claudeResp.Content) == 0 {
+		return nil, fmt.Errorf("empty response from Claude")
+	}
+
+	text := claudeResp.Content[0].Text
+
+	// Extract JSON from response (may be wrapped in ```json ... ```)
+	jsonContent := extractJSON(text)
+
+	// Validate it's valid JSON
+	var check json.RawMessage
+	if err := json.Unmarshal([]byte(jsonContent), &check); err != nil {
+		return nil, fmt.Errorf("Claude returned invalid JSON: %w", err)
+	}
+
+	return []byte(jsonContent), nil
+}
+
+func extractJSON(text string) string {
+	// Try to find JSON block in markdown code fence
+	start := 0
+	if idx := indexOf(text, "```json"); idx >= 0 {
+		start = idx + 7
+		if end := indexOf(text[start:], "```"); end >= 0 {
+			return text[start : start+end]
+		}
+	}
+	if idx := indexOf(text, "```"); idx >= 0 {
+		start = idx + 3
+		// Skip optional newline
+		if start < len(text) && text[start] == '\n' {
+			start++
+		}
+		if end := indexOf(text[start:], "```"); end >= 0 {
+			return text[start : start+end]
+		}
+	}
+	// Try raw JSON
+	if idx := indexOf(text, "{"); idx >= 0 {
+		return text[idx:]
+	}
+	return text
+}
+
+func indexOf(s, substr string) int {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return i
+		}
+	}
+	return -1
+}
+
+func buildSystemPrompt(platforms []string, subreddits []string) string {
+	prompt := `You are an expert launch content writer for indie hackers and startup founders. You understand the culture, rules, and best practices of each platform.
+
+Generate launch content in JSON format. Only include the platforms requested. Follow these rules strictly:
+
+**Product Hunt:**
+- title: Short, punchy, max 60 characters
+- subtitle: One-line value proposition
+- description: 3-4 paragraphs covering problem → solution → key features → CTA
+- maker_comment: Personal story + why you built this + ask for feedback. Friendly, personal, non-salesy.
+
+**Reddit:**
+- Each subreddit gets its own entry in the array
+- r/SaaS: Direct product introduction, title describes the pain point
+- r/startups: Focus on journey and lessons learned
+- r/sideproject: Show what you built + request feedback
+- r/webdev: Technical angle, implementation details
+- General: Avoid pure self-promotion, frame as sharing/discussion. No external links in title.
+- title: Engaging, describes value or pain point
+- body: Markdown format, authentic voice
+
+**Hacker News (Show HN):**
+- title: "Show HN: [Product Name] – [one-line description]"
+- first_comment: Technical decisions, motivation, honest and humble tone. No marketing language.
+
+**Twitter/X:**
+- Generate a thread of 5-8 tweets
+- Tweet 1: Hook + core value proposition
+- Middle tweets: Feature highlights, build story, screenshot suggestions
+- Last tweet: CTA + link placeholder
+- Each tweet MUST be under 280 characters
+- Use emoji sparingly
+
+**IndieHackers:**
+- title: Journey/build-in-public style
+- body: Share the process honestly, include numbers if available, ask for community feedback
+
+Return ONLY valid JSON, no other text.`
+
+	return prompt
+}
+
+func buildUserPrompt(req GenerateRequest, product db.Product) string {
+	name := product.Name
+	url := ""
+	if product.Url.Valid {
+		url = product.Url.String
+	}
+	desc := ""
+	if product.Description.Valid {
+		desc = product.Description.String
+	}
+	descLong := ""
+	if product.DescriptionLong.Valid {
+		descLong = product.DescriptionLong.String
+	}
+	audience := ""
+	if product.TargetAudience.Valid {
+		audience = product.TargetAudience.String
+	}
+
+	platformStr := ""
+	for _, p := range req.Platforms {
+		platformStr += "- " + p + "\n"
+	}
+
+	subredditStr := ""
+	if len(req.RedditSubreddits) > 0 {
+		for _, sr := range req.RedditSubreddits {
+			subredditStr += "  - " + sr + "\n"
+		}
+	}
+
+	launchTypeLabel := map[string]string{
+		"initial":        "Initial Launch",
+		"feature_update": "Feature Update",
+		"major_update":   "Major Update",
+	}
+	ltLabel := launchTypeLabel[req.LaunchType]
+	if ltLabel == "" {
+		ltLabel = req.LaunchType
+	}
+
+	prompt := fmt.Sprintf(`Generate launch content for the following product:
+
+**Product Name:** %s
+**Product URL:** %s
+**Short Description:** %s
+**Detailed Description:** %s
+**Target Audience:** %s
+**Launch Type:** %s
+
+**Platforms to generate for:**
+%s`, name, url, desc, descLong, audience, ltLabel, platformStr)
+
+	if subredditStr != "" {
+		prompt += fmt.Sprintf("\n**Reddit Subreddits:**\n%s", subredditStr)
+	}
+
+	prompt += `
+
+Generate the JSON content with ONLY the requested platforms as keys. Use these exact key names: "product_hunt", "reddit", "hackernews", "twitter", "indiehackers".
+
+For reddit, return an array of objects with "subreddit", "title", and "body" fields.
+For twitter, return an object with a "thread" array of tweet strings.`
+
+	// Add pgtype.Text helper
+	_ = pgtype.Text{}
+
+	return prompt
+}
