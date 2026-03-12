@@ -87,6 +87,7 @@ func main() {
 
 			// Launch Content
 			r.Post("/api/products/{id}/generate", launchHandler.Generate)
+			r.Post("/api/products/{id}/regenerate-field", launchHandler.RegenerateField)
 			r.Get("/api/products/{id}/draft", launchHandler.GetDraft)
 			r.Put("/api/products/{id}/draft", launchHandler.SaveDraft)
 			r.Post("/api/products/{id}/confirm", launchHandler.ConfirmVersion)

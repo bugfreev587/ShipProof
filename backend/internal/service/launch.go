@@ -128,6 +128,106 @@ func (s *LaunchService) ConfirmVersion(ctx context.Context, productID uuid.UUID,
 	return &version, nil
 }
 
+// RegenerateField regenerates a specific field/section within a platform.
+type RegenerateFieldRequest struct {
+	Platform  string `json:"platform"`   // e.g. "product_hunt", "reddit", "twitter", etc.
+	Field     string `json:"field"`      // e.g. "description", "maker_comment", "first_comment", "body", "thread"
+	Index     int    `json:"index"`      // for arrays: reddit post index, twitter tweet index (-1 if not applicable)
+	Subreddit string `json:"subreddit"`  // for reddit: which subreddit
+}
+
+func (s *LaunchService) RegenerateField(ctx context.Context, req RegenerateFieldRequest, product db.Product) (string, error) {
+	systemPrompt := `You are an expert launch content writer for indie hackers and startup founders.
+You will regenerate a SINGLE specific piece of content. Return ONLY the raw text content, no JSON wrapping, no markdown fences.`
+
+	userPrompt := buildRegenerateFieldPrompt(req, product)
+
+	body := claudeRequest{
+		Model:     "claude-sonnet-4-20250514",
+		MaxTokens: 2048,
+		System:    systemPrompt,
+		Messages:  []claudeMessage{{Role: "user", Content: userPrompt}},
+	}
+
+	bodyJSON, _ := json.Marshal(body)
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", "https://api.anthropic.com/v1/messages", bytes.NewReader(bodyJSON))
+	if err != nil {
+		return "", err
+	}
+
+	httpReq.Header.Set("x-api-key", s.apiKey)
+	httpReq.Header.Set("anthropic-version", "2023-06-01")
+	httpReq.Header.Set("content-type", "application/json")
+
+	start := time.Now()
+	resp, err := s.httpClient.Do(httpReq)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		slog.Error("Claude API error (regenerate field)", "status", resp.StatusCode, "body", string(respBody))
+		return "", fmt.Errorf("Claude API returned status %d", resp.StatusCode)
+	}
+
+	var claudeResp claudeResponse
+	if err := json.Unmarshal(respBody, &claudeResp); err != nil {
+		return "", err
+	}
+
+	slog.Info("Claude API call (regenerate field)",
+		"prompt_tokens", claudeResp.Usage.InputTokens,
+		"completion_tokens", claudeResp.Usage.OutputTokens,
+		"duration_ms", time.Since(start).Milliseconds(),
+	)
+
+	if len(claudeResp.Content) == 0 {
+		return "", fmt.Errorf("empty response from Claude")
+	}
+
+	return claudeResp.Content[0].Text, nil
+}
+
+func buildRegenerateFieldPrompt(req RegenerateFieldRequest, product db.Product) string {
+	name := product.Name
+	url := ""
+	if product.Url.Valid {
+		url = product.Url.String
+	}
+	desc := ""
+	if product.Description.Valid {
+		desc = product.Description.String
+	}
+
+	productInfo := fmt.Sprintf("Product: %s\nURL: %s\nDescription: %s", name, url, desc)
+
+	switch req.Platform {
+	case "product_hunt":
+		switch req.Field {
+		case "description":
+			return fmt.Sprintf("%s\n\nRegenerate the Product Hunt description. Write 3-4 paragraphs covering problem → solution → key features → CTA. Friendly, personal, non-salesy.", productInfo)
+		case "maker_comment":
+			return fmt.Sprintf("%s\n\nRegenerate the Product Hunt maker comment. Write a personal story about why you built this + ask for feedback. Friendly, humble, authentic.", productInfo)
+		}
+	case "reddit":
+		return fmt.Sprintf("%s\n\nRegenerate a Reddit post body for %s. Frame as sharing/discussion, avoid pure self-promotion. Markdown format, authentic voice.", productInfo, req.Subreddit)
+	case "hackernews":
+		return fmt.Sprintf("%s\n\nRegenerate the Hacker News first comment. Cover technical decisions and motivation. Honest, humble, no marketing language.", productInfo)
+	case "twitter":
+		return fmt.Sprintf("%s\n\nRegenerate a single tweet for a launch thread. Must be under 280 characters. Use emoji sparingly. Make it engaging.", productInfo)
+	case "indiehackers":
+		return fmt.Sprintf("%s\n\nRegenerate the IndieHackers post body. Share the building journey honestly, include learnings, ask for community feedback. Build-in-public style.", productInfo)
+	}
+
+	return fmt.Sprintf("%s\n\nRegenerate the %s %s content.", productInfo, req.Platform, req.Field)
+}
+
 type PlanLimitError struct {
 	Message string
 }

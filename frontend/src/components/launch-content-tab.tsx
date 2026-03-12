@@ -9,6 +9,7 @@ import {
   confirmVersion,
   listVersions,
   getVersion,
+  regenerateField,
   type LaunchDraft,
   type LaunchVersion,
   type Product,
@@ -551,6 +552,7 @@ function DraftEditor({
         content={editedContent}
         onChange={setEditedContent}
         copyToClipboard={copyToClipboard}
+        productId={draft.product_id}
       />
 
       {error && <p className="mt-4 text-sm text-[#EF4444]">{error}</p>}
@@ -587,17 +589,62 @@ function ContentEditor({
   content,
   onChange,
   copyToClipboard,
+  productId,
 }: {
   platform: string;
   content: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
   copyToClipboard: (text: string) => void;
+  productId: string;
 }) {
+  const { getToken } = useAuth();
+  const [regeneratingKey, setRegeneratingKey] = useState<string | null>(null);
   const platformContent = content[platform] as Record<string, unknown> | unknown[] | undefined;
 
   const updateField = (field: string, value: string) => {
     const current = (content[platform] || {}) as Record<string, unknown>;
     onChange({ ...content, [platform]: { ...current, [field]: value } });
+  };
+
+  const handleRegenerate = async (
+    field: string,
+    onResult: (text: string) => void,
+    opts?: { index?: number; subreddit?: string },
+  ) => {
+    const key = `${platform}-${field}-${opts?.index ?? ""}`;
+    setRegeneratingKey(key);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await regenerateField(
+        productId,
+        { platform, field, index: opts?.index ?? -1, subreddit: opts?.subreddit },
+        token,
+      );
+      onResult(res.text);
+    } catch {
+      // ignore
+    } finally {
+      setRegeneratingKey(null);
+    }
+  };
+
+  const regenButton = (
+    field: string,
+    onResult: (text: string) => void,
+    opts?: { index?: number; subreddit?: string },
+  ) => {
+    const key = `${platform}-${field}-${opts?.index ?? ""}`;
+    const isRegenerating = regeneratingKey === key;
+    return (
+      <button
+        onClick={() => handleRegenerate(field, onResult, opts)}
+        disabled={regeneratingKey !== null}
+        className="shrink-0 rounded px-2 py-1 text-xs text-[#6366F1] hover:bg-[#6366F1]/10 disabled:opacity-50 transition-colors"
+      >
+        {isRegenerating ? "Regenerating..." : "Regenerate"}
+      </button>
+    );
   };
 
   if (!platformContent) {
@@ -614,8 +661,12 @@ function ContentEditor({
       <div className="space-y-4">
         <Field label="Title" value={ph.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
         <Field label="Subtitle" value={ph.subtitle || ""} onChange={(v) => updateField("subtitle", v)} onCopy={copyToClipboard} />
-        <Field label="Description" value={ph.description || ""} onChange={(v) => updateField("description", v)} onCopy={copyToClipboard} multiline rows={14} />
-        <Field label="Maker Comment" value={ph.maker_comment || ""} onChange={(v) => updateField("maker_comment", v)} onCopy={copyToClipboard} multiline rows={10} />
+        <Field label="Description" value={ph.description || ""} onChange={(v) => updateField("description", v)} onCopy={copyToClipboard} multiline rows={14}
+          extraAction={regenButton("description", (t) => updateField("description", t))}
+        />
+        <Field label="Maker Comment" value={ph.maker_comment || ""} onChange={(v) => updateField("maker_comment", v)} onCopy={copyToClipboard} multiline rows={10}
+          extraAction={regenButton("maker_comment", (t) => updateField("maker_comment", t))}
+        />
       </div>
     );
   }
@@ -633,8 +684,15 @@ function ContentEditor({
             key={i}
             className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-4"
           >
-            <div className="mb-2 text-sm font-medium text-[#6366F1]">
-              {post.subreddit}
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-medium text-[#6366F1]">
+                {post.subreddit}
+              </span>
+              {regenButton("body", (t) => {
+                const updated = [...posts];
+                updated[i] = { ...updated[i], body: t };
+                onChange({ ...content, reddit: updated });
+              }, { index: i, subreddit: post.subreddit })}
             </div>
             <Field
               label="Title"
@@ -671,7 +729,9 @@ function ContentEditor({
     return (
       <div className="space-y-4">
         <Field label="Title" value={hn.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
-        <Field label="First Comment" value={hn.first_comment || ""} onChange={(v) => updateField("first_comment", v)} onCopy={copyToClipboard} multiline rows={12} />
+        <Field label="First Comment" value={hn.first_comment || ""} onChange={(v) => updateField("first_comment", v)} onCopy={copyToClipboard} multiline rows={12}
+          extraAction={regenButton("first_comment", (t) => updateField("first_comment", t))}
+        />
       </div>
     );
   }
@@ -687,11 +747,18 @@ function ContentEditor({
               <span className="text-xs text-[#9CA3AF]">
                 Tweet {i + 1}
               </span>
-              <span
-                className={`text-xs ${tweet.length > 280 ? "text-[#EF4444]" : "text-[#9CA3AF]"}`}
-              >
-                {tweet.length}/280
-              </span>
+              <div className="flex items-center gap-2">
+                {regenButton("thread", (t) => {
+                  const updated = [...thread];
+                  updated[i] = t;
+                  onChange({ ...content, twitter: { thread: updated } });
+                }, { index: i })}
+                <span
+                  className={`text-xs ${tweet.length > 280 ? "text-[#EF4444]" : "text-[#9CA3AF]"}`}
+                >
+                  {tweet.length}/280
+                </span>
+              </div>
             </div>
             <div className="flex gap-2">
               <textarea
@@ -720,7 +787,9 @@ function ContentEditor({
     return (
       <div className="space-y-4">
         <Field label="Title" value={ih.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
-        <Field label="Body" value={ih.body || ""} onChange={(v) => updateField("body", v)} onCopy={copyToClipboard} multiline rows={14} />
+        <Field label="Body" value={ih.body || ""} onChange={(v) => updateField("body", v)} onCopy={copyToClipboard} multiline rows={14}
+          extraAction={regenButton("body", (t) => updateField("body", t))}
+        />
       </div>
     );
   }
@@ -857,6 +926,7 @@ function Field({
   onCopy,
   multiline,
   rows = 5,
+  extraAction,
 }: {
   label: string;
   value: string;
@@ -864,12 +934,16 @@ function Field({
   onCopy: (text: string) => void;
   multiline?: boolean;
   rows?: number;
+  extraAction?: React.ReactNode;
 }) {
   return (
     <div>
       <div className="mb-1 flex items-center justify-between">
         <label className="text-xs font-medium text-[#9CA3AF]">{label}</label>
-        <CopyButton text={value} onCopy={onCopy} />
+        <div className="flex items-center gap-1">
+          {extraAction}
+          <CopyButton text={value} onCopy={onCopy} />
+        </div>
       </div>
       {multiline ? (
         <textarea

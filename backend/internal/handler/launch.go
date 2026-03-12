@@ -95,6 +95,30 @@ func (h *LaunchHandler) Generate(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result.Draft)
 }
 
+// POST /api/products/{id}/regenerate-field
+func (h *LaunchHandler) RegenerateField(w http.ResponseWriter, r *http.Request) {
+	product, _, err := h.verifyProductOwnership(r)
+	if err != nil {
+		http.Error(w, `{"error":"forbidden"}`, http.StatusForbidden)
+		return
+	}
+
+	var req service.RegenerateFieldRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
+		return
+	}
+
+	text, err := h.service.RegenerateField(r.Context(), req, product)
+	if err != nil {
+		http.Error(w, `{"error":"regeneration failed"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"text": text})
+}
+
 // GET /api/products/{id}/draft
 func (h *LaunchHandler) GetDraft(w http.ResponseWriter, r *http.Request) {
 	product, _, err := h.verifyProductOwnership(r)

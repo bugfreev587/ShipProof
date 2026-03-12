@@ -164,6 +164,23 @@ export function saveDraft(
   );
 }
 
+export function regenerateField(
+  productId: string,
+  data: {
+    platform: string;
+    field: string;
+    index?: number;
+    subreddit?: string;
+  },
+  token: string,
+) {
+  return fetchApi<{ text: string }>(
+    `/api/products/${productId}/regenerate-field`,
+    { method: "POST", body: JSON.stringify(data) },
+    token,
+  );
+}
+
 export function confirmVersion(
   productId: string,
   title: string,
