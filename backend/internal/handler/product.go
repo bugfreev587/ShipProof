@@ -12,14 +12,16 @@ import (
 
 	db "github.com/xiaobo/shipproof/internal/db"
 	"github.com/xiaobo/shipproof/internal/middleware"
+	"github.com/xiaobo/shipproof/internal/service"
 )
 
 type ProductHandler struct {
-	queries *db.Queries
+	queries     *db.Queries
+	userService *service.UserService
 }
 
-func NewProductHandler(queries *db.Queries) *ProductHandler {
-	return &ProductHandler{queries: queries}
+func NewProductHandler(queries *db.Queries, userService *service.UserService) *ProductHandler {
+	return &ProductHandler{queries: queries, userService: userService}
 }
 
 type createProductRequest struct {
@@ -50,7 +52,7 @@ func generateSlug(name string) string {
 
 func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 	clerkID := middleware.GetClerkUserID(r.Context())
-	user, err := h.queries.GetUserByClerkID(r.Context(), clerkID)
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
 	if err != nil {
 		http.Error(w, `{"error":"user not found"}`, http.StatusNotFound)
 		return
@@ -68,7 +70,7 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	clerkID := middleware.GetClerkUserID(r.Context())
-	user, err := h.queries.GetUserByClerkID(r.Context(), clerkID)
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
 	if err != nil {
 		http.Error(w, `{"error":"user not found"}`, http.StatusNotFound)
 		return
@@ -121,7 +123,7 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	// Verify ownership
 	clerkID := middleware.GetClerkUserID(r.Context())
-	user, err := h.queries.GetUserByClerkID(r.Context(), clerkID)
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
 	if err != nil || user.ID != product.UserID {
 		http.Error(w, `{"error":"forbidden"}`, http.StatusForbidden)
 		return
@@ -145,7 +147,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	clerkID := middleware.GetClerkUserID(r.Context())
-	user, err := h.queries.GetUserByClerkID(r.Context(), clerkID)
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
 	if err != nil || user.ID != product.UserID {
 		http.Error(w, `{"error":"forbidden"}`, http.StatusForbidden)
 		return
@@ -188,7 +190,7 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	clerkID := middleware.GetClerkUserID(r.Context())
-	user, err := h.queries.GetUserByClerkID(r.Context(), clerkID)
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
 	if err != nil || user.ID != product.UserID {
 		http.Error(w, `{"error":"forbidden"}`, http.StatusForbidden)
 		return

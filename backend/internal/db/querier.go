@@ -31,6 +31,7 @@ type Querier interface {
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPlan(ctx context.Context, arg UpdateUserPlanParams) (User, error)
 	UpsertDraft(ctx context.Context, arg UpsertDraftParams) (LaunchDraft, error)
+	UpsertUserByClerkID(ctx context.Context, arg UpsertUserByClerkIDParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

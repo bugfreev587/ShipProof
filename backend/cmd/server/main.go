@@ -67,9 +67,10 @@ func main() {
 
 	if queries != nil {
 		webhookHandler := handler.NewWebhookHandler(queries)
-		productHandler := handler.NewProductHandler(queries)
+		userService := service.NewUserService(queries)
+		productHandler := handler.NewProductHandler(queries, userService)
 		launchService := service.NewLaunchService(queries)
-		launchHandler := handler.NewLaunchHandler(queries, launchService)
+		launchHandler := handler.NewLaunchHandler(queries, launchService, userService)
 
 		r.Post("/api/webhooks/clerk", webhookHandler.HandleClerkWebhook)
 

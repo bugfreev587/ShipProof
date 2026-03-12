@@ -165,3 +165,35 @@ func (q *Queries) UpdateUserPlan(ctx context.Context, arg UpdateUserPlanParams) 
 	)
 	return i, err
 }
+
+const upsertUserByClerkID = `-- name: UpsertUserByClerkID :one
+INSERT INTO users (clerk_id, email, name)
+VALUES ($1, $2, $3)
+ON CONFLICT (clerk_id) DO UPDATE
+SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = now()
+RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at
+`
+
+type UpsertUserByClerkIDParams struct {
+	ClerkID string `json:"clerk_id"`
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+}
+
+func (q *Queries) UpsertUserByClerkID(ctx context.Context, arg UpsertUserByClerkIDParams) (User, error) {
+	row := q.db.QueryRow(ctx, upsertUserByClerkID, arg.ClerkID, arg.Email, arg.Name)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.ClerkID,
+		&i.Email,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.Plan,
+		&i.StripeCustomerID,
+		&i.StripeSubscriptionID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

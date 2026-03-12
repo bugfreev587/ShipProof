@@ -14,12 +14,13 @@ import (
 )
 
 type LaunchHandler struct {
-	queries *db.Queries
-	service *service.LaunchService
+	queries     *db.Queries
+	service     *service.LaunchService
+	userService *service.UserService
 }
 
-func NewLaunchHandler(queries *db.Queries, svc *service.LaunchService) *LaunchHandler {
-	return &LaunchHandler{queries: queries, service: svc}
+func NewLaunchHandler(queries *db.Queries, svc *service.LaunchService, userService *service.UserService) *LaunchHandler {
+	return &LaunchHandler{queries: queries, service: svc, userService: userService}
 }
 
 // verifyProductOwnership checks that the current user owns the product
@@ -30,7 +31,7 @@ func (h *LaunchHandler) verifyProductOwnership(r *http.Request) (db.Product, db.
 	}
 
 	clerkID := middleware.GetClerkUserID(r.Context())
-	user, err := h.queries.GetUserByClerkID(r.Context(), clerkID)
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
 	if err != nil {
 		return db.Product{}, db.User{}, err
 	}

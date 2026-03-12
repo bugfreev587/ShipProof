@@ -20,3 +20,10 @@ RETURNING *;
 
 -- name: GetUserByID :one
 SELECT * FROM users WHERE id = $1;
+
+-- name: UpsertUserByClerkID :one
+INSERT INTO users (clerk_id, email, name)
+VALUES ($1, $2, $3)
+ON CONFLICT (clerk_id) DO UPDATE
+SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = now()
+RETURNING *;
