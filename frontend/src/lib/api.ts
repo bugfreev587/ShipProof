@@ -188,7 +188,13 @@ export function confirmVersion(
 ) {
   return fetchApi<LaunchVersion>(
     `/api/products/${productId}/confirm`,
-    { method: "POST", body: JSON.stringify({ title }) },
+    {
+      method: "POST",
+      body: JSON.stringify({
+        title,
+        timezone_offset: new Date().getTimezoneOffset(),
+      }),
+    },
     token,
   );
 }

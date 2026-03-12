@@ -168,7 +168,8 @@ func (h *LaunchHandler) SaveDraft(w http.ResponseWriter, r *http.Request) {
 }
 
 type confirmRequest struct {
-	Title string `json:"title"`
+	Title          string `json:"title"`
+	TimezoneOffset int    `json:"timezone_offset"` // minutes offset from UTC (JS: new Date().getTimezoneOffset())
 }
 
 // POST /api/products/{id}/confirm
@@ -190,7 +191,7 @@ func (h *LaunchHandler) ConfirmVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	version, err := h.service.ConfirmVersion(r.Context(), product.ID, req.Title, user)
+	version, err := h.service.ConfirmVersion(r.Context(), product.ID, req.Title, user, req.TimezoneOffset)
 	if err != nil {
 		var planErr *service.PlanLimitError
 		if errors.As(err, &planErr) {

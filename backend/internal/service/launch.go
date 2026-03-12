@@ -75,7 +75,7 @@ func (s *LaunchService) Generate(ctx context.Context, req GenerateRequest, produ
 	return &GenerateResult{Draft: draft}, nil
 }
 
-func (s *LaunchService) ConfirmVersion(ctx context.Context, productID uuid.UUID, title string, user db.User) (*db.LaunchVersion, error) {
+func (s *LaunchService) ConfirmVersion(ctx context.Context, productID uuid.UUID, title string, user db.User, timezoneOffset int) (*db.LaunchVersion, error) {
 	// Plan limit check for versions
 	if user.Plan == db.UserPlanFree {
 		versionCount, err := s.queries.CountVersionsByProductID(ctx, productID)
@@ -98,16 +98,14 @@ func (s *LaunchService) ConfirmVersion(ctx context.Context, productID uuid.UUID,
 	}
 	nextNum := maxNum + 1
 
-	now := time.Now().UTC()
-	versionLabel := fmt.Sprintf("v%d.x_%s", nextNum, now.Format("01022006150405")[:12])
-	// Format: v{N}.x_{MMDDYYYYHHmm}
-	versionLabel = fmt.Sprintf("v%d.x_%s%s%s%s%s",
+	// JS getTimezoneOffset() returns minutes *ahead* of UTC as negative,
+	// e.g. UTC+8 → -480. We negate to get the Go offset.
+	loc := time.FixedZone("client", -timezoneOffset*60)
+	now := time.Now().In(loc)
+	// Format: v{N}_{MMDDYYYYHHmm}
+	versionLabel := fmt.Sprintf("v%d_%s",
 		nextNum,
-		now.Format("01"),   // MM
-		now.Format("02"),   // DD
-		now.Format("2006"), // YYYY
-		now.Format("15"),   // HH
-		now.Format("04"),   // mm
+		now.Format("01022006")+now.Format("1504"),
 	)
 
 	version, err := s.queries.CreateVersion(ctx, db.CreateVersionParams{
