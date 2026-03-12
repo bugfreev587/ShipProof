@@ -1,10 +1,10 @@
 -- name: CreateVersion :one
-INSERT INTO launch_versions (product_id, version_number, version_label, title, launch_type, platforms, content)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO launch_versions (product_id, version_number, version_label, title, launch_type, platforms, content, launch_notes)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: ListVersionsByProductID :many
-SELECT id, product_id, version_number, version_label, title, launch_type, platforms, created_at
+SELECT id, product_id, version_number, version_label, title, launch_type, platforms, launch_notes, created_at
 FROM launch_versions
 WHERE product_id = $1
 ORDER BY created_at DESC;

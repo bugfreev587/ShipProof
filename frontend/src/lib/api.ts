@@ -63,6 +63,7 @@ export interface LaunchDraft {
   launch_type: string;
   platforms: string[];
   content: Record<string, unknown>;
+  launch_notes: PgText;
   created_at: string;
   updated_at: string;
 }
@@ -76,6 +77,7 @@ export interface LaunchVersion {
   launch_type: string;
   platforms: string[];
   content?: Record<string, unknown>;
+  launch_notes: PgText;
   created_at: string;
 }
 
@@ -134,6 +136,7 @@ export function generateLaunchContent(
     launch_type: string;
     platforms: string[];
     reddit_subreddits?: string[];
+    launch_notes?: string;
   },
   token: string,
 ) {

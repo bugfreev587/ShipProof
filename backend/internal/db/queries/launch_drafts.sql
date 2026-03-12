@@ -2,12 +2,13 @@
 SELECT * FROM launch_drafts WHERE product_id = $1;
 
 -- name: UpsertDraft :one
-INSERT INTO launch_drafts (product_id, launch_type, platforms, content)
-VALUES ($1, $2, $3, $4)
+INSERT INTO launch_drafts (product_id, launch_type, platforms, content, launch_notes)
+VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT (product_id) DO UPDATE
 SET launch_type = EXCLUDED.launch_type,
     platforms = EXCLUDED.platforms,
     content = EXCLUDED.content,
+    launch_notes = EXCLUDED.launch_notes,
     updated_at = now()
 RETURNING *;
 

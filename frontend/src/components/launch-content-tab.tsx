@@ -49,6 +49,7 @@ export default function LaunchContentTab({ product }: Props) {
     "r/SaaS",
   ]);
   const [customSubreddit, setCustomSubreddit] = useState("");
+  const [launchNotes, setLaunchNotes] = useState("");
 
   // Draft editing
   const [activePlatform, setActivePlatform] = useState("");
@@ -77,6 +78,9 @@ export default function LaunchContentTab({ product }: Props) {
         );
         const platforms = draftRes.draft.platforms || [];
         setActivePlatform(platforms[0] || "");
+        if (draftRes.draft.launch_notes?.Valid) {
+          setLaunchNotes(draftRes.draft.launch_notes.String);
+        }
       }
       setVersions(versionsRes);
     } catch {
@@ -121,6 +125,7 @@ export default function LaunchContentTab({ product }: Props) {
           reddit_subreddits: selectedPlatforms.includes("reddit")
             ? allSubreddits
             : undefined,
+          launch_notes: launchNotes || undefined,
         },
         token,
       );
@@ -209,6 +214,8 @@ export default function LaunchContentTab({ product }: Props) {
           setSelectedSubreddits={setSelectedSubreddits}
           customSubreddit={customSubreddit}
           setCustomSubreddit={setCustomSubreddit}
+          launchNotes={launchNotes}
+          setLaunchNotes={setLaunchNotes}
           generating={generating}
           onGenerate={handleGenerate}
           error={error}
@@ -271,6 +278,14 @@ export default function LaunchContentTab({ product }: Props) {
                 </button>
                 {expandedVersion === v.id && expandedVersionData && (
                   <div className="mt-2 rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4">
+                    {expandedVersionData.launch_notes?.Valid && (
+                      <div className="mb-4 rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3">
+                        <span className="text-xs font-medium text-[#9CA3AF]">Launch Notes</span>
+                        <p className="mt-1 text-sm text-[#F1F1F3] whitespace-pre-wrap">
+                          {expandedVersionData.launch_notes.String}
+                        </p>
+                      </div>
+                    )}
                     <ContentViewer
                       content={
                         expandedVersionData.content as Record<string, unknown>
@@ -337,6 +352,8 @@ function GenerateForm({
   setSelectedSubreddits,
   customSubreddit,
   setCustomSubreddit,
+  launchNotes,
+  setLaunchNotes,
   generating,
   onGenerate,
   error,
@@ -349,6 +366,8 @@ function GenerateForm({
   setSelectedSubreddits: (v: string[]) => void;
   customSubreddit: string;
   setCustomSubreddit: (v: string) => void;
+  launchNotes: string;
+  setLaunchNotes: (v: string) => void;
   generating: boolean;
   onGenerate: () => void;
   error: string;
@@ -453,6 +472,23 @@ function GenerateForm({
           />
         </div>
       )}
+
+      {/* Launch Notes */}
+      <div className="mb-4">
+        <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">
+          Launch Notes
+        </label>
+        <textarea
+          value={launchNotes}
+          onChange={(e) => setLaunchNotes(e.target.value)}
+          rows={4}
+          placeholder="Key talking points, unique angles, specific features to highlight, tone preferences, or any context the AI should use when generating content..."
+          className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none resize-none"
+        />
+        <p className="mt-1 text-xs text-[#6B7280]">
+          These notes will be used as the primary context for AI-generated content across all platforms.
+        </p>
+      </div>
 
       {error && <p className="mb-4 text-sm text-[#EF4444]">{error}</p>}
 

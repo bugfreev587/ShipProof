@@ -36,6 +36,7 @@ type GenerateRequest struct {
 	LaunchType       string    `json:"launch_type"`
 	Platforms        []string  `json:"platforms"`
 	RedditSubreddits []string  `json:"reddit_subreddits"`
+	LaunchNotes      string    `json:"launch_notes"`
 }
 
 type GenerateResult struct {
@@ -63,10 +64,11 @@ func (s *LaunchService) Generate(ctx context.Context, req GenerateRequest, produ
 	contentJSON := json.RawMessage(content)
 
 	draft, err := s.queries.UpsertDraft(ctx, db.UpsertDraftParams{
-		ProductID:  req.ProductID,
-		LaunchType: db.LaunchType(req.LaunchType),
-		Platforms:  platformsJSON,
-		Content:    contentJSON,
+		ProductID:   req.ProductID,
+		LaunchType:  db.LaunchType(req.LaunchType),
+		Platforms:   platformsJSON,
+		Content:     contentJSON,
+		LaunchNotes: pgtype.Text{String: req.LaunchNotes, Valid: req.LaunchNotes != ""},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to save draft: %w", err)
@@ -116,6 +118,7 @@ func (s *LaunchService) ConfirmVersion(ctx context.Context, productID uuid.UUID,
 		LaunchType:    draft.LaunchType,
 		Platforms:     draft.Platforms,
 		Content:       draft.Content,
+		LaunchNotes:   draft.LaunchNotes,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create version: %w", err)
@@ -134,11 +137,11 @@ type RegenerateFieldRequest struct {
 	Subreddit string `json:"subreddit"`  // for reddit: which subreddit
 }
 
-func (s *LaunchService) RegenerateField(ctx context.Context, req RegenerateFieldRequest, product db.Product) (string, error) {
+func (s *LaunchService) RegenerateField(ctx context.Context, req RegenerateFieldRequest, product db.Product, launchNotes string) (string, error) {
 	systemPrompt := `You are an expert launch content writer for indie hackers and startup founders.
 You will regenerate a SINGLE specific piece of content. Return ONLY the raw text content, no JSON wrapping, no markdown fences.`
 
-	userPrompt := buildRegenerateFieldPrompt(req, product)
+	userPrompt := buildRegenerateFieldPrompt(req, product, launchNotes)
 
 	body := claudeRequest{
 		Model:     "claude-sonnet-4-20250514",
@@ -192,7 +195,7 @@ You will regenerate a SINGLE specific piece of content. Return ONLY the raw text
 	return claudeResp.Content[0].Text, nil
 }
 
-func buildRegenerateFieldPrompt(req RegenerateFieldRequest, product db.Product) string {
+func buildRegenerateFieldPrompt(req RegenerateFieldRequest, product db.Product, launchNotes string) string {
 	name := product.Name
 	url := ""
 	if product.Url.Valid {
@@ -204,6 +207,9 @@ func buildRegenerateFieldPrompt(req RegenerateFieldRequest, product db.Product) 
 	}
 
 	productInfo := fmt.Sprintf("Product: %s\nURL: %s\nDescription: %s", name, url, desc)
+	if launchNotes != "" {
+		productInfo += fmt.Sprintf("\n\nLaunch Notes (use as primary context):\n%s", launchNotes)
+	}
 
 	switch req.Platform {
 	case "product_hunt":
@@ -450,6 +456,11 @@ func buildUserPrompt(req GenerateRequest, product db.Product) string {
 		ltLabel = req.LaunchType
 	}
 
+	launchNotes := ""
+	if req.LaunchNotes != "" {
+		launchNotes = req.LaunchNotes
+	}
+
 	prompt := fmt.Sprintf(`Generate launch content for the following product:
 
 **Product Name:** %s
@@ -461,6 +472,10 @@ func buildUserPrompt(req GenerateRequest, product db.Product) string {
 
 **Platforms to generate for:**
 %s`, name, url, desc, descLong, audience, ltLabel, platformStr)
+
+	if launchNotes != "" {
+		prompt += fmt.Sprintf("\n**Launch Notes (IMPORTANT — use these as the primary context and talking points for all generated content):**\n%s\n", launchNotes)
+	}
 
 	if subredditStr != "" {
 		prompt += fmt.Sprintf("\n**Reddit Subreddits:**\n%s", subredditStr)

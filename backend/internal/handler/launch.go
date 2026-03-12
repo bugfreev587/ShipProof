@@ -52,6 +52,7 @@ type generateRequest struct {
 	LaunchType       string   `json:"launch_type"`
 	Platforms        []string `json:"platforms"`
 	RedditSubreddits []string `json:"reddit_subreddits"`
+	LaunchNotes      string   `json:"launch_notes"`
 }
 
 // POST /api/products/{id}/generate
@@ -78,6 +79,7 @@ func (h *LaunchHandler) Generate(w http.ResponseWriter, r *http.Request) {
 		LaunchType:       req.LaunchType,
 		Platforms:        req.Platforms,
 		RedditSubreddits: req.RedditSubreddits,
+		LaunchNotes:      req.LaunchNotes,
 	}, product, user)
 	if err != nil {
 		var planErr *service.PlanLimitError
@@ -109,7 +111,13 @@ func (h *LaunchHandler) RegenerateField(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	text, err := h.service.RegenerateField(r.Context(), req, product)
+	// Get launch_notes from current draft
+	var launchNotes string
+	if draft, err := h.queries.GetDraftByProductID(r.Context(), product.ID); err == nil && draft.LaunchNotes.Valid {
+		launchNotes = draft.LaunchNotes.String
+	}
+
+	text, err := h.service.RegenerateField(r.Context(), req, product, launchNotes)
 	if err != nil {
 		http.Error(w, `{"error":"regeneration failed"}`, http.StatusInternalServerError)
 		return

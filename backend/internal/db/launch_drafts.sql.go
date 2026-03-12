@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countDraftsThisMonth = `-- name: CountDraftsThisMonth :one
@@ -35,7 +36,7 @@ func (q *Queries) DeleteDraftByProductID(ctx context.Context, productID uuid.UUI
 }
 
 const getDraftByProductID = `-- name: GetDraftByProductID :one
-SELECT id, product_id, launch_type, platforms, content, created_at, updated_at FROM launch_drafts WHERE product_id = $1
+SELECT id, product_id, launch_type, platforms, content, created_at, updated_at, launch_notes FROM launch_drafts WHERE product_id = $1
 `
 
 func (q *Queries) GetDraftByProductID(ctx context.Context, productID uuid.UUID) (LaunchDraft, error) {
@@ -49,6 +50,7 @@ func (q *Queries) GetDraftByProductID(ctx context.Context, productID uuid.UUID) 
 		&i.Content,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LaunchNotes,
 	)
 	return i, err
 }
@@ -57,7 +59,7 @@ const updateDraftContent = `-- name: UpdateDraftContent :one
 UPDATE launch_drafts
 SET content = $2, updated_at = now()
 WHERE product_id = $1
-RETURNING id, product_id, launch_type, platforms, content, created_at, updated_at
+RETURNING id, product_id, launch_type, platforms, content, created_at, updated_at, launch_notes
 `
 
 type UpdateDraftContentParams struct {
@@ -76,26 +78,29 @@ func (q *Queries) UpdateDraftContent(ctx context.Context, arg UpdateDraftContent
 		&i.Content,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LaunchNotes,
 	)
 	return i, err
 }
 
 const upsertDraft = `-- name: UpsertDraft :one
-INSERT INTO launch_drafts (product_id, launch_type, platforms, content)
-VALUES ($1, $2, $3, $4)
+INSERT INTO launch_drafts (product_id, launch_type, platforms, content, launch_notes)
+VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT (product_id) DO UPDATE
 SET launch_type = EXCLUDED.launch_type,
     platforms = EXCLUDED.platforms,
     content = EXCLUDED.content,
+    launch_notes = EXCLUDED.launch_notes,
     updated_at = now()
-RETURNING id, product_id, launch_type, platforms, content, created_at, updated_at
+RETURNING id, product_id, launch_type, platforms, content, created_at, updated_at, launch_notes
 `
 
 type UpsertDraftParams struct {
-	ProductID  uuid.UUID       `json:"product_id"`
-	LaunchType LaunchType      `json:"launch_type"`
-	Platforms  json.RawMessage `json:"platforms"`
-	Content    json.RawMessage `json:"content"`
+	ProductID   uuid.UUID       `json:"product_id"`
+	LaunchType  LaunchType      `json:"launch_type"`
+	Platforms   json.RawMessage `json:"platforms"`
+	Content     json.RawMessage `json:"content"`
+	LaunchNotes pgtype.Text     `json:"launch_notes"`
 }
 
 func (q *Queries) UpsertDraft(ctx context.Context, arg UpsertDraftParams) (LaunchDraft, error) {
@@ -104,6 +109,7 @@ func (q *Queries) UpsertDraft(ctx context.Context, arg UpsertDraftParams) (Launc
 		arg.LaunchType,
 		arg.Platforms,
 		arg.Content,
+		arg.LaunchNotes,
 	)
 	var i LaunchDraft
 	err := row.Scan(
@@ -114,6 +120,7 @@ func (q *Queries) UpsertDraft(ctx context.Context, arg UpsertDraftParams) (Launc
 		&i.Content,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LaunchNotes,
 	)
 	return i, err
 }

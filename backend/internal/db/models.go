@@ -317,13 +317,14 @@ func (ns NullWidgetTheme) Value() (driver.Value, error) {
 }
 
 type LaunchDraft struct {
-	ID         uuid.UUID       `json:"id"`
-	ProductID  uuid.UUID       `json:"product_id"`
-	LaunchType LaunchType      `json:"launch_type"`
-	Platforms  json.RawMessage `json:"platforms"`
-	Content    json.RawMessage `json:"content"`
-	CreatedAt  time.Time       `json:"created_at"`
-	UpdatedAt  time.Time       `json:"updated_at"`
+	ID          uuid.UUID       `json:"id"`
+	ProductID   uuid.UUID       `json:"product_id"`
+	LaunchType  LaunchType      `json:"launch_type"`
+	Platforms   json.RawMessage `json:"platforms"`
+	Content     json.RawMessage `json:"content"`
+	CreatedAt   time.Time       `json:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at"`
+	LaunchNotes pgtype.Text     `json:"launch_notes"`
 }
 
 type LaunchVersion struct {
@@ -336,6 +337,7 @@ type LaunchVersion struct {
 	Platforms     json.RawMessage `json:"platforms"`
 	Content       json.RawMessage `json:"content"`
 	CreatedAt     time.Time       `json:"created_at"`
+	LaunchNotes   pgtype.Text     `json:"launch_notes"`
 }
 
 type Product struct {

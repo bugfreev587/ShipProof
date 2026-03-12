@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countVersionsByProductID = `-- name: CountVersionsByProductID :one
@@ -25,9 +26,9 @@ func (q *Queries) CountVersionsByProductID(ctx context.Context, productID uuid.U
 }
 
 const createVersion = `-- name: CreateVersion :one
-INSERT INTO launch_versions (product_id, version_number, version_label, title, launch_type, platforms, content)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, product_id, version_number, version_label, title, launch_type, platforms, content, created_at
+INSERT INTO launch_versions (product_id, version_number, version_label, title, launch_type, platforms, content, launch_notes)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, product_id, version_number, version_label, title, launch_type, platforms, content, created_at, launch_notes
 `
 
 type CreateVersionParams struct {
@@ -38,6 +39,7 @@ type CreateVersionParams struct {
 	LaunchType    LaunchType      `json:"launch_type"`
 	Platforms     json.RawMessage `json:"platforms"`
 	Content       json.RawMessage `json:"content"`
+	LaunchNotes   pgtype.Text     `json:"launch_notes"`
 }
 
 func (q *Queries) CreateVersion(ctx context.Context, arg CreateVersionParams) (LaunchVersion, error) {
@@ -49,6 +51,7 @@ func (q *Queries) CreateVersion(ctx context.Context, arg CreateVersionParams) (L
 		arg.LaunchType,
 		arg.Platforms,
 		arg.Content,
+		arg.LaunchNotes,
 	)
 	var i LaunchVersion
 	err := row.Scan(
@@ -61,6 +64,7 @@ func (q *Queries) CreateVersion(ctx context.Context, arg CreateVersionParams) (L
 		&i.Platforms,
 		&i.Content,
 		&i.CreatedAt,
+		&i.LaunchNotes,
 	)
 	return i, err
 }
@@ -79,7 +83,7 @@ func (q *Queries) GetMaxVersionNumber(ctx context.Context, productID uuid.UUID) 
 }
 
 const getVersionByID = `-- name: GetVersionByID :one
-SELECT id, product_id, version_number, version_label, title, launch_type, platforms, content, created_at FROM launch_versions WHERE id = $1
+SELECT id, product_id, version_number, version_label, title, launch_type, platforms, content, created_at, launch_notes FROM launch_versions WHERE id = $1
 `
 
 func (q *Queries) GetVersionByID(ctx context.Context, id uuid.UUID) (LaunchVersion, error) {
@@ -95,12 +99,13 @@ func (q *Queries) GetVersionByID(ctx context.Context, id uuid.UUID) (LaunchVersi
 		&i.Platforms,
 		&i.Content,
 		&i.CreatedAt,
+		&i.LaunchNotes,
 	)
 	return i, err
 }
 
 const listVersionsByProductID = `-- name: ListVersionsByProductID :many
-SELECT id, product_id, version_number, version_label, title, launch_type, platforms, created_at
+SELECT id, product_id, version_number, version_label, title, launch_type, platforms, launch_notes, created_at
 FROM launch_versions
 WHERE product_id = $1
 ORDER BY created_at DESC
@@ -114,6 +119,7 @@ type ListVersionsByProductIDRow struct {
 	Title         string          `json:"title"`
 	LaunchType    LaunchType      `json:"launch_type"`
 	Platforms     json.RawMessage `json:"platforms"`
+	LaunchNotes   pgtype.Text     `json:"launch_notes"`
 	CreatedAt     time.Time       `json:"created_at"`
 }
 
@@ -134,6 +140,7 @@ func (q *Queries) ListVersionsByProductID(ctx context.Context, productID uuid.UU
 			&i.Title,
 			&i.LaunchType,
 			&i.Platforms,
+			&i.LaunchNotes,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
