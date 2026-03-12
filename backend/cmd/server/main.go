@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	slogbetterstack "github.com/samber/slog-betterstack"
 
 	db "github.com/xiaobo/shipproof/internal/db"
 	"github.com/xiaobo/shipproof/internal/handler"
@@ -24,7 +25,20 @@ import (
 func main() {
 	_ = godotenv.Load()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	stdoutHandler := slog.NewJSONHandler(os.Stdout, nil)
+
+	var logHandler slog.Handler
+	bsToken := os.Getenv("BETTERSTACK_TOKEN")
+	if bsToken != "" {
+		bsHandler := slogbetterstack.Option{
+			Token: bsToken,
+		}.NewBetterstackHandler()
+		logHandler = fanoutHandler{handlers: []slog.Handler{stdoutHandler, bsHandler}}
+	} else {
+		logHandler = stdoutHandler
+	}
+
+	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
 
 	port := os.Getenv("PORT")
@@ -155,5 +169,45 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		slog.Error("server shutdown failed", "error", err)
 	}
+
 	slog.Info("server stopped")
+}
+
+// fanoutHandler sends each log record to multiple slog.Handler destinations.
+type fanoutHandler struct {
+	handlers []slog.Handler
+}
+
+func (f fanoutHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	for _, h := range f.handlers {
+		if h.Enabled(ctx, level) {
+			return true
+		}
+	}
+	return false
+}
+
+func (f fanoutHandler) Handle(ctx context.Context, record slog.Record) error {
+	for _, h := range f.handlers {
+		if h.Enabled(ctx, record.Level) {
+			_ = h.Handle(ctx, record)
+		}
+	}
+	return nil
+}
+
+func (f fanoutHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	handlers := make([]slog.Handler, len(f.handlers))
+	for i, h := range f.handlers {
+		handlers[i] = h.WithAttrs(attrs)
+	}
+	return fanoutHandler{handlers: handlers}
+}
+
+func (f fanoutHandler) WithGroup(name string) slog.Handler {
+	handlers := make([]slog.Handler, len(f.handlers))
+	for i, h := range f.handlers {
+		handlers[i] = h.WithGroup(name)
+	}
+	return fanoutHandler{handlers: handlers}
 }

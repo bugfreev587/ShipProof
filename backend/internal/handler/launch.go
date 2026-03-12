@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -89,6 +90,7 @@ func (h *LaunchHandler) Generate(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(map[string]string{"error": planErr.Message})
 			return
 		}
+		slog.Error("generation failed", "error", err, "product_id", product.ID)
 		http.Error(w, `{"error":"generation failed"}`, http.StatusInternalServerError)
 		return
 	}
@@ -119,6 +121,7 @@ func (h *LaunchHandler) RegenerateField(w http.ResponseWriter, r *http.Request) 
 
 	text, err := h.service.RegenerateField(r.Context(), req, product, launchNotes)
 	if err != nil {
+		slog.Error("regeneration failed", "error", err, "product_id", product.ID)
 		http.Error(w, `{"error":"regeneration failed"}`, http.StatusInternalServerError)
 		return
 	}

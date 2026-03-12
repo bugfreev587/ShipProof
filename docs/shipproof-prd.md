@@ -48,30 +48,42 @@ Indie hackers花数月build产品，但只花30分钟准备launch。发布后社
 #### 用户流程
 
 ```
-Step 1: 输入产品信息
+Step 1: 输入产品信息（一次性填写，后续复用）
   - 产品名称 (必填)
   - 产品URL (必填)
   - 一句话描述 (必填，如 "AI-powered prompt optimizer for developers")
   - 详细描述 (可选，2-3句话展开核心价值)
   - 目标用户 (可选，如 "indie hackers who use Claude Code daily")
-  - 发布类型: Initial Launch / Feature Update / Major Update
 
-Step 2: 选择目标平台 (多选)
+Step 2: 本次发布信息
+  - 发布类型: Initial Launch / Feature Update / Major Update
+  - Launch Notes (必填, textarea):
+      这次发布的核心内容。可以是:
+      - 新功能列表 ("Added dark mode, keyboard shortcuts, export to PDF")
+      - commit log / changelog 摘要
+      - 解决了什么用户问题 ("Users complained about eye strain → dark mode")
+      - 关键数据 ("50% faster load time", "3 new integrations")
+      - 任何希望AI围绕生成的要点
+      placeholder: "Paste your changelog, key features, or talking points for this launch..."
+      这是AI生成内容的核心输入——产品信息提供背景，Launch Notes提供这次的具体发布内容
+
+Step 3: 选择目标平台 (多选)
   ☑ Product Hunt
   ☑ Reddit (选择具体subreddit: r/SaaS, r/startups, r/sideproject, r/webdev, 或自定义)
   ☑ Hacker News (Show HN)
   ☑ Twitter/X (launch thread)
   ☑ IndieHackers
 
-Step 3: AI生成 → 草稿 (Draft)
+Step 4: AI生成 → 草稿 (Draft)
   点击 [Generate] → AI为每个选中的平台生成一份文案
+  AI使用: 产品信息(背景) + Launch Notes(本次重点) + 平台规则 来生成
   这是草稿状态，用户可以：
     - 逐个平台查看和编辑文案
     - 点击 [Regenerate] 对单个平台重新生成
     - 点击 [Regenerate All] 全部重新生成
     - 手动编辑任何文案内容
 
-Step 4: 确认 → 版本化 (Version)
+Step 5: 确认 → 版本化 (Version)
   用户review满意后，点击 [Confirm & Save Version]
     - 系统自动生成版本号: v{N}.x_{MMDDYYYYHHmm}
       例如: v1.x_031120260832 (第1个版本，2026年3月11日08:32生成)
@@ -80,7 +92,7 @@ Step 4: 确认 → 版本化 (Version)
     - 版本不可修改（只读）
     - 版本列表中可查看完整历史
 
-Step 5: 复制并手动发布
+Step 6: 复制并手动发布
   每个平台的文案旁有 [Copy] 按钮
   用户自己去各平台粘贴发布
   可选: 显示发布日checklist (最佳发帖时间建议)
@@ -503,6 +515,7 @@ LaunchDraft (当前活跃草稿，每个Product最多一个)
   - id: UUID (PK)
   - product_id: UUID (FK → Product, unique — 一个Product只有一个draft)
   - launch_type: Enum ('initial', 'feature_update', 'major_update')
+  - launch_notes: Text (NOT NULL, 本次发布的核心内容/changelog/talking points)
   - platforms: JSON (选中的平台列表)
   - content: JSON (各平台生成的文案内容)
     {
@@ -522,6 +535,7 @@ LaunchVersion (确认后的版本，不可修改)
   - version_label: String (自动生成, 如 "v1.x_031120260832"，格式: v{N}.x_{MMDDYYYYHHmm})
   - title: String (NOT NULL, 用户填写, 如 "Product Hunt Launch")
   - launch_type: Enum ('initial', 'feature_update', 'major_update')
+  - launch_notes: Text (NOT NULL, 从draft复制过来，记录本次发布的核心内容)
   - platforms: JSON
   - content: JSON (与draft结构相同)
   - created_at: Timestamp
