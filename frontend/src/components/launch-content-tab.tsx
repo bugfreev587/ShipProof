@@ -614,8 +614,8 @@ function ContentEditor({
       <div className="space-y-4">
         <Field label="Title" value={ph.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
         <Field label="Subtitle" value={ph.subtitle || ""} onChange={(v) => updateField("subtitle", v)} onCopy={copyToClipboard} />
-        <Field label="Description" value={ph.description || ""} onChange={(v) => updateField("description", v)} onCopy={copyToClipboard} multiline />
-        <Field label="Maker Comment" value={ph.maker_comment || ""} onChange={(v) => updateField("maker_comment", v)} onCopy={copyToClipboard} multiline />
+        <Field label="Description" value={ph.description || ""} onChange={(v) => updateField("description", v)} onCopy={copyToClipboard} multiline rows={14} />
+        <Field label="Maker Comment" value={ph.maker_comment || ""} onChange={(v) => updateField("maker_comment", v)} onCopy={copyToClipboard} multiline rows={10} />
       </div>
     );
   }
@@ -657,6 +657,7 @@ function ContentEditor({
                 }}
                 onCopy={copyToClipboard}
                 multiline
+                rows={12}
               />
             </div>
           </div>
@@ -670,7 +671,7 @@ function ContentEditor({
     return (
       <div className="space-y-4">
         <Field label="Title" value={hn.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
-        <Field label="First Comment" value={hn.first_comment || ""} onChange={(v) => updateField("first_comment", v)} onCopy={copyToClipboard} multiline />
+        <Field label="First Comment" value={hn.first_comment || ""} onChange={(v) => updateField("first_comment", v)} onCopy={copyToClipboard} multiline rows={12} />
       </div>
     );
   }
@@ -719,7 +720,7 @@ function ContentEditor({
     return (
       <div className="space-y-4">
         <Field label="Title" value={ih.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
-        <Field label="Body" value={ih.body || ""} onChange={(v) => updateField("body", v)} onCopy={copyToClipboard} multiline />
+        <Field label="Body" value={ih.body || ""} onChange={(v) => updateField("body", v)} onCopy={copyToClipboard} multiline rows={14} />
       </div>
     );
   }
@@ -855,12 +856,14 @@ function Field({
   onChange,
   onCopy,
   multiline,
+  rows = 5,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   onCopy: (text: string) => void;
   multiline?: boolean;
+  rows?: number;
 }) {
   return (
     <div>
@@ -872,7 +875,7 @@ function Field({
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          rows={5}
+          rows={rows}
           className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
         />
       ) : (
