@@ -167,6 +167,14 @@ export function saveDraft(
   );
 }
 
+export function deleteDraft(productId: string, token: string) {
+  return fetchApi<void>(
+    `/api/products/${productId}/draft`,
+    { method: "DELETE" },
+    token,
+  );
+}
+
 export function regenerateField(
   productId: string,
   data: {

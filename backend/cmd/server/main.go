@@ -116,6 +116,7 @@ func main() {
 			r.Post("/api/products/{id}/regenerate-field", launchHandler.RegenerateField)
 			r.Get("/api/products/{id}/draft", launchHandler.GetDraft)
 			r.Put("/api/products/{id}/draft", launchHandler.SaveDraft)
+			r.Delete("/api/products/{id}/draft", launchHandler.DeleteDraft)
 			r.Post("/api/products/{id}/confirm", launchHandler.ConfirmVersion)
 			r.Get("/api/products/{id}/versions", launchHandler.ListVersions)
 			r.Get("/api/products/{id}/versions/{vid}", launchHandler.GetVersion)

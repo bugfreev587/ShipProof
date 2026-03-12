@@ -178,6 +178,22 @@ func (h *LaunchHandler) SaveDraft(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(draft)
 }
 
+// DELETE /api/products/{id}/draft
+func (h *LaunchHandler) DeleteDraft(w http.ResponseWriter, r *http.Request) {
+	product, _, err := h.verifyProductOwnership(r)
+	if err != nil {
+		http.Error(w, `{"error":"forbidden"}`, http.StatusForbidden)
+		return
+	}
+
+	if err := h.queries.DeleteDraftByProductID(r.Context(), product.ID); err != nil {
+		http.Error(w, `{"error":"failed to delete draft"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 type confirmRequest struct {
 	Title          string `json:"title"`
 	TimezoneOffset int    `json:"timezone_offset"` // minutes offset from UTC (JS: new Date().getTimezoneOffset())

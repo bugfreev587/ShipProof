@@ -6,6 +6,7 @@ import {
   generateLaunchContent,
   getDraft,
   saveDraft,
+  deleteDraft,
   confirmVersion,
   listVersions,
   getVersion,
@@ -178,6 +179,18 @@ export default function LaunchContentTab({ product }: Props) {
     }
   };
 
+  const handleCancelDraft = async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await deleteDraft(product.id, token);
+      setDraft(null);
+      setEditedContent({});
+    } catch {
+      setError("Failed to cancel draft");
+    }
+  };
+
   const handleExpandVersion = async (vId: string) => {
     if (expandedVersion === vId) {
       setExpandedVersion(null);
@@ -230,6 +243,7 @@ export default function LaunchContentTab({ product }: Props) {
           onSave={handleSaveDraft}
           onConfirm={() => setShowConfirmModal(true)}
           onRegenerate={handleGenerate}
+          onCancelDraft={handleCancelDraft}
           saving={saving}
           generating={generating}
           copyToClipboard={copyToClipboard}
@@ -519,6 +533,7 @@ function DraftEditor({
   onSave,
   onConfirm,
   onRegenerate,
+  onCancelDraft,
   saving,
   generating,
   copyToClipboard,
@@ -534,6 +549,7 @@ function DraftEditor({
   onSave: () => void;
   onConfirm: () => void;
   onRegenerate: () => void;
+  onCancelDraft: () => void;
   saving: boolean;
   generating: boolean;
   copyToClipboard: (text: string) => void;
@@ -586,7 +602,6 @@ function DraftEditor({
       <ContentEditor
         platform={activePlatform}
         content={editedContent}
-        originalContent={draft.content as Record<string, unknown>}
         onChange={setEditedContent}
         copyToClipboard={copyToClipboard}
         productId={draft.product_id}
@@ -604,7 +619,7 @@ function DraftEditor({
           {generating ? "Regenerating..." : "Regenerate All"}
         </button>
         <button
-          onClick={() => setEditedContent(draft.content as Record<string, unknown>)}
+          onClick={() => setEditedContent({})}
           className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:bg-[#2A2A30] hover:text-[#F1F1F3] transition-colors"
         >
           Discard All
@@ -615,6 +630,12 @@ function DraftEditor({
           className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30] disabled:opacity-50 transition-colors"
         >
           {saving ? "Saving..." : "Save Draft"}
+        </button>
+        <button
+          onClick={onCancelDraft}
+          className="rounded-lg border border-red-500/30 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+        >
+          Cancel Draft
         </button>
         <button
           onClick={onConfirm}
@@ -630,14 +651,12 @@ function DraftEditor({
 function ContentEditor({
   platform,
   content,
-  originalContent,
   onChange,
   copyToClipboard,
   productId,
 }: {
   platform: string;
   content: Record<string, unknown>;
-  originalContent: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
   copyToClipboard: (text: string) => void;
   productId: string;
@@ -693,9 +712,8 @@ function ContentEditor({
   };
 
   const discardField = (field: string) => {
-    const original = (originalContent[platform] || {}) as Record<string, unknown>;
     const current = (content[platform] || {}) as Record<string, unknown>;
-    onChange({ ...content, [platform]: { ...current, [field]: original[field] } });
+    onChange({ ...content, [platform]: { ...current, [field]: "" } });
   };
 
   const discardButton = (field: string) => (
@@ -719,15 +737,20 @@ function ContentEditor({
     const ph = platformContent as Record<string, string>;
     return (
       <div className="space-y-4">
-        <Field label="Title" value={ph.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
-        <Field label="Subtitle" value={ph.subtitle || ""} onChange={(v) => updateField("subtitle", v)} onCopy={copyToClipboard} />
-        <Field label="Description" value={ph.description || ""} onChange={(v) => updateField("description", v)} onCopy={copyToClipboard} multiline rows={14}
-          extraAction={regenButton("description", (t) => updateField("description", t))}
+        <Field label="Title" value={ph.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard}
+          extraAction={discardButton("title")}
         />
-        <Field label="Maker Comment" value={ph.maker_comment || ""} onChange={(v) => updateField("maker_comment", v)} onCopy={copyToClipboard} multiline rows={10}
-          extraAction={regenButton("maker_comment", (t) => updateField("maker_comment", t))}
+        <Field label="Subtitle" value={ph.subtitle || ""} onChange={(v) => updateField("subtitle", v)} onCopy={copyToClipboard}
+          extraAction={discardButton("subtitle")}
         />
-        <div className="flex justify-end">
+        <Field label="Description" value={ph.description || ""} onChange={(v) => updateField("description", v)} onCopy={copyToClipboard} multiline rows={14} />
+        <div className="flex justify-end gap-1">
+          {regenButton("description", (t) => updateField("description", t))}
+          {discardButton("description")}
+        </div>
+        <Field label="Maker Comment" value={ph.maker_comment || ""} onChange={(v) => updateField("maker_comment", v)} onCopy={copyToClipboard} multiline rows={10} />
+        <div className="flex justify-end gap-1">
+          {regenButton("maker_comment", (t) => updateField("maker_comment", t))}
           {discardButton("maker_comment")}
         </div>
       </div>
@@ -740,11 +763,13 @@ function ContentEditor({
       title: string;
       body: string;
     }>;
-    const originalPosts = (originalContent.reddit || []) as Array<{
-      subreddit: string;
-      title: string;
-      body: string;
-    }>;
+    if (posts.length === 0) {
+      return (
+        <div className="text-sm text-[#9CA3AF]">
+          All Reddit posts have been discarded. Use &quot;Regenerate&quot; to generate new content.
+        </div>
+      );
+    }
     return (
       <div className="space-y-6">
         {posts.map((post, i) => (
@@ -789,9 +814,12 @@ function ContentEditor({
               }, { index: i, subreddit: post.subreddit })}
               <button
                 onClick={() => {
-                  if (originalPosts[i]) {
-                    const updated = [...posts];
-                    updated[i] = { ...originalPosts[i] };
+                  const updated = posts.filter((_, idx) => idx !== i);
+                  if (updated.length === 0) {
+                    const newContent = { ...content };
+                    delete newContent.reddit;
+                    onChange(newContent);
+                  } else {
                     onChange({ ...content, reddit: updated });
                   }
                 }}
@@ -810,7 +838,9 @@ function ContentEditor({
     const hn = platformContent as Record<string, string>;
     return (
       <div className="space-y-4">
-        <Field label="Title" value={hn.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
+        <Field label="Title" value={hn.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard}
+          extraAction={discardButton("title")}
+        />
         <Field label="First Comment" value={hn.first_comment || ""} onChange={(v) => updateField("first_comment", v)} onCopy={copyToClipboard} multiline rows={12} />
         <div className="flex justify-end gap-1">
           {regenButton("first_comment", (t) => updateField("first_comment", t))}
@@ -823,7 +853,13 @@ function ContentEditor({
   if (platform === "twitter") {
     const tw = platformContent as { thread: string[] };
     const thread = tw.thread || [];
-    const originalThread = ((originalContent.twitter as { thread?: string[] })?.thread) || [];
+    if (thread.length === 0) {
+      return (
+        <div className="text-sm text-[#9CA3AF]">
+          All tweets have been discarded. Use &quot;Regenerate&quot; to generate new content.
+        </div>
+      );
+    }
     return (
       <div className="space-y-3">
         {thread.map((tweet, i) => (
@@ -840,9 +876,12 @@ function ContentEditor({
                 }, { index: i })}
                 <button
                   onClick={() => {
-                    if (originalThread[i] !== undefined) {
-                      const updated = [...thread];
-                      updated[i] = originalThread[i];
+                    const updated = thread.filter((_, idx) => idx !== i);
+                    if (updated.length === 0) {
+                      const newContent = { ...content };
+                      delete newContent.twitter;
+                      onChange(newContent);
+                    } else {
                       onChange({ ...content, twitter: { thread: updated } });
                     }
                   }}
@@ -883,10 +922,14 @@ function ContentEditor({
     const ih = platformContent as Record<string, string>;
     return (
       <div className="space-y-4">
-        <Field label="Title" value={ih.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard} />
-        <Field label="Body" value={ih.body || ""} onChange={(v) => updateField("body", v)} onCopy={copyToClipboard} multiline rows={14}
-          extraAction={regenButton("body", (t) => updateField("body", t))}
+        <Field label="Title" value={ih.title || ""} onChange={(v) => updateField("title", v)} onCopy={copyToClipboard}
+          extraAction={discardButton("title")}
         />
+        <Field label="Body" value={ih.body || ""} onChange={(v) => updateField("body", v)} onCopy={copyToClipboard} multiline rows={14} />
+        <div className="flex justify-end gap-1">
+          {regenButton("body", (t) => updateField("body", t))}
+          {discardButton("body")}
+        </div>
       </div>
     );
   }
