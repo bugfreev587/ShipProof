@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getProduct, type Product } from "@/lib/api";
 import LaunchContentTab from "@/components/launch-content-tab";
+import ProofsTab from "@/components/proofs-tab";
+import WidgetWallTab from "@/components/widget-wall-tab";
 import ProductInfoEditor from "@/components/product-info-editor";
 
 export default function ProductDetailPage() {
@@ -80,17 +82,9 @@ export default function ProductDetailPage() {
         ))}
       </div>
 
-      {activeTab === "proofs" && (
-        <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
-          Proofs will be available in Phase 3.
-        </div>
-      )}
+      {activeTab === "proofs" && <ProofsTab product={product} />}
       {activeTab === "launch" && <LaunchContentTab product={product} />}
-      {activeTab === "widget" && (
-        <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
-          Widget & Wall configuration will be available in Phase 3.
-        </div>
-      )}
+      {activeTab === "widget" && <WidgetWallTab product={product} />}
     </div>
   );
 }

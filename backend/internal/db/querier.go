@@ -11,25 +11,53 @@ import (
 )
 
 type Querier interface {
+	AddProofToWall(ctx context.Context, arg AddProofToWallParams) (WallProof, error)
+	AddTagToProof(ctx context.Context, arg AddTagToProofParams) (ProofTag, error)
 	CountDraftsThisMonth(ctx context.Context, userID uuid.UUID) (int64, error)
+	CountProofsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountVersionsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
+	CountWallsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
+	CreateDefaultWidgetConfig(ctx context.Context, productID uuid.UUID) (WidgetConfig, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	CreateProof(ctx context.Context, arg CreateProofParams) (Proof, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVersion(ctx context.Context, arg CreateVersionParams) (LaunchVersion, error)
+	CreateWall(ctx context.Context, arg CreateWallParams) (Wall, error)
 	DeleteDraftByProductID(ctx context.Context, productID uuid.UUID) error
 	DeleteProduct(ctx context.Context, id uuid.UUID) error
+	DeleteProof(ctx context.Context, id uuid.UUID) error
+	DeleteWall(ctx context.Context, id uuid.UUID) error
 	GetDraftByProductID(ctx context.Context, productID uuid.UUID) (LaunchDraft, error)
 	GetMaxVersionNumber(ctx context.Context, productID uuid.UUID) (int32, error)
 	GetProductByID(ctx context.Context, id uuid.UUID) (Product, error)
+	GetProductBySlug(ctx context.Context, slug string) (Product, error)
+	GetProofByID(ctx context.Context, id uuid.UUID) (Proof, error)
 	GetUserByClerkID(ctx context.Context, clerkID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetVersionByID(ctx context.Context, id uuid.UUID) (LaunchVersion, error)
+	GetWallByID(ctx context.Context, id uuid.UUID) (Wall, error)
+	GetWallBySlug(ctx context.Context, slug string) (Wall, error)
+	GetWidgetConfigByProductID(ctx context.Context, productID uuid.UUID) (WidgetConfig, error)
+	ListApprovedProofsByProductID(ctx context.Context, productID uuid.UUID) ([]Proof, error)
+	ListDistinctTagsByProductID(ctx context.Context, productID uuid.UUID) ([]string, error)
 	ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([]Product, error)
+	ListProofsByProductID(ctx context.Context, productID uuid.UUID) ([]Proof, error)
+	ListProofsByWallID(ctx context.Context, wallID uuid.UUID) ([]ListProofsByWallIDRow, error)
+	ListTagsByProofID(ctx context.Context, proofID uuid.UUID) ([]ProofTag, error)
 	ListVersionsByProductID(ctx context.Context, productID uuid.UUID) ([]ListVersionsByProductIDRow, error)
+	ListWallsByProductID(ctx context.Context, productID uuid.UUID) ([]Wall, error)
+	RemoveProofFromWall(ctx context.Context, arg RemoveProofFromWallParams) error
+	RemoveTagFromProof(ctx context.Context, arg RemoveTagFromProofParams) error
+	ToggleProofFeatured(ctx context.Context, id uuid.UUID) (Proof, error)
 	UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) (LaunchDraft, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
+	UpdateProof(ctx context.Context, arg UpdateProofParams) (Proof, error)
+	UpdateProofOrder(ctx context.Context, arg UpdateProofOrderParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPlan(ctx context.Context, arg UpdateUserPlanParams) (User, error)
+	UpdateWall(ctx context.Context, arg UpdateWallParams) (Wall, error)
+	UpdateWallProofOrder(ctx context.Context, arg UpdateWallProofOrderParams) error
+	UpdateWidgetConfig(ctx context.Context, arg UpdateWidgetConfigParams) (WidgetConfig, error)
 	UpsertDraft(ctx context.Context, arg UpsertDraftParams) (LaunchDraft, error)
 	UpsertUserByClerkID(ctx context.Context, arg UpsertUserByClerkIDParams) (User, error)
 }

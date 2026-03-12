@@ -72,7 +72,19 @@ func main() {
 		launchService := service.NewLaunchService(queries)
 		launchHandler := handler.NewLaunchHandler(queries, launchService, userService)
 
+		// Storage service (graceful: nil if R2 not configured)
+		storageService, _ := service.NewStorageService()
+
+		proofHandler := handler.NewProofHandler(queries, userService, storageService)
+		widgetHandler := handler.NewWidgetHandler(queries, userService)
+		wallHandler := handler.NewWallHandler(queries, userService)
+		publicHandler := handler.NewPublicHandler(queries)
+
 		r.Post("/api/webhooks/clerk", webhookHandler.HandleClerkWebhook)
+
+		// Public API routes (no auth)
+		r.Get("/api/public/products/{slug}/proofs", publicHandler.GetProductProofs)
+		r.Get("/api/public/walls/{slug}/proofs", publicHandler.GetWallProofs)
 
 		// Authenticated routes
 		r.Group(func(r chi.Router) {
@@ -93,6 +105,30 @@ func main() {
 			r.Post("/api/products/{id}/confirm", launchHandler.ConfirmVersion)
 			r.Get("/api/products/{id}/versions", launchHandler.ListVersions)
 			r.Get("/api/products/{id}/versions/{vid}", launchHandler.GetVersion)
+
+			// Proofs
+			r.Post("/api/products/{id}/proofs", proofHandler.Create)
+			r.Get("/api/products/{id}/proofs", proofHandler.List)
+			r.Put("/api/proofs/{pid}", proofHandler.Update)
+			r.Delete("/api/proofs/{pid}", proofHandler.Delete)
+			r.Put("/api/proofs/{pid}/featured", proofHandler.ToggleFeatured)
+			r.Put("/api/proofs/{pid}/order", proofHandler.UpdateOrder)
+			r.Post("/api/proofs/{pid}/tags", proofHandler.AddTag)
+			r.Delete("/api/proofs/{pid}/tags/{tag}", proofHandler.RemoveTag)
+
+			// Widget Config
+			r.Get("/api/products/{id}/widget", widgetHandler.Get)
+			r.Put("/api/products/{id}/widget", widgetHandler.Update)
+
+			// Walls
+			r.Get("/api/products/{id}/walls", wallHandler.List)
+			r.Post("/api/products/{id}/walls", wallHandler.Create)
+			r.Get("/api/walls/{wid}", wallHandler.Get)
+			r.Put("/api/walls/{wid}", wallHandler.Update)
+			r.Delete("/api/walls/{wid}", wallHandler.Delete)
+			r.Post("/api/walls/{wid}/proofs", wallHandler.AddProof)
+			r.Delete("/api/walls/{wid}/proofs/{pid}", wallHandler.RemoveProof)
+			r.Put("/api/walls/{wid}/proofs/order", wallHandler.UpdateProofOrder)
 		})
 	}
 
