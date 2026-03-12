@@ -43,8 +43,8 @@ export default function ProductDetailPage() {
   }
 
   const tabs = [
-    { key: "proofs" as const, label: "Proofs" },
     { key: "launch" as const, label: "Launch Content" },
+    { key: "proofs" as const, label: "Proofs" },
     { key: "widget" as const, label: "Widget & Wall" },
   ];
 
