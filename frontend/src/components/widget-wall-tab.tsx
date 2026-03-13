@@ -801,22 +801,31 @@ function WallCard({
       ? `${window.location.origin}/w/${wall.slug}`
       : `/w/${wall.slug}`;
 
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(wallUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleExpand = async () => {
     if (expanded) {
       setExpanded(false);
       return;
     }
     setExpanded(true);
-    setLoadingProofs(true);
-    try {
-      const token = await getToken();
-      if (!token) return;
-      const allProofs = await listProofs(product.id, token);
-      setProofs(allProofs);
-    } catch {
-      // ignore
-    } finally {
-      setLoadingProofs(false);
+    if (proofs.length === 0) {
+      setLoadingProofs(true);
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const allProofs = await listProofs(product.id, token);
+        setProofs(allProofs);
+      } catch {
+        // ignore
+      } finally {
+        setLoadingProofs(false);
+      }
     }
   };
 
@@ -848,70 +857,97 @@ function WallCard({
   };
 
   return (
-    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="text-sm font-medium text-[#F1F1F3]">{wall.name}</h4>
-          <a
-            href={wallUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-[#6366F1] hover:text-[#818CF8]"
-          >
-            {wallUrl}
-          </a>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={handleExpand}
-            className="text-xs text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
-          >
-            {expanded ? "Collapse" : "Manage Proofs"}
-          </button>
-          <button
-            onClick={handleDelete}
-            className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
-          >
-            Delete
-          </button>
-        </div>
+    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] overflow-hidden">
+      {/* Header: name + delete */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+        <h4 className="text-sm font-medium text-[#F1F1F3]">{wall.name}</h4>
+        <button
+          onClick={handleDelete}
+          className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
+        >
+          Delete
+        </button>
       </div>
 
+      {/* Expand chevron */}
+      <button
+        onClick={handleExpand}
+        className="flex items-center justify-center w-full py-2 border-t border-[#2A2A30] text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#242429] transition-colors"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {/* Expanded panel: proofs + wall URL */}
       {expanded && (
-        <div className="mt-4 border-t border-[#2A2A30] pt-4">
-          {loadingProofs ? (
-            <p className="text-xs text-[#6B7280]">Loading proofs...</p>
-          ) : proofs.length === 0 ? (
-            <p className="text-xs text-[#6B7280]">
-              No proofs available. Add proofs in the Proofs tab first.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {proofs.map((proof) => (
-                <label
-                  key={proof.id}
-                  className="flex items-center gap-3 rounded-lg bg-[#0F0F10] p-2 cursor-pointer hover:bg-[#242429] transition-colors"
+        <div className="border-t border-[#2A2A30] p-4 space-y-5">
+          {/* Manage Proofs */}
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-[#F1F1F3]">Proofs</p>
+            {loadingProofs ? (
+              <p className="text-xs text-[#6B7280]">Loading proofs...</p>
+            ) : proofs.length === 0 ? (
+              <p className="text-xs text-[#6B7280]">
+                No proofs available. Add proofs in the Proofs tab first.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {proofs.map((proof) => (
+                  <label
+                    key={proof.id}
+                    className="flex items-center gap-3 rounded-lg bg-[#0F0F10] p-2.5 cursor-pointer hover:bg-[#242429] transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={wallProofIds.has(proof.id)}
+                      onChange={() => handleToggleProof(proof.id)}
+                      className="rounded border-[#2A2A30] flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-[#F1F1F3]">
+                        {proof.author_name}
+                      </span>
+                      {proof.content_text && (
+                        <p className="text-xs text-[#6B7280] truncate">
+                          {proof.content_text}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Wall URL */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-[#F1F1F3]">Wall of Love URL</p>
+            <div className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-[#6B7280]">Share this link or embed in your site</p>
+                <button
+                  onClick={handleCopy}
+                  className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
                 >
-                  <input
-                    type="checkbox"
-                    checked={wallProofIds.has(proof.id)}
-                    onChange={() => handleToggleProof(proof.id)}
-                    className="rounded border-[#2A2A30]"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm text-[#F1F1F3]">
-                      {proof.author_name}
-                    </span>
-                    {proof.content_text && (
-                      <p className="text-xs text-[#6B7280] truncate">
-                        {proof.content_text}
-                      </p>
-                    )}
-                  </div>
-                </label>
-              ))}
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+              <pre className="text-xs text-[#9CA3AF] overflow-x-auto font-mono">
+                {wallUrl}
+              </pre>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>
