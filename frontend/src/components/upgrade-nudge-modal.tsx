@@ -21,27 +21,33 @@ export default function UpgradeNudgeModal({
         </h2>
         <p className="mb-4 text-sm text-[#9CA3AF]">{message}</p>
 
-        <div className="mb-4 rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-4">
-          <div className="grid grid-cols-3 gap-3 text-center text-xs">
-            <div>
-              <div className="mb-1 font-medium text-[#9CA3AF]">Free</div>
-              <div className="text-[#6B7280]">1 product</div>
-              <div className="text-[#6B7280]">1 proof</div>
-              <div className="text-[#6B7280]">3 gens/mo</div>
-            </div>
-            <div className="border-x border-[#2A2A30] px-3">
-              <div className="mb-1 font-medium text-[#6366F1]">Pro $12/mo</div>
-              <div className="text-[#9CA3AF]">1 product</div>
-              <div className="text-[#9CA3AF]">Unlimited</div>
-              <div className="text-[#9CA3AF]">Unlimited</div>
-            </div>
-            <div>
-              <div className="mb-1 font-medium text-[#F59E0B]">Business $29/mo</div>
-              <div className="text-[#9CA3AF]">10 products</div>
-              <div className="text-[#9CA3AF]">Unlimited</div>
-              <div className="text-[#9CA3AF]">Unlimited</div>
-            </div>
-          </div>
+        <div className="mb-4 rounded-lg border border-[#2A2A30] bg-[#0F0F10] overflow-hidden">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-[#2A2A30]">
+                <th className="py-2.5 px-3 text-left font-medium text-[#6B7280]"></th>
+                <th className="py-2.5 px-3 text-center font-medium text-[#9CA3AF]">Free</th>
+                <th className="py-2.5 px-3 text-center font-medium text-[#6366F1]">Pro $12/mo</th>
+                <th className="py-2.5 px-3 text-center font-medium text-[#F59E0B]">Business $29/mo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { label: "Products", free: "1", pro: "1", biz: "10" },
+                { label: "Proofs", free: "1", pro: "Unlimited", biz: "Unlimited" },
+                { label: "Spaces", free: "—", pro: "1", biz: "10" },
+                { label: "Content Gen", free: "3/mo", pro: "Unlimited", biz: "Unlimited" },
+                { label: "Remove Branding", free: "—", pro: "—", biz: "✓" },
+              ].map((row, i) => (
+                <tr key={row.label} className={i < 4 ? "border-b border-[#2A2A30]/50" : ""}>
+                  <td className="py-2 px-3 text-left text-[#9CA3AF]">{row.label}</td>
+                  <td className="py-2 px-3 text-center text-[#6B7280]">{row.free}</td>
+                  <td className="py-2 px-3 text-center text-[#F1F1F3]">{row.pro}</td>
+                  <td className="py-2 px-3 text-center text-[#F1F1F3]">{row.biz}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         <div className="flex justify-end gap-3">
