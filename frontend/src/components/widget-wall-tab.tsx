@@ -243,10 +243,12 @@ function SpaceProofCard({
   proof,
   isDark,
   showPlatformIcon,
+  borderRadius,
 }: {
   proof: Proof;
   isDark: boolean;
   showPlatformIcon: boolean;
+  borderRadius: number;
 }) {
   const [showFull, setShowFull] = useState(false);
   const TEXT_LIMIT = 100;
@@ -254,11 +256,12 @@ function SpaceProofCard({
 
   return (
     <div
-      className="flex-shrink-0 rounded-lg border p-3 flex flex-col"
+      className="flex-shrink-0 border p-3 flex flex-col"
       style={{
         width: "220px",
         height: showFull ? "auto" : "120px",
         minHeight: "120px",
+        borderRadius: `${borderRadius}px`,
         borderColor: isDark ? "#2A2A30" : "#E5E7EB",
         background: isDark ? "#242429" : "#FFFFFF",
       }}
@@ -462,8 +465,8 @@ function SpaceCard({
           </div>
         ) : (
           <div
-            className="flex gap-3 overflow-x-auto pb-2"
-            style={{ scrollbarWidth: "thin" }}
+            className="flex overflow-x-auto pb-2"
+            style={{ gap: `${config.card_spacing}px`, scrollbarWidth: "thin" }}
           >
             {spaceProofs.map((proof) => (
               <SpaceProofCard
@@ -471,6 +474,7 @@ function SpaceCard({
                 proof={proof}
                 isDark={isDark}
                 showPlatformIcon={config.show_platform_icon}
+                borderRadius={config.border_radius}
               />
             ))}
           </div>
@@ -515,22 +519,6 @@ function SpaceCard({
                   <option value="dark">Dark</option>
                   <option value="light">Light</option>
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-xs text-[#9CA3AF] mb-1">
-                  Max Items: {config.max_items}
-                </label>
-                <input
-                  type="range"
-                  min={1}
-                  max={20}
-                  value={config.max_items}
-                  onChange={(e) =>
-                    handleConfigChange({ max_items: Number(e.target.value) })
-                  }
-                  className="w-full"
-                />
               </div>
 
               <div>
