@@ -79,7 +79,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="-mx-10 -mt-8 flex flex-col" style={{ height: "calc(100vh - 4rem)" }}>
+    <div className="-mx-10 -mt-8 flex flex-col overflow-hidden" style={{ height: "calc(100vh - 4rem)" }}>
       {/* Product Header */}
       <div className="flex items-center justify-between px-10 py-6 border-b border-[#2A2A30]">
         <div className="flex items-center gap-3">
