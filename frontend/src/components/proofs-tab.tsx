@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   listProofs,
   createProofJson,
@@ -356,7 +356,9 @@ function ProofModal({
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(proof?.tags || []);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [existingTags, setExistingTags] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -462,12 +464,36 @@ function ProofModal({
     }
   };
 
+  const handleImageSelected = (file: File | null) => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) handleImageSelected(file);
+        return;
+      }
+    }
+  };
+
   const tabs = isEdit
     ? []
     : [
         { key: "text" as const, label: "Paste Text" },
         { key: "url" as const, label: "Paste URL" },
-        { key: "upload" as const, label: "Upload Screenshot" },
+        { key: "upload" as const, label: "Screenshot" },
       ];
 
   return (
@@ -594,18 +620,61 @@ function ProofModal({
 
           {tab === "upload" && !isEdit && (
             <div>
-              <label className="block text-xs text-[#9CA3AF] mb-1">
-                Screenshot
-              </label>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                className="w-full text-sm text-[#9CA3AF] file:mr-4 file:rounded-lg file:border-0 file:bg-[#6366F1] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-[#818CF8]"
-              />
-              <p className="mt-1 text-xs text-[#6B7280]">
-                Max 5MB. JPG, PNG, WebP, or GIF.
-              </p>
+              {imagePreview ? (
+                <div>
+                  <label className="block text-xs text-[#9CA3AF] mb-1">Preview</label>
+                  <div className="relative rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-2">
+                    <img
+                      src={imagePreview}
+                      alt="Screenshot preview"
+                      className="max-h-48 w-full rounded object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleImageSelected(null)}
+                      className="absolute top-3 right-3 rounded-full bg-[#0F0F10]/80 p-1 text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-[#6B7280]">{imageFile?.name}</p>
+                </div>
+              ) : (
+                <div>
+                  {/* Paste zone — primary */}
+                  <div
+                    onPaste={handlePaste}
+                    tabIndex={0}
+                    className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#6366F1]/40 bg-[#6366F1]/5 px-4 py-8 text-center cursor-pointer hover:border-[#6366F1]/70 hover:bg-[#6366F1]/10 transition-colors focus:outline-none focus:border-[#6366F1]"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <svg className="h-8 w-8 text-[#6366F1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 0l3-3m-3 3l3 3M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-[#F1F1F3]">
+                        Paste screenshot here
+                      </p>
+                      <p className="text-xs text-[#9CA3AF]">
+                        Press {navigator?.platform?.includes("Mac") ? "⌘V" : "Ctrl+V"} to paste, or click to choose file
+                      </p>
+                    </div>
+                  </div>
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={(e) => handleImageSelected(e.target.files?.[0] || null)}
+                    className="hidden"
+                  />
+                  <p className="mt-2 text-xs text-[#6B7280]">
+                    Max 5MB. JPG, PNG, WebP, or GIF.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
