@@ -4,21 +4,9 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import {
   getCurrentUser,
-  createCheckoutSession,
   createBillingPortalSession,
   type User,
 } from "@/lib/api";
-
-const priceIds: Record<string, { monthly: string; yearly: string }> = {
-  pro: {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID || "",
-    yearly: process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID || "",
-  },
-  business: {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PRICE_ID || "",
-    yearly: process.env.NEXT_PUBLIC_STRIPE_BUSINESS_YEARLY_PRICE_ID || "",
-  },
-};
 
 const planBadgeColors: Record<string, string> = {
   free: "bg-[#3F3F46] text-[#9CA3AF]",
@@ -41,7 +29,6 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [yearly, setYearly] = useState(false);
-  const [upgrading, setUpgrading] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
@@ -60,24 +47,9 @@ export default function SettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleUpgrade = async (plan: string) => {
-    setUpgrading(plan);
-    try {
-      const token = await getToken();
-      if (!token) return;
-      const period = yearly ? "yearly" : "monthly";
-      const priceId = priceIds[plan]?.[period];
-      if (!priceId) return;
-      const { url } = await createCheckoutSession(
-        { price_id: priceId, plan },
-        token,
-      );
-      window.location.href = url;
-    } catch {
-      // handle error
-    } finally {
-      setUpgrading(null);
-    }
+  const handleUpgrade = (plan: string) => {
+    void plan;
+    window.location.href = "/pricing";
   };
 
   const handleManageBilling = async () => {
@@ -169,33 +141,24 @@ export default function SettingsPage() {
                 <>
                   <button
                     onClick={() => handleUpgrade("pro")}
-                    disabled={upgrading === "pro"}
-                    className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
+                    className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
                   >
-                    {upgrading === "pro"
-                      ? "Redirecting..."
-                      : `Upgrade to Pro (${yearly ? "$9" : "$12"}/mo)`}
+                    Upgrade to Pro ({yearly ? "$9" : "$12"}/mo)
                   </button>
                   <button
                     onClick={() => handleUpgrade("business")}
-                    disabled={upgrading === "business"}
-                    className="rounded-lg bg-[#F59E0B] px-4 py-2 text-sm font-medium text-white hover:bg-[#FBBF24] disabled:opacity-50 transition-colors"
+                    className="rounded-lg bg-[#F59E0B] px-4 py-2 text-sm font-medium text-white hover:bg-[#FBBF24] transition-colors"
                   >
-                    {upgrading === "business"
-                      ? "Redirecting..."
-                      : `Upgrade to Business (${yearly ? "$24" : "$29"}/mo)`}
+                    Upgrade to Business ({yearly ? "$24" : "$29"}/mo)
                   </button>
                 </>
               )}
               {plan === "pro" && (
                 <button
                   onClick={() => handleUpgrade("business")}
-                  disabled={upgrading === "business"}
-                  className="rounded-lg bg-[#F59E0B] px-4 py-2 text-sm font-medium text-white hover:bg-[#FBBF24] disabled:opacity-50 transition-colors"
+                  className="rounded-lg bg-[#F59E0B] px-4 py-2 text-sm font-medium text-white hover:bg-[#FBBF24] transition-colors"
                 >
-                  {upgrading === "business"
-                    ? "Redirecting..."
-                    : `Upgrade to Business (${yearly ? "$24" : "$29"}/mo)`}
+                  Upgrade to Business ({yearly ? "$24" : "$29"}/mo)
                 </button>
               )}
             </>
