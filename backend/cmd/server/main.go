@@ -165,6 +165,7 @@ func main() {
 			r.Put("/api/walls/{wid}", wallHandler.Update)
 			r.Put("/api/walls/{wid}/config", wallHandler.UpdateConfig)
 			r.Delete("/api/walls/{wid}", wallHandler.Delete)
+			r.Get("/api/walls/{wid}/proofs", wallHandler.ListProofs)
 			r.Post("/api/walls/{wid}/proofs", wallHandler.AddProof)
 			r.Delete("/api/walls/{wid}/proofs/{pid}", wallHandler.RemoveProof)
 			r.Put("/api/walls/{wid}/proofs/order", wallHandler.UpdateProofOrder)

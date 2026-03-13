@@ -617,6 +617,10 @@ export function updateWallConfig(
   }, token);
 }
 
+export function listWallProofs(wallId: string, token: string) {
+  return fetchApi<Proof[]>(`/api/walls/${wallId}/proofs`, {}, token);
+}
+
 export function addProofToWall(
   wallId: string,
   proofId: string,

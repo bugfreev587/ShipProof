@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
@@ -56,12 +57,14 @@ func (h *WallHandler) verifyProductOwnership(w http.ResponseWriter, r *http.Requ
 func (h *WallHandler) verifyWallOwnership(w http.ResponseWriter, r *http.Request, wallID uuid.UUID) (*db.Wall, bool) {
 	wall, err := h.queries.GetWallByID(r.Context(), wallID)
 	if err != nil {
+		slog.Warn("wall not found", "wall_id", wallID, "error", err)
 		http.Error(w, `{"error":"wall not found"}`, http.StatusNotFound)
 		return nil, false
 	}
 
 	product, err := h.queries.GetProductByID(r.Context(), wall.ProductID)
 	if err != nil {
+		slog.Warn("product not found for wall", "wall_id", wallID, "product_id", wall.ProductID, "error", err)
 		http.Error(w, `{"error":"product not found"}`, http.StatusNotFound)
 		return nil, false
 	}
@@ -249,6 +252,28 @@ func (h *WallHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *WallHandler) ListProofs(w http.ResponseWriter, r *http.Request) {
+	wallID, err := uuid.Parse(chi.URLParam(r, "wid"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid wall id"}`, http.StatusBadRequest)
+		return
+	}
+
+	_, ok := h.verifyWallOwnership(w, r, wallID)
+	if !ok {
+		return
+	}
+
+	proofs, err := h.queries.ListProofsByWallID(r.Context(), wallID)
+	if err != nil {
+		http.Error(w, `{"error":"failed to list wall proofs"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(proofs)
 }
 
 func (h *WallHandler) AddProof(w http.ResponseWriter, r *http.Request) {

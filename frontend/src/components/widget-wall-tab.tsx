@@ -17,6 +17,7 @@ import {
   listProofs,
   addProofToWall,
   removeProofFromWall,
+  listWallProofs,
   type Space,
   type Wall,
   type Proof,
@@ -822,8 +823,12 @@ function WallCard({
       try {
         const token = await getToken();
         if (!token) return;
-        const allProofs = await listProofs(product.id, token);
+        const [allProofs, existingWallProofs] = await Promise.all([
+          listProofs(product.id, token),
+          listWallProofs(wall.id, token),
+        ]);
         setProofs(allProofs);
+        setWallProofIds(new Set(existingWallProofs.map((p) => p.id)));
       } catch {
         // ignore
       } finally {
