@@ -1,8 +1,8 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   listSpaces,
   createSpace,
@@ -14,16 +14,12 @@ import {
   listWalls,
   createWall,
   deleteWall,
-  updateWallConfig,
   listProofs,
-  listWallProofs,
-  addProofToWall,
-  removeProofFromWall,
+  getCurrentUser,
   type Space,
   type Wall,
   type Proof,
   type Product,
-  getCurrentUser,
   ApiError,
 } from "@/lib/api";
 
@@ -672,7 +668,7 @@ function SpaceCard({
   );
 }
 
-/* ─── Walls Section (unchanged from original) ─── */
+/* ─── Walls Section ─── */
 
 function WallsSection({
   product,
@@ -806,12 +802,7 @@ function WallCard({
   onUpdated: () => void;
 }) {
   const { getToken } = useAuth();
-  const [expanded, setExpanded] = useState(false);
-  const [config, setConfig] = useState(wall);
-  const [proofs, setProofs] = useState<Proof[]>([]);
-  const [wallProofIds, setWallProofIds] = useState<Set<string>>(new Set());
-  const [loadingProofs, setLoadingProofs] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const router = useRouter();
 
   const wallUrl =
     typeof window !== "undefined"
@@ -825,77 +816,6 @@ function WallCard({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleExpand = async () => {
-    if (expanded) {
-      setExpanded(false);
-      return;
-    }
-    setExpanded(true);
-    if (proofs.length === 0) {
-      setLoadingProofs(true);
-      try {
-        const token = await getToken();
-        if (!token) return;
-        const [allProofs, existingWallProofs] = await Promise.all([
-          listProofs(product.id, token),
-          listWallProofs(wall.id, token),
-        ]);
-        setProofs(allProofs);
-        setWallProofIds(new Set(existingWallProofs.map((p) => p.id)));
-      } catch {
-        // ignore
-      } finally {
-        setLoadingProofs(false);
-      }
-    }
-  };
-
-  const handleConfigChange = (updates: Partial<Wall>) => {
-    const newConfig = { ...config, ...updates };
-    setConfig(newConfig);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      const token = await getToken();
-      if (!token) return;
-      try {
-        await updateWallConfig(
-          wall.id,
-          {
-            theme: newConfig.theme,
-            border_radius: newConfig.border_radius,
-            card_spacing: newConfig.card_spacing,
-            show_platform_icon: newConfig.show_platform_icon,
-            show_branding: newConfig.show_branding,
-          },
-          token,
-        );
-      } catch {
-        // ignore
-      }
-    }, 500);
-  };
-
-  const handleToggleProof = async (proofId: string) => {
-    const token = await getToken();
-    if (!token) return;
-    try {
-      if (wallProofIds.has(proofId)) {
-        await removeProofFromWall(wall.id, proofId, token);
-        setWallProofIds((prev) => {
-          const next = new Set(prev);
-          next.delete(proofId);
-          return next;
-        });
-      } else {
-        await addProofToWall(wall.id, proofId, wallProofIds.size, token);
-        setWallProofIds((prev) => new Set(prev).add(proofId));
-      }
-    } catch {
-      // ignore
-    }
-  };
-
   const handleDelete = async () => {
     const token = await getToken();
     if (!token) return;
@@ -904,11 +824,16 @@ function WallCard({
   };
 
   return (
-    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] overflow-hidden">
-      {/* Header: name + URL + delete */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between mb-1">
-          <h4 className="text-sm font-medium text-[#F1F1F3]">{wall.name}</h4>
+    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4">
+      <div className="flex items-center justify-between mb-1">
+        <h4 className="text-sm font-medium text-[#F1F1F3]">{wall.name}</h4>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push(`/dashboard/products/${product.id}/walls/${wall.id}`)}
+            className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
+          >
+            Edit
+          </button>
           <button
             onClick={handleDelete}
             className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
@@ -916,163 +841,23 @@ function WallCard({
             Delete
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            href={wallUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-[#6366F1] hover:text-[#818CF8] truncate"
-          >
-            {wallUrl}
-          </a>
-          <button
-            onClick={handleCopy}
-            className="text-xs text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors flex-shrink-0"
-          >
-            {copied ? "Copied!" : "Copy"}
-          </button>
-        </div>
       </div>
-
-      {/* Expand chevron */}
-      <button
-        onClick={handleExpand}
-        className="flex items-center justify-center w-full py-2 border-t border-[#2A2A30] text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#242429] transition-colors"
-      >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+      <div className="flex items-center gap-2">
+        <a
+          href={wallUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-[#6366F1] hover:text-[#818CF8] truncate"
         >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
-
-      {/* Expanded panel: config + proofs */}
-      {expanded && (
-        <div className="border-t border-[#2A2A30] p-4 space-y-5">
-          {/* Wall Configuration */}
-          <div className="space-y-4">
-            <p className="text-xs font-medium text-[#F1F1F3]">Wall Configuration</p>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-[#9CA3AF] mb-1">Theme</label>
-                <select
-                  value={config.theme}
-                  onChange={(e) => handleConfigChange({ theme: e.target.value })}
-                  className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
-                >
-                  <option value="dark">Dark</option>
-                  <option value="light">Light</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs text-[#9CA3AF] mb-1">
-                  Border Radius: {config.border_radius}px
-                </label>
-                <input
-                  type="range"
-                  min={0}
-                  max={24}
-                  value={config.border_radius}
-                  onChange={(e) =>
-                    handleConfigChange({ border_radius: Number(e.target.value) })
-                  }
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs text-[#9CA3AF] mb-1">
-                  Card Spacing: {config.card_spacing}px
-                </label>
-                <input
-                  type="range"
-                  min={4}
-                  max={32}
-                  value={config.card_spacing}
-                  onChange={(e) =>
-                    handleConfigChange({ card_spacing: Number(e.target.value) })
-                  }
-                  className="w-full"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={config.show_platform_icon}
-                  onChange={(e) =>
-                    handleConfigChange({ show_platform_icon: e.target.checked })
-                  }
-                  className="rounded border-[#2A2A30]"
-                />
-                Show platform icons
-              </label>
-
-              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={config.show_branding}
-                  onChange={(e) =>
-                    handleConfigChange({ show_branding: e.target.checked })
-                  }
-                  className="rounded border-[#2A2A30]"
-                />
-                Show &quot;Powered by ShipProof&quot;
-              </label>
-            </div>
-          </div>
-
-          {/* Manage Proofs */}
-          <div className="space-y-3">
-            <p className="text-xs font-medium text-[#F1F1F3]">Proofs</p>
-            {loadingProofs ? (
-              <p className="text-xs text-[#6B7280]">Loading proofs...</p>
-            ) : proofs.length === 0 ? (
-              <p className="text-xs text-[#6B7280]">
-                No proofs available. Add proofs in the Proofs tab first.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {proofs.map((proof) => (
-                  <label
-                    key={proof.id}
-                    className="flex items-center gap-3 rounded-lg bg-[#0F0F10] p-2.5 cursor-pointer hover:bg-[#242429] transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={wallProofIds.has(proof.id)}
-                      onChange={() => handleToggleProof(proof.id)}
-                      className="rounded border-[#2A2A30] flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm text-[#F1F1F3]">
-                        {proof.author_name}
-                      </span>
-                      {proof.content_text && (
-                        <p className="text-xs text-[#6B7280] truncate">
-                          {proof.content_text}
-                        </p>
-                      )}
-                    </div>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+          {wallUrl}
+        </a>
+        <button
+          onClick={handleCopy}
+          className="text-xs text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors flex-shrink-0"
+        >
+          {copied ? "Copied!" : "Copy"}
+        </button>
+      </div>
     </div>
   );
 }
