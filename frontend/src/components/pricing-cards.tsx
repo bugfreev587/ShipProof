@@ -81,25 +81,35 @@ export default function PricingCards() {
   const { isSignedIn, getToken } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
+  const [error, setError] = useState("");
+
   const handleUpgrade = async (plan: string) => {
     if (!isSignedIn) {
       window.location.href = "/sign-up";
       return;
     }
     setLoading(plan);
+    setError("");
     try {
       const token = await getToken();
       if (!token) return;
       const period = yearly ? "yearly" : "monthly";
       const priceId = priceIds[plan]?.[period];
-      if (!priceId) return;
+      if (!priceId) {
+        setError(
+          "Stripe is not configured yet. Please set the price ID environment variables.",
+        );
+        return;
+      }
       const { url } = await createCheckoutSession(
         { price_id: priceId, plan },
         token,
       );
       window.location.href = url;
-    } catch {
-      // handle error
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to start checkout. Please try again.",
+      );
     } finally {
       setLoading(null);
     }
@@ -133,6 +143,12 @@ export default function PricingCards() {
           <span className="text-[#10B981] text-xs font-medium">Save 25%</span>
         </span>
       </div>
+
+      {error && (
+        <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400 text-center">
+          {error}
+        </div>
+      )}
 
       {/* Cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
