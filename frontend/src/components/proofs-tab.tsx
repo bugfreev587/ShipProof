@@ -4,6 +4,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useState, useEffect, useCallback } from "react";
 import {
   listProofs,
+  listSpaces,
   createProofJson,
   createProof,
   updateProof,
@@ -11,10 +12,13 @@ import {
   toggleProofFeatured,
   addProofTag,
   removeProofTag,
+  addProofToSpace,
+  removeProofFromSpace,
   listProductTags,
   extractScreenshot,
   type Proof,
   type Product,
+  type Space,
   ApiError,
 } from "@/lib/api";
 
@@ -55,6 +59,8 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTag, setFilterTag] = useState("");
   const [allTags, setAllTags] = useState<string[]>([]);
+  const [expandedProofId, setExpandedProofId] = useState<string | null>(null);
+  const [addToSpaceProof, setAddToSpaceProof] = useState<Proof | null>(null);
 
   const fetchProofs = useCallback(async () => {
     try {
@@ -174,74 +180,75 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((proof) => (
-            <div
-              key={proof.id}
-              className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4"
-            >
-              <div className="flex items-start gap-3">
-                {/* Platform badge */}
-                <PlatformBadge platform={proof.source_platform} />
+          {filtered.map((proof) => {
+            const isExpanded = expandedProofId === proof.id;
+            return (
+              <div
+                key={proof.id}
+                className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4"
+              >
+                <div className="flex items-start gap-3">
+                  {/* Platform badge */}
+                  <PlatformBadge platform={proof.source_platform} />
 
-                <div className="flex-1 min-w-0">
-                  {/* Author */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-[#F1F1F3]">
-                      {proof.author_name}
-                    </span>
-                    {proof.author_title && (
-                      <span className="text-xs text-[#6B7280]">
-                        {proof.author_title}
+                  <div className="flex-1 min-w-0">
+                    {/* Author */}
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-[#F1F1F3]">
+                        {proof.author_name}
                       </span>
+                      {proof.author_title && (
+                        <span className="text-xs text-[#6B7280]">
+                          {proof.author_title}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    {proof.content_text && (
+                      <p className="text-sm text-[#9CA3AF] mb-2 line-clamp-3">
+                        {proof.content_text}
+                      </p>
+                    )}
+
+                    {proof.content_image_url && (
+                      <div className="mb-2">
+                        <img
+                          src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
+                          alt="Proof screenshot"
+                          className="max-h-40 rounded-lg border border-[#2A2A30]"
+                        />
+                      </div>
+                    )}
+
+                    {/* Tags */}
+                    {proof.tags && proof.tags.length > 0 && (
+                      <div className="flex gap-1 flex-wrap mb-2">
+                        {proof.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-[#242429] px-2 py-0.5 text-xs text-[#9CA3AF]"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Source URL */}
+                    {proof.source_url && (
+                      <a
+                        href={proof.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-[#6366F1] hover:text-[#818CF8]"
+                      >
+                        View source
+                      </a>
                     )}
                   </div>
 
-                  {/* Content */}
-                  {proof.content_text && (
-                    <p className="text-sm text-[#9CA3AF] mb-2 line-clamp-3">
-                      {proof.content_text}
-                    </p>
-                  )}
-
-                  {proof.content_image_url && (
-                    <div className="mb-2">
-                      <img
-                        src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
-                        alt="Proof screenshot"
-                        className="max-h-40 rounded-lg border border-[#2A2A30]"
-                      />
-                    </div>
-                  )}
-
-                  {/* Tags */}
-                  {proof.tags && proof.tags.length > 0 && (
-                    <div className="flex gap-1 flex-wrap mb-2">
-                      {proof.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full bg-[#242429] px-2 py-0.5 text-xs text-[#9CA3AF]"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Source URL */}
-                  {proof.source_url && (
-                    <a
-                      href={proof.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-[#6366F1] hover:text-[#818CF8]"
-                    >
-                      View source
-                    </a>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
+                  {/* Featured toggle */}
                   <button
                     onClick={() => handleToggleFeatured(proof.id)}
                     className={`text-lg ${
@@ -255,22 +262,72 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                   >
                     ★
                   </button>
+                </div>
+
+                {/* Expanded action bar */}
+                {isExpanded && (
+                  <div className="mt-3 flex items-center justify-center gap-4 border-t border-[#2A2A30] pt-3">
+                    <button
+                      onClick={() => {
+                        setEditingProof(proof);
+                        setExpandedProofId(null);
+                      }}
+                      className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setDeletingProof(proof);
+                        setExpandedProofId(null);
+                      }}
+                      className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-red-400 transition-colors"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAddToSpaceProof(proof);
+                        setExpandedProofId(null);
+                      }}
+                      className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-[#6366F1] transition-colors"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
+                      </svg>
+                      Add to Space
+                    </button>
+                  </div>
+                )}
+
+                {/* Chevron toggle */}
+                <div className="flex justify-end mt-2">
                   <button
-                    onClick={() => setEditingProof(proof)}
-                    className="text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+                    onClick={() =>
+                      setExpandedProofId(isExpanded ? null : proof.id)
+                    }
+                    className="text-[#6B7280] hover:text-[#F1F1F3] transition-colors p-1"
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => setDeletingProof(proof)}
-                    className="text-sm text-[#9CA3AF] hover:text-red-400 transition-colors"
-                  >
-                    Delete
+                    <svg
+                      className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
                   </button>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -314,11 +371,20 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                 onClick={handleDelete}
                 className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
               >
-                Delete
+                Confirm
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add to Space Modal */}
+      {addToSpaceProof && (
+        <AddToSpaceModal
+          product={product}
+          proof={addToSpaceProof}
+          onClose={() => setAddToSpaceProof(null)}
+        />
       )}
     </div>
   );
@@ -801,6 +867,153 @@ function ProofModal({
           >
             {saving ? "Saving..." : isEdit ? "Save Changes" : "Add Proof"}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Add to Space Modal ---
+
+function AddToSpaceModal({
+  product,
+  proof,
+  onClose,
+}: {
+  product: Product;
+  proof: Proof;
+  onClose: () => void;
+}) {
+  const { getToken } = useAuth();
+  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [selectedSpaceIds, setSelectedSpaceIds] = useState<Set<string>>(new Set());
+  const [initialSpaceIds, setInitialSpaceIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const allSpaces = await listSpaces(product.id, token);
+        setSpaces(allSpaces);
+
+        // Check which spaces already contain this proof
+        const alreadyIn = new Set<string>();
+        for (const space of allSpaces) {
+          try {
+            const res = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/spaces/${space.id}/proofs`,
+              { headers: { Authorization: `Bearer ${token}` } },
+            );
+            if (res.ok) {
+              const spaceProofs = await res.json();
+              if (Array.isArray(spaceProofs) && spaceProofs.some((sp: { proof_id: string }) => sp.proof_id === proof.id)) {
+                alreadyIn.add(space.id);
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+        setSelectedSpaceIds(new Set(alreadyIn));
+        setInitialSpaceIds(new Set(alreadyIn));
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [getToken, product.id, proof.id]);
+
+  const toggleSpace = (spaceId: string) => {
+    setSelectedSpaceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(spaceId)) {
+        next.delete(spaceId);
+      } else {
+        next.add(spaceId);
+      }
+      return next;
+    });
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      // Add to newly selected spaces
+      for (const spaceId of selectedSpaceIds) {
+        if (!initialSpaceIds.has(spaceId)) {
+          await addProofToSpace(spaceId, proof.id, 0, token);
+        }
+      }
+      // Remove from deselected spaces
+      for (const spaceId of initialSpaceIds) {
+        if (!selectedSpaceIds.has(spaceId)) {
+          await removeProofFromSpace(spaceId, proof.id, token);
+        }
+      }
+
+      onClose();
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="w-full max-w-sm rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
+        <h3 className="text-lg font-semibold text-[#F1F1F3] mb-4">
+          Add to Space
+        </h3>
+
+        {loading ? (
+          <p className="text-sm text-[#9CA3AF]">Loading spaces...</p>
+        ) : spaces.length === 0 ? (
+          <p className="text-sm text-[#9CA3AF]">
+            No spaces yet. Create a space in the Spaces tab first.
+          </p>
+        ) : (
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {spaces.map((space) => (
+              <label
+                key={space.id}
+                className="flex items-center gap-3 rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2.5 cursor-pointer hover:border-[#3F3F46] transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSpaceIds.has(space.id)}
+                  onChange={() => toggleSpace(space.id)}
+                  className="h-4 w-4 rounded border-[#2A2A30] bg-[#0F0F10] text-[#6366F1] focus:ring-[#6366F1] focus:ring-offset-0"
+                />
+                <span className="text-sm text-[#F1F1F3]">{space.name}</span>
+              </label>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+          >
+            Cancel
+          </button>
+          {spaces.length > 0 && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+          )}
         </div>
       </div>
     </div>
