@@ -57,33 +57,48 @@ export default async function WallPage({
   }
 
   const { wall, product, proofs } = data;
+  const isDark = wall.theme === "dark";
+  const bgBase = isDark ? "#0F0F10" : "#F9FAFB";
+  const bgCard = isDark ? "#1A1A1F" : "#FFFFFF";
+  const borderColor = isDark ? "#2A2A30" : "#E5E7EB";
+  const textPrimary = isDark ? "#F1F1F3" : "#111827";
+  const textSecondary = isDark ? "#9CA3AF" : "#6B7280";
+  const textTertiary = isDark ? "#6B7280" : "#9CA3AF";
+  const radius = `${wall.border_radius}px`;
+  const spacing = `${wall.card_spacing}px`;
 
   return (
-    <div className="min-h-screen bg-[#0F0F10]">
+    <div className="min-h-screen" style={{ background: bgBase }}>
       {/* Header */}
       <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-3xl font-bold text-[#F1F1F3] mb-2">{wall.name}</h1>
-        <p className="text-[#9CA3AF]">
+        <h1 className="text-3xl font-bold mb-2" style={{ color: textPrimary }}>{wall.name}</h1>
+        <p style={{ color: textSecondary }}>
           What people are saying about{" "}
-          <span className="text-[#F1F1F3] font-medium">{product.name}</span>
+          <span className="font-medium" style={{ color: textPrimary }}>{product.name}</span>
         </p>
       </div>
 
       {/* Masonry Grid */}
       <div className="max-w-6xl mx-auto px-4 pb-12">
         {proofs.length === 0 ? (
-          <div className="text-center text-[#6B7280] py-12">
+          <div className="text-center py-12" style={{ color: textTertiary }}>
             No proofs yet.
           </div>
         ) : (
           <div
             className="columns-1 sm:columns-2 lg:columns-3"
-            style={{ columnGap: "16px" }}
+            style={{ columnGap: spacing }}
           >
             {proofs.map((proof) => (
               <div
                 key={proof.id}
-                className="break-inside-avoid mb-4 rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-5"
+                className="break-inside-avoid p-5"
+                style={{
+                  marginBottom: spacing,
+                  borderRadius: radius,
+                  border: `1px solid ${borderColor}`,
+                  background: bgCard,
+                }}
               >
                 {/* Author */}
                 <div className="flex items-center gap-2 mb-3">
@@ -93,19 +108,19 @@ export default async function WallPage({
                       alt={proof.author_name}
                       className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                     />
-                  ) : (
+                  ) : wall.show_platform_icon ? (
                     <span
                       className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
                     >
                       {PLATFORM_LABELS[proof.source_platform] || "O"}
                     </span>
-                  )}
+                  ) : null}
                   <div>
-                    <div className="text-sm font-medium text-[#F1F1F3]">
+                    <div className="text-sm font-medium" style={{ color: textPrimary }}>
                       {proof.author_name}
                     </div>
                     {proof.author_title && (
-                      <div className="text-xs text-[#6B7280]">
+                      <div className="text-xs" style={{ color: textTertiary }}>
                         {proof.author_title}
                       </div>
                     )}
@@ -114,7 +129,7 @@ export default async function WallPage({
 
                 {/* Content */}
                 {proof.content_text && (
-                  <p className="text-sm text-[#9CA3AF] leading-relaxed">
+                  <p className="text-sm leading-relaxed" style={{ color: textSecondary }}>
                     {proof.content_text}
                   </p>
                 )}
@@ -123,12 +138,16 @@ export default async function WallPage({
                   <img
                     src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
                     alt="Proof"
-                    className="mt-3 w-full rounded-lg border border-[#2A2A30]"
+                    className="mt-3 w-full"
+                    style={{
+                      borderRadius: `${Math.max(wall.border_radius - 4, 0)}px`,
+                      border: `1px solid ${borderColor}`,
+                    }}
                   />
                 )}
 
                 {/* Date */}
-                <div className="mt-3 text-xs text-[#6B7280]">
+                <div className="mt-3 text-xs" style={{ color: textTertiary }}>
                   {new Date(proof.created_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -142,15 +161,18 @@ export default async function WallPage({
       </div>
 
       {/* Footer */}
-      <div className="text-center pb-8 text-xs text-[#6B7280]">
-        Powered by{" "}
-        <a
-          href="https://shipproof.io"
-          className="text-[#6366F1] hover:text-[#818CF8] transition-colors"
-        >
-          ShipProof
-        </a>
-      </div>
+      {wall.show_branding && (
+        <div className="text-center pb-8 text-xs" style={{ color: textTertiary }}>
+          Powered by{" "}
+          <a
+            href="https://shipproof.io"
+            className="hover:opacity-80 transition-opacity"
+            style={{ color: "#6366F1", textDecoration: "none" }}
+          >
+            ShipProof
+          </a>
+        </div>
+      )}
     </div>
   );
 }

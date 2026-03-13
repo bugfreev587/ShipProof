@@ -13,6 +13,7 @@ import {
   listWalls,
   createWall,
   deleteWall,
+  updateWallConfig,
   listProofs,
   addProofToWall,
   removeProofFromWall,
@@ -792,9 +793,11 @@ function WallCard({
 }) {
   const { getToken } = useAuth();
   const [expanded, setExpanded] = useState(false);
+  const [config, setConfig] = useState(wall);
   const [proofs, setProofs] = useState<Proof[]>([]);
   const [wallProofIds, setWallProofIds] = useState<Set<string>>(new Set());
   const [loadingProofs, setLoadingProofs] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const wallUrl =
     typeof window !== "undefined"
@@ -829,6 +832,32 @@ function WallCard({
     }
   };
 
+  const handleConfigChange = (updates: Partial<Wall>) => {
+    const newConfig = { ...config, ...updates };
+    setConfig(newConfig);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        await updateWallConfig(
+          wall.id,
+          {
+            theme: newConfig.theme,
+            border_radius: newConfig.border_radius,
+            card_spacing: newConfig.card_spacing,
+            show_platform_icon: newConfig.show_platform_icon,
+            show_branding: newConfig.show_branding,
+          },
+          token,
+        );
+      } catch {
+        // ignore
+      }
+    }, 500);
+  };
+
   const handleToggleProof = async (proofId: string) => {
     const token = await getToken();
     if (!token) return;
@@ -858,15 +887,33 @@ function WallCard({
 
   return (
     <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] overflow-hidden">
-      {/* Header: name + delete */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h4 className="text-sm font-medium text-[#F1F1F3]">{wall.name}</h4>
-        <button
-          onClick={handleDelete}
-          className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
-        >
-          Delete
-        </button>
+      {/* Header: name + URL + delete */}
+      <div className="px-4 pt-4 pb-2">
+        <div className="flex items-center justify-between mb-1">
+          <h4 className="text-sm font-medium text-[#F1F1F3]">{wall.name}</h4>
+          <button
+            onClick={handleDelete}
+            className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href={wallUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-[#6366F1] hover:text-[#818CF8] truncate"
+          >
+            {wallUrl}
+          </a>
+          <button
+            onClick={handleCopy}
+            className="text-xs text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors flex-shrink-0"
+          >
+            {copied ? "Copied!" : "Copy"}
+          </button>
+        </div>
       </div>
 
       {/* Expand chevron */}
@@ -889,9 +936,86 @@ function WallCard({
         </svg>
       </button>
 
-      {/* Expanded panel: proofs + wall URL */}
+      {/* Expanded panel: config + proofs */}
       {expanded && (
         <div className="border-t border-[#2A2A30] p-4 space-y-5">
+          {/* Wall Configuration */}
+          <div className="space-y-4">
+            <p className="text-xs font-medium text-[#F1F1F3]">Wall Configuration</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">Theme</label>
+                <select
+                  value={config.theme}
+                  onChange={(e) => handleConfigChange({ theme: e.target.value })}
+                  className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+                >
+                  <option value="dark">Dark</option>
+                  <option value="light">Light</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">
+                  Border Radius: {config.border_radius}px
+                </label>
+                <input
+                  type="range"
+                  min={0}
+                  max={24}
+                  value={config.border_radius}
+                  onChange={(e) =>
+                    handleConfigChange({ border_radius: Number(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">
+                  Card Spacing: {config.card_spacing}px
+                </label>
+                <input
+                  type="range"
+                  min={4}
+                  max={32}
+                  value={config.card_spacing}
+                  onChange={(e) =>
+                    handleConfigChange({ card_spacing: Number(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.show_platform_icon}
+                  onChange={(e) =>
+                    handleConfigChange({ show_platform_icon: e.target.checked })
+                  }
+                  className="rounded border-[#2A2A30]"
+                />
+                Show platform icons
+              </label>
+
+              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.show_branding}
+                  onChange={(e) =>
+                    handleConfigChange({ show_branding: e.target.checked })
+                  }
+                  className="rounded border-[#2A2A30]"
+                />
+                Show &quot;Powered by ShipProof&quot;
+              </label>
+            </div>
+          </div>
+
           {/* Manage Proofs */}
           <div className="space-y-3">
             <p className="text-xs font-medium text-[#F1F1F3]">Proofs</p>
@@ -928,25 +1052,6 @@ function WallCard({
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Wall URL */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-[#F1F1F3]">Wall of Love URL</p>
-            <div className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-[#6B7280]">Share this link or embed in your site</p>
-                <button
-                  onClick={handleCopy}
-                  className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-              </div>
-              <pre className="text-xs text-[#9CA3AF] overflow-x-auto font-mono">
-                {wallUrl}
-              </pre>
-            </div>
           </div>
         </div>
       )}

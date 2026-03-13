@@ -416,12 +416,17 @@ type User struct {
 }
 
 type Wall struct {
-	ID        uuid.UUID `json:"id"`
-	ProductID uuid.UUID `json:"product_id"`
-	Name      string    `json:"name"`
-	Slug      string    `json:"slug"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID               uuid.UUID   `json:"id"`
+	ProductID        uuid.UUID   `json:"product_id"`
+	Name             string      `json:"name"`
+	Slug             string      `json:"slug"`
+	CreatedAt        time.Time   `json:"created_at"`
+	UpdatedAt        time.Time   `json:"updated_at"`
+	Theme            WidgetTheme `json:"theme"`
+	BorderRadius     int32       `json:"border_radius"`
+	CardSpacing      int32       `json:"card_spacing"`
+	ShowPlatformIcon bool        `json:"show_platform_icon"`
+	ShowBranding     bool        `json:"show_branding"`
 }
 
 type WallProof struct {

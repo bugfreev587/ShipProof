@@ -25,7 +25,7 @@ func (q *Queries) CountWallsByProductID(ctx context.Context, productID uuid.UUID
 const createWall = `-- name: CreateWall :one
 INSERT INTO walls (product_id, name, slug)
 VALUES ($1, $2, $3)
-RETURNING id, product_id, name, slug, created_at, updated_at
+RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding
 `
 
 type CreateWallParams struct {
@@ -44,6 +44,11 @@ func (q *Queries) CreateWall(ctx context.Context, arg CreateWallParams) (Wall, e
 		&i.Slug,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Theme,
+		&i.BorderRadius,
+		&i.CardSpacing,
+		&i.ShowPlatformIcon,
+		&i.ShowBranding,
 	)
 	return i, err
 }
@@ -58,7 +63,7 @@ func (q *Queries) DeleteWall(ctx context.Context, id uuid.UUID) error {
 }
 
 const getWallByID = `-- name: GetWallByID :one
-SELECT id, product_id, name, slug, created_at, updated_at FROM walls WHERE id = $1
+SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding FROM walls WHERE id = $1
 `
 
 func (q *Queries) GetWallByID(ctx context.Context, id uuid.UUID) (Wall, error) {
@@ -71,12 +76,17 @@ func (q *Queries) GetWallByID(ctx context.Context, id uuid.UUID) (Wall, error) {
 		&i.Slug,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Theme,
+		&i.BorderRadius,
+		&i.CardSpacing,
+		&i.ShowPlatformIcon,
+		&i.ShowBranding,
 	)
 	return i, err
 }
 
 const getWallBySlug = `-- name: GetWallBySlug :one
-SELECT id, product_id, name, slug, created_at, updated_at FROM walls WHERE slug = $1
+SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding FROM walls WHERE slug = $1
 `
 
 func (q *Queries) GetWallBySlug(ctx context.Context, slug string) (Wall, error) {
@@ -89,12 +99,17 @@ func (q *Queries) GetWallBySlug(ctx context.Context, slug string) (Wall, error) 
 		&i.Slug,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Theme,
+		&i.BorderRadius,
+		&i.CardSpacing,
+		&i.ShowPlatformIcon,
+		&i.ShowBranding,
 	)
 	return i, err
 }
 
 const listWallsByProductID = `-- name: ListWallsByProductID :many
-SELECT id, product_id, name, slug, created_at, updated_at FROM walls WHERE product_id = $1 ORDER BY created_at DESC
+SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding FROM walls WHERE product_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListWallsByProductID(ctx context.Context, productID uuid.UUID) ([]Wall, error) {
@@ -113,6 +128,11 @@ func (q *Queries) ListWallsByProductID(ctx context.Context, productID uuid.UUID)
 			&i.Slug,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Theme,
+			&i.BorderRadius,
+			&i.CardSpacing,
+			&i.ShowPlatformIcon,
+			&i.ShowBranding,
 		); err != nil {
 			return nil, err
 		}
@@ -127,7 +147,7 @@ func (q *Queries) ListWallsByProductID(ctx context.Context, productID uuid.UUID)
 const updateWall = `-- name: UpdateWall :one
 UPDATE walls SET name = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, product_id, name, slug, created_at, updated_at
+RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding
 `
 
 type UpdateWallParams struct {
@@ -145,6 +165,58 @@ func (q *Queries) UpdateWall(ctx context.Context, arg UpdateWallParams) (Wall, e
 		&i.Slug,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Theme,
+		&i.BorderRadius,
+		&i.CardSpacing,
+		&i.ShowPlatformIcon,
+		&i.ShowBranding,
+	)
+	return i, err
+}
+
+const updateWallConfig = `-- name: UpdateWallConfig :one
+UPDATE walls SET
+    theme = $2,
+    border_radius = $3,
+    card_spacing = $4,
+    show_platform_icon = $5,
+    show_branding = $6,
+    updated_at = now()
+WHERE id = $1
+RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding
+`
+
+type UpdateWallConfigParams struct {
+	ID               uuid.UUID   `json:"id"`
+	Theme            WidgetTheme `json:"theme"`
+	BorderRadius     int32       `json:"border_radius"`
+	CardSpacing      int32       `json:"card_spacing"`
+	ShowPlatformIcon bool        `json:"show_platform_icon"`
+	ShowBranding     bool        `json:"show_branding"`
+}
+
+func (q *Queries) UpdateWallConfig(ctx context.Context, arg UpdateWallConfigParams) (Wall, error) {
+	row := q.db.QueryRow(ctx, updateWallConfig,
+		arg.ID,
+		arg.Theme,
+		arg.BorderRadius,
+		arg.CardSpacing,
+		arg.ShowPlatformIcon,
+		arg.ShowBranding,
+	)
+	var i Wall
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.Name,
+		&i.Slug,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Theme,
+		&i.BorderRadius,
+		&i.CardSpacing,
+		&i.ShowPlatformIcon,
+		&i.ShowBranding,
 	)
 	return i, err
 }

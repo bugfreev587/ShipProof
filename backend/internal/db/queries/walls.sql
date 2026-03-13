@@ -17,6 +17,17 @@ UPDATE walls SET name = $2, updated_at = now()
 WHERE id = $1
 RETURNING *;
 
+-- name: UpdateWallConfig :one
+UPDATE walls SET
+    theme = $2,
+    border_radius = $3,
+    card_spacing = $4,
+    show_platform_icon = $5,
+    show_branding = $6,
+    updated_at = now()
+WHERE id = $1
+RETURNING *;
+
 -- name: DeleteWall :exec
 DELETE FROM walls WHERE id = $1;
 

@@ -190,6 +190,47 @@ func (h *WallHandler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(wall)
 }
 
+func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
+	wallID, err := uuid.Parse(chi.URLParam(r, "wid"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid wall id"}`, http.StatusBadRequest)
+		return
+	}
+
+	_, ok := h.verifyWallOwnership(w, r, wallID)
+	if !ok {
+		return
+	}
+
+	var req struct {
+		Theme            string `json:"theme"`
+		BorderRadius     int32  `json:"border_radius"`
+		CardSpacing      int32  `json:"card_spacing"`
+		ShowPlatformIcon bool   `json:"show_platform_icon"`
+		ShowBranding     bool   `json:"show_branding"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
+		return
+	}
+
+	wall, err := h.queries.UpdateWallConfig(r.Context(), db.UpdateWallConfigParams{
+		ID:               wallID,
+		Theme:            db.WidgetTheme(req.Theme),
+		BorderRadius:     req.BorderRadius,
+		CardSpacing:      req.CardSpacing,
+		ShowPlatformIcon: req.ShowPlatformIcon,
+		ShowBranding:     req.ShowBranding,
+	})
+	if err != nil {
+		http.Error(w, `{"error":"failed to update wall config"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(wall)
+}
+
 func (h *WallHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	wallID, err := uuid.Parse(chi.URLParam(r, "wid"))
 	if err != nil {

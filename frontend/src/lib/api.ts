@@ -329,6 +329,11 @@ export interface Wall {
   product_id: string;
   name: string;
   slug: string;
+  theme: string;
+  border_radius: number;
+  card_spacing: number;
+  show_platform_icon: boolean;
+  show_branding: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -576,6 +581,24 @@ export function updateWall(wallId: string, name: string, token: string) {
 
 export function deleteWall(wallId: string, token: string) {
   return fetchApi<void>(`/api/walls/${wallId}`, { method: "DELETE" }, token);
+}
+
+export function updateWallConfig(
+  wallId: string,
+  config: {
+    theme: string;
+    border_radius: number;
+    card_spacing: number;
+    show_platform_icon: boolean;
+    show_branding: boolean;
+  },
+  token: string,
+) {
+  return fetchApi<Wall>(`/api/walls/${wallId}/config`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  }, token);
 }
 
 export function addProofToWall(

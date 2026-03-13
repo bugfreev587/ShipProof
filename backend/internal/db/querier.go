@@ -71,6 +71,7 @@ type Querier interface {
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPlan(ctx context.Context, arg UpdateUserPlanParams) (User, error)
 	UpdateWall(ctx context.Context, arg UpdateWallParams) (Wall, error)
+	UpdateWallConfig(ctx context.Context, arg UpdateWallConfigParams) (Wall, error)
 	UpdateWallProofOrder(ctx context.Context, arg UpdateWallProofOrderParams) error
 	UpdateWidgetConfig(ctx context.Context, arg UpdateWidgetConfigParams) (WidgetConfig, error)
 	UpsertDraft(ctx context.Context, arg UpsertDraftParams) (LaunchDraft, error)

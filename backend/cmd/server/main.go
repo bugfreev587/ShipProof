@@ -162,6 +162,7 @@ func main() {
 			r.Post("/api/products/{id}/walls", wallHandler.Create)
 			r.Get("/api/walls/{wid}", wallHandler.Get)
 			r.Put("/api/walls/{wid}", wallHandler.Update)
+			r.Put("/api/walls/{wid}/config", wallHandler.UpdateConfig)
 			r.Delete("/api/walls/{wid}", wallHandler.Delete)
 			r.Post("/api/walls/{wid}/proofs", wallHandler.AddProof)
 			r.Delete("/api/walls/{wid}/proofs/{pid}", wallHandler.RemoveProof)
