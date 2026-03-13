@@ -12,28 +12,34 @@ import (
 )
 
 type Querier interface {
+	AddProofToSpace(ctx context.Context, arg AddProofToSpaceParams) (SpaceProof, error)
 	AddProofToWall(ctx context.Context, arg AddProofToWallParams) (WallProof, error)
 	AddTagToProof(ctx context.Context, arg AddTagToProofParams) (ProofTag, error)
 	CountDraftsThisMonth(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountProductsByUserID(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountProofsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
+	CountSpacesByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountVersionsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountWallsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CreateDefaultWidgetConfig(ctx context.Context, productID uuid.UUID) (WidgetConfig, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
 	CreateProof(ctx context.Context, arg CreateProofParams) (Proof, error)
+	CreateSpace(ctx context.Context, arg CreateSpaceParams) (Space, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVersion(ctx context.Context, arg CreateVersionParams) (LaunchVersion, error)
 	CreateWall(ctx context.Context, arg CreateWallParams) (Wall, error)
 	DeleteDraftByProductID(ctx context.Context, productID uuid.UUID) error
 	DeleteProduct(ctx context.Context, id uuid.UUID) error
 	DeleteProof(ctx context.Context, id uuid.UUID) error
+	DeleteSpace(ctx context.Context, id uuid.UUID) error
 	DeleteWall(ctx context.Context, id uuid.UUID) error
 	GetDraftByProductID(ctx context.Context, productID uuid.UUID) (LaunchDraft, error)
 	GetMaxVersionNumber(ctx context.Context, productID uuid.UUID) (int32, error)
 	GetProductByID(ctx context.Context, id uuid.UUID) (Product, error)
 	GetProductBySlug(ctx context.Context, slug string) (Product, error)
 	GetProofByID(ctx context.Context, id uuid.UUID) (Proof, error)
+	GetSpaceByID(ctx context.Context, id uuid.UUID) (Space, error)
+	GetSpaceBySlug(ctx context.Context, slug string) (Space, error)
 	GetUserByClerkID(ctx context.Context, clerkID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByStripeCustomerID(ctx context.Context, stripeCustomerID pgtype.Text) (User, error)
@@ -45,10 +51,13 @@ type Querier interface {
 	ListDistinctTagsByProductID(ctx context.Context, productID uuid.UUID) ([]string, error)
 	ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([]Product, error)
 	ListProofsByProductID(ctx context.Context, productID uuid.UUID) ([]Proof, error)
+	ListProofsBySpaceID(ctx context.Context, spaceID uuid.UUID) ([]ListProofsBySpaceIDRow, error)
 	ListProofsByWallID(ctx context.Context, wallID uuid.UUID) ([]ListProofsByWallIDRow, error)
+	ListSpacesByProductID(ctx context.Context, productID uuid.UUID) ([]Space, error)
 	ListTagsByProofID(ctx context.Context, proofID uuid.UUID) ([]ProofTag, error)
 	ListVersionsByProductID(ctx context.Context, productID uuid.UUID) ([]ListVersionsByProductIDRow, error)
 	ListWallsByProductID(ctx context.Context, productID uuid.UUID) ([]Wall, error)
+	RemoveProofFromSpace(ctx context.Context, arg RemoveProofFromSpaceParams) error
 	RemoveProofFromWall(ctx context.Context, arg RemoveProofFromWallParams) error
 	RemoveTagFromProof(ctx context.Context, arg RemoveTagFromProofParams) error
 	ToggleProofFeatured(ctx context.Context, id uuid.UUID) (Proof, error)
@@ -56,6 +65,9 @@ type Querier interface {
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateProof(ctx context.Context, arg UpdateProofParams) (Proof, error)
 	UpdateProofOrder(ctx context.Context, arg UpdateProofOrderParams) error
+	UpdateSpace(ctx context.Context, arg UpdateSpaceParams) (Space, error)
+	UpdateSpaceConfig(ctx context.Context, arg UpdateSpaceConfigParams) (Space, error)
+	UpdateSpaceProofOrder(ctx context.Context, arg UpdateSpaceProofOrderParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPlan(ctx context.Context, arg UpdateUserPlanParams) (User, error)
 	UpdateWall(ctx context.Context, arg UpdateWallParams) (Wall, error)

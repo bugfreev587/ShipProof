@@ -380,6 +380,28 @@ type ProofTag struct {
 	Tag     string    `json:"tag"`
 }
 
+type Space struct {
+	ID               uuid.UUID   `json:"id"`
+	ProductID        uuid.UUID   `json:"product_id"`
+	Name             string      `json:"name"`
+	Slug             string      `json:"slug"`
+	Theme            WidgetTheme `json:"theme"`
+	MaxItems         int32       `json:"max_items"`
+	ShowPlatformIcon bool        `json:"show_platform_icon"`
+	BorderRadius     int32       `json:"border_radius"`
+	CardSpacing      int32       `json:"card_spacing"`
+	ShowBranding     bool        `json:"show_branding"`
+	CreatedAt        time.Time   `json:"created_at"`
+	UpdatedAt        time.Time   `json:"updated_at"`
+}
+
+type SpaceProof struct {
+	ID           uuid.UUID `json:"id"`
+	SpaceID      uuid.UUID `json:"space_id"`
+	ProofID      uuid.UUID `json:"proof_id"`
+	DisplayOrder int32     `json:"display_order"`
+}
+
 type User struct {
 	ID                   uuid.UUID   `json:"id"`
 	ClerkID              string      `json:"clerk_id"`

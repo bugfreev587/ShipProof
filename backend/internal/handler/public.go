@@ -70,6 +70,67 @@ func (h *PublicHandler) GetProductProofs(w http.ResponseWriter, r *http.Request)
 	})
 }
 
+func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+	if slug == "" {
+		http.Error(w, `{"error":"slug is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	space, err := h.queries.GetSpaceBySlug(r.Context(), slug)
+	if err != nil {
+		http.Error(w, `{"error":"space not found"}`, http.StatusNotFound)
+		return
+	}
+
+	product, err := h.queries.GetProductByID(r.Context(), space.ProductID)
+	if err != nil {
+		http.Error(w, `{"error":"product not found"}`, http.StatusNotFound)
+		return
+	}
+
+	proofs, err := h.queries.ListProofsBySpaceID(r.Context(), space.ID)
+	if err != nil {
+		http.Error(w, `{"error":"failed to list proofs"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// Limit proofs to max_items
+	if int(space.MaxItems) < len(proofs) {
+		proofs = proofs[:space.MaxItems]
+	}
+
+	type spaceConfig struct {
+		Theme            string `json:"theme"`
+		MaxItems         int32  `json:"max_items"`
+		ShowPlatformIcon bool   `json:"show_platform_icon"`
+		BorderRadius     int32  `json:"border_radius"`
+		CardSpacing      int32  `json:"card_spacing"`
+		ShowBranding     bool   `json:"show_branding"`
+	}
+
+	type response struct {
+		Space   spaceConfig                    `json:"space"`
+		Product db.Product                     `json:"product"`
+		Proofs  []db.ListProofsBySpaceIDRow    `json:"proofs"`
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	json.NewEncoder(w).Encode(response{
+		Space: spaceConfig{
+			Theme:            string(space.Theme),
+			MaxItems:         space.MaxItems,
+			ShowPlatformIcon: space.ShowPlatformIcon,
+			BorderRadius:     space.BorderRadius,
+			CardSpacing:      space.CardSpacing,
+			ShowBranding:     space.ShowBranding,
+		},
+		Product: product,
+		Proofs:  proofs,
+	})
+}
+
 func (h *PublicHandler) GetWallProofs(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	if slug == "" {

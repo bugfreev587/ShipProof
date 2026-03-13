@@ -340,6 +340,28 @@ export interface WallProof {
   display_order: number;
 }
 
+export interface Space {
+  id: string;
+  product_id: string;
+  name: string;
+  slug: string;
+  theme: string;
+  max_items: number;
+  show_platform_icon: boolean;
+  border_radius: number;
+  card_spacing: number;
+  show_branding: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SpaceProof {
+  id: string;
+  space_id: string;
+  proof_id: string;
+  display_order: number;
+}
+
 export interface WidgetConfig {
   id: string;
   product_id: string;
@@ -596,6 +618,83 @@ export function updateWallProofOrder(
   );
 }
 
+// --- Spaces ---
+
+export function listSpaces(productId: string, token: string) {
+  return fetchApi<Space[]>(`/api/products/${productId}/spaces`, {}, token);
+}
+
+export function createSpace(productId: string, name: string, token: string) {
+  return fetchApi<Space>(
+    `/api/products/${productId}/spaces`,
+    { method: "POST", body: JSON.stringify({ name }) },
+    token,
+  );
+}
+
+export function getSpace(spaceId: string, token: string) {
+  return fetchApi<Space>(`/api/spaces/${spaceId}`, {}, token);
+}
+
+export function updateSpace(spaceId: string, name: string, token: string) {
+  return fetchApi<Space>(
+    `/api/spaces/${spaceId}`,
+    { method: "PUT", body: JSON.stringify({ name }) },
+    token,
+  );
+}
+
+export function updateSpaceConfig(
+  spaceId: string,
+  data: {
+    theme: string;
+    max_items: number;
+    show_platform_icon: boolean;
+    border_radius: number;
+    card_spacing: number;
+    show_branding: boolean;
+  },
+  token: string,
+) {
+  return fetchApi<Space>(
+    `/api/spaces/${spaceId}/config`,
+    { method: "PUT", body: JSON.stringify(data) },
+    token,
+  );
+}
+
+export function deleteSpace(spaceId: string, token: string) {
+  return fetchApi<void>(`/api/spaces/${spaceId}`, { method: "DELETE" }, token);
+}
+
+export function addProofToSpace(
+  spaceId: string,
+  proofId: string,
+  displayOrder: number,
+  token: string,
+) {
+  return fetchApi<SpaceProof>(
+    `/api/spaces/${spaceId}/proofs`,
+    {
+      method: "POST",
+      body: JSON.stringify({ proof_id: proofId, display_order: displayOrder }),
+    },
+    token,
+  );
+}
+
+export function removeProofFromSpace(
+  spaceId: string,
+  proofId: string,
+  token: string,
+) {
+  return fetchApi<void>(
+    `/api/spaces/${spaceId}/proofs/${proofId}`,
+    { method: "DELETE" },
+    token,
+  );
+}
+
 // --- Public (no auth) ---
 
 export interface PublicProofsResponse {
@@ -613,6 +712,25 @@ export interface PublicWallResponse {
 export function fetchPublicProofs(slug: string) {
   return fetchApi<PublicProofsResponse>(
     `/api/public/products/${slug}/proofs`,
+  );
+}
+
+export interface PublicSpaceResponse {
+  space: {
+    theme: string;
+    max_items: number;
+    show_platform_icon: boolean;
+    border_radius: number;
+    card_spacing: number;
+    show_branding: boolean;
+  };
+  product: Product;
+  proofs: (Proof & { space_display_order: number })[];
+}
+
+export function fetchPublicSpaceProofs(slug: string) {
+  return fetchApi<PublicSpaceResponse>(
+    `/api/public/spaces/${slug}/proofs`,
   );
 }
 

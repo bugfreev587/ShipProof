@@ -15,6 +15,7 @@ type PlanLimits struct {
 	MaxProofs         int  // per product; -1 = unlimited
 	MaxGenerations    int  // per month; -1 = unlimited
 	MaxVersions       int  // per product; -1 = unlimited
+	MaxSpaces         int  // per product; 0 = none, -1 = unlimited
 	CanCreateWall     bool
 	CanRemoveBranding bool
 }
@@ -28,6 +29,7 @@ func LimitsFor(plan db.UserPlan) PlanLimits {
 			MaxProofs:         -1,
 			MaxGenerations:    -1,
 			MaxVersions:       -1,
+			MaxSpaces:         1,
 			CanCreateWall:     true,
 			CanRemoveBranding: false,
 		}
@@ -37,6 +39,7 @@ func LimitsFor(plan db.UserPlan) PlanLimits {
 			MaxProofs:         -1,
 			MaxGenerations:    -1,
 			MaxVersions:       -1,
+			MaxSpaces:         10,
 			CanCreateWall:     true,
 			CanRemoveBranding: true,
 		}
@@ -46,6 +49,7 @@ func LimitsFor(plan db.UserPlan) PlanLimits {
 			MaxProofs:         1,
 			MaxGenerations:    3,
 			MaxVersions:       3,
+			MaxSpaces:         0,
 			CanCreateWall:     false,
 			CanRemoveBranding: false,
 		}
@@ -123,6 +127,28 @@ func (s *PlanService) CheckVersionLimit(ctx context.Context, productID uuid.UUID
 	if int(count) >= limits.MaxVersions {
 		return &PlanLimitError{
 			Message: "Version limit reached. Upgrade to Pro for unlimited versions.",
+		}
+	}
+	return nil
+}
+
+func (s *PlanService) CheckSpaceLimit(ctx context.Context, productID uuid.UUID, plan db.UserPlan) error {
+	limits := LimitsFor(plan)
+	if limits.MaxSpaces < 0 {
+		return nil
+	}
+	if limits.MaxSpaces == 0 {
+		return &PlanLimitError{
+			Message: "Spaces is a Pro feature. Upgrade to create embed spaces.",
+		}
+	}
+	count, err := s.queries.CountSpacesByProductID(ctx, productID)
+	if err != nil {
+		return fmt.Errorf("failed to check space limit: %w", err)
+	}
+	if int(count) >= limits.MaxSpaces {
+		return &PlanLimitError{
+			Message: fmt.Sprintf("Space limit reached (%d). Upgrade your plan to create more spaces.", limits.MaxSpaces),
 		}
 	}
 	return nil

@@ -95,6 +95,7 @@ func main() {
 		proofHandler := handler.NewProofHandler(queries, userService, storageService, planService, extractService)
 		widgetHandler := handler.NewWidgetHandler(queries, userService, planService)
 		wallHandler := handler.NewWallHandler(queries, userService, planService)
+		spaceHandler := handler.NewSpaceHandler(queries, userService, planService)
 		publicHandler := handler.NewPublicHandler(queries)
 		stripeHandler := handler.NewStripeHandler(queries, userService)
 		userHandler := handler.NewUserHandler(userService)
@@ -108,6 +109,7 @@ func main() {
 		// Public API routes (no auth)
 		r.Get("/api/public/products/{slug}/proofs", publicHandler.GetProductProofs)
 		r.Get("/api/public/walls/{slug}/proofs", publicHandler.GetWallProofs)
+		r.Get("/api/public/spaces/{slug}/proofs", publicHandler.GetSpaceProofs)
 
 		// Authenticated routes
 		r.Group(func(r chi.Router) {
@@ -164,6 +166,17 @@ func main() {
 			r.Post("/api/walls/{wid}/proofs", wallHandler.AddProof)
 			r.Delete("/api/walls/{wid}/proofs/{pid}", wallHandler.RemoveProof)
 			r.Put("/api/walls/{wid}/proofs/order", wallHandler.UpdateProofOrder)
+
+			// Spaces
+			r.Get("/api/products/{id}/spaces", spaceHandler.List)
+			r.Post("/api/products/{id}/spaces", spaceHandler.Create)
+			r.Get("/api/spaces/{sid}", spaceHandler.Get)
+			r.Put("/api/spaces/{sid}", spaceHandler.Update)
+			r.Put("/api/spaces/{sid}/config", spaceHandler.UpdateConfig)
+			r.Delete("/api/spaces/{sid}", spaceHandler.Delete)
+			r.Post("/api/spaces/{sid}/proofs", spaceHandler.AddProof)
+			r.Delete("/api/spaces/{sid}/proofs/{pid}", spaceHandler.RemoveProof)
+			r.Put("/api/spaces/{sid}/proofs/order", spaceHandler.UpdateProofOrder)
 		})
 	}
 

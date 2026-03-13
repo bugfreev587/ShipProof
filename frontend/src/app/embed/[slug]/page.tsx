@@ -1,4 +1,4 @@
-import { fetchPublicProofs } from "@/lib/api";
+import { fetchPublicProofs, fetchPublicSpaceProofs } from "@/lib/api";
 
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
@@ -20,6 +20,23 @@ const PLATFORM_LABELS: Record<string, string> = {
   other: "O",
 };
 
+interface WidgetSettings {
+  theme: string;
+  show_platform_icon: boolean;
+  border_radius: number;
+  card_spacing: number;
+  show_branding: boolean;
+}
+
+interface ProofItem {
+  id: string;
+  source_platform: string;
+  author_name: string;
+  author_title: string | null;
+  content_text: string | null;
+  content_image_url: string | null;
+}
+
 export default async function EmbedPage({
   params,
 }: {
@@ -27,18 +44,28 @@ export default async function EmbedPage({
 }) {
   const { slug } = await params;
 
-  let data;
+  let proofs: ProofItem[] = [];
+  let widget: WidgetSettings;
+
+  // Try space first, fall back to product embed
   try {
-    data = await fetchPublicProofs(slug);
+    const spaceData = await fetchPublicSpaceProofs(slug);
+    proofs = spaceData.proofs;
+    widget = spaceData.space;
   } catch {
-    return (
-      <div className="p-4 text-center text-sm text-gray-500">
-        Widget not found.
-      </div>
-    );
+    try {
+      const productData = await fetchPublicProofs(slug);
+      proofs = productData.proofs;
+      widget = productData.widget;
+    } catch {
+      return (
+        <div className="p-4 text-center text-sm text-gray-500">
+          Widget not found.
+        </div>
+      );
+    }
   }
 
-  const { proofs, widget } = data;
   const isDark = widget.theme === "dark";
   const radius = `${widget.border_radius}px`;
   const spacing = `${widget.card_spacing}px`;

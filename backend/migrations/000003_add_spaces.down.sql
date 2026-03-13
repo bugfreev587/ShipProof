@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS space_proofs;
+DROP TABLE IF EXISTS spaces;
