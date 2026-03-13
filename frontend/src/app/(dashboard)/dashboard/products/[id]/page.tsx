@@ -10,39 +10,7 @@ import WidgetWallTab from "@/components/widget-wall-tab";
 import ProductInfoEditor from "@/components/product-info-editor";
 import UpgradeNudgeModal from "@/components/upgrade-nudge-modal";
 
-type TabKey = "content" | "proofs" | "widget";
-
-const sidebarItems: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  {
-    key: "content",
-    label: "Content",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 3l1.912 5.813a2 2 0 001.272 1.272L21 12l-5.816 1.915a2 2 0 00-1.272 1.272L12 21l-1.912-5.813a2 2 0 00-1.272-1.272L3 12l5.816-1.915a2 2 0 001.272-1.272L12 3z" />
-      </svg>
-    ),
-  },
-  {
-    key: "proofs",
-    label: "Proofs",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-        <path d="M8 10h.01M12 10h.01M16 10h.01" />
-      </svg>
-    ),
-  },
-  {
-    key: "widget",
-    label: "Embed Widget",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="16 18 22 12 16 6" />
-        <polyline points="8 6 2 12 8 18" />
-      </svg>
-    ),
-  },
-];
+type TabKey = "content" | "proofs" | "spaces" | "walls";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -53,6 +21,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [embedExpanded, setEmbedExpanded] = useState(false);
   const [nudge, setNudge] = useState<{ open: boolean; message: string }>({
     open: false,
     message: "",
@@ -60,9 +29,16 @@ export default function ProductDetailPage() {
 
   const tabParam = searchParams.get("tab");
   const activeTab: TabKey =
-    tabParam === "proofs" || tabParam === "widget" || tabParam === "content"
+    tabParam === "proofs" || tabParam === "spaces" || tabParam === "walls" || tabParam === "content"
       ? tabParam
       : "content";
+
+  // Auto-expand the Embed Widgets section when a sub-tab is active
+  useEffect(() => {
+    if (activeTab === "spaces" || activeTab === "walls") {
+      setEmbedExpanded(true);
+    }
+  }, [activeTab]);
 
   const setActiveTab = useCallback(
     (tab: TabKey) => {
@@ -126,39 +102,159 @@ export default function ProductDetailPage() {
       {/* Sidebar + Content */}
       <div className="flex flex-1 min-h-0">
         {/* Sidebar — hidden on mobile, shown md+ */}
-        <nav className="hidden md:flex w-60 flex-col gap-3 p-6">
-          {sidebarItems.map((item) => (
+        <nav className="hidden md:flex w-60 flex-col gap-1 p-6">
+          {/* Content */}
+          <button
+            onClick={() => setActiveTab("content")}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+              activeTab === "content"
+                ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
+                : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+            }`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3l1.912 5.813a2 2 0 001.272 1.272L21 12l-5.816 1.915a2 2 0 00-1.272 1.272L12 21l-1.912-5.813a2 2 0 00-1.272-1.272L3 12l5.816-1.915a2 2 0 001.272-1.272L12 3z" />
+            </svg>
+            Content
+          </button>
+
+          {/* Proofs */}
+          <button
+            onClick={() => setActiveTab("proofs")}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+              activeTab === "proofs"
+                ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
+                : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+            }`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+              <path d="M8 10h.01M12 10h.01M16 10h.01" />
+            </svg>
+            Proofs
+          </button>
+
+          {/* Embed Widgets — collapsible parent */}
+          <div className="mt-2">
             <button
-              key={item.key}
-              onClick={() => setActiveTab(item.key)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                activeTab === item.key
-                  ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
+              onClick={() => {
+                if (!embedExpanded) {
+                  setEmbedExpanded(true);
+                  // If not already on a sub-tab, navigate to spaces
+                  if (activeTab !== "spaces" && activeTab !== "walls") {
+                    setActiveTab("spaces");
+                  }
+                } else {
+                  setEmbedExpanded(false);
+                }
+              }}
+              className={`flex items-center justify-between w-full rounded-lg px-3 py-2 text-sm transition-colors ${
+                activeTab === "spaces" || activeTab === "walls"
+                  ? "text-[#F1F1F3] font-medium"
                   : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
               }`}
             >
-              {item.icon}
-              {item.label}
+              <span className="flex items-center gap-3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="16 18 22 12 16 6" />
+                  <polyline points="8 6 2 12 8 18" />
+                </svg>
+                Embed Widgets
+              </span>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform duration-200 ${embedExpanded ? "rotate-0" : "-rotate-90"}`}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </button>
-          ))}
+
+            {/* Sub-items */}
+            {embedExpanded && (
+              <div className="ml-4 mt-1 flex flex-col gap-1 border-l border-[#2A2A30] pl-3">
+                <button
+                  onClick={() => setActiveTab("spaces")}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                    activeTab === "spaces"
+                      ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
+                      : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+                  }`}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                  </svg>
+                  Spaces
+                </button>
+                <button
+                  onClick={() => setActiveTab("walls")}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                    activeTab === "walls"
+                      ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
+                      : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+                  }`}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                  </svg>
+                  Wall of Love
+                </button>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Mobile horizontal tabs */}
         <div className="flex md:hidden border-b border-[#2A2A30] w-full">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => setActiveTab(item.key)}
-              className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
-                activeTab === item.key
-                  ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
-                  : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
+          <button
+            onClick={() => setActiveTab("content")}
+            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
+              activeTab === "content"
+                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
+                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+            }`}
+          >
+            Content
+          </button>
+          <button
+            onClick={() => setActiveTab("proofs")}
+            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
+              activeTab === "proofs"
+                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
+                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+            }`}
+          >
+            Proofs
+          </button>
+          <button
+            onClick={() => setActiveTab("spaces")}
+            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
+              activeTab === "spaces"
+                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
+                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+            }`}
+          >
+            Spaces
+          </button>
+          <button
+            onClick={() => setActiveTab("walls")}
+            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
+              activeTab === "walls"
+                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
+                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+            }`}
+          >
+            Walls
+          </button>
         </div>
 
         {/* Content Area */}
@@ -169,8 +265,8 @@ export default function ProductDetailPage() {
           {activeTab === "proofs" && (
             <ProofsTab product={product} onPlanLimit={handlePlanLimit} />
           )}
-          {activeTab === "widget" && (
-            <WidgetWallTab product={product} onPlanLimit={handlePlanLimit} />
+          {(activeTab === "spaces" || activeTab === "walls") && (
+            <WidgetWallTab product={product} onPlanLimit={handlePlanLimit} activeSection={activeTab} />
           )}
         </div>
       </div>

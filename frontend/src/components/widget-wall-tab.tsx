@@ -25,11 +25,11 @@ import {
 interface Props {
   product: Product;
   onPlanLimit?: (message: string) => void;
+  activeSection?: "spaces" | "walls";
 }
 
-export default function WidgetWallTab({ product, onPlanLimit }: Props) {
+export default function WidgetWallTab({ product, onPlanLimit, activeSection = "spaces" }: Props) {
   const { getToken } = useAuth();
-  const [activeTab, setActiveTab] = useState<"spaces" | "walls">("spaces");
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [walls, setWalls] = useState<Wall[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,31 +68,7 @@ export default function WidgetWallTab({ product, onPlanLimit }: Props) {
         </div>
       )}
 
-      {/* Sub-tabs */}
-      <div className="flex gap-1 rounded-lg bg-[#0F0F10] p-1 w-fit">
-        <button
-          onClick={() => setActiveTab("spaces")}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            activeTab === "spaces"
-              ? "bg-[#1A1A1F] text-[#F1F1F3]"
-              : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-          }`}
-        >
-          Spaces
-        </button>
-        <button
-          onClick={() => setActiveTab("walls")}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            activeTab === "walls"
-              ? "bg-[#1A1A1F] text-[#F1F1F3]"
-              : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-          }`}
-        >
-          Wall of Love
-        </button>
-      </div>
-
-      {activeTab === "spaces" ? (
+      {activeSection === "spaces" ? (
         <SpacesSection
           product={product}
           spaces={spaces}
