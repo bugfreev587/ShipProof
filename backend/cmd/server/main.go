@@ -152,6 +152,7 @@ func main() {
 			r.Post("/api/proofs/{pid}/tags", proofHandler.AddTag)
 			r.Delete("/api/proofs/{pid}/tags/{tag}", proofHandler.RemoveTag)
 			r.Post("/api/proofs/extract-screenshot", proofHandler.ExtractScreenshot)
+			r.Post("/api/upload/avatar", proofHandler.UploadAvatar)
 
 			// Widget Config
 			r.Get("/api/products/{id}/widget", widgetHandler.Get)

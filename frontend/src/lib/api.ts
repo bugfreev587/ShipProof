@@ -512,6 +512,22 @@ export function extractScreenshot(
   });
 }
 
+export async function uploadAvatar(file: File, token: string): Promise<string> {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  const res = await fetch(`${API_URL}/api/upload/avatar`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: "Upload failed" }));
+    throw new ApiError(res.status, body.error || "Upload failed");
+  }
+  const data = await res.json();
+  return data.url;
+}
+
 export function listProductTags(productId: string, token: string) {
   return fetchApi<string[]>(
     `/api/products/${productId}/tags`,

@@ -58,6 +58,40 @@ var allowedExtensions = map[string]string{
 
 const maxFileSize = 5 * 1024 * 1024 // 5MB
 
+func (s *StorageService) UploadAvatar(ctx context.Context, filename string, reader io.Reader, size int64) (string, error) {
+	if s == nil {
+		return "", fmt.Errorf("storage service not configured")
+	}
+
+	if size > maxFileSize {
+		return "", fmt.Errorf("file too large, max 5MB")
+	}
+
+	ext := strings.ToLower(filepath.Ext(filename))
+	contentType, ok := allowedExtensions[ext]
+	if !ok {
+		return "", fmt.Errorf("unsupported file format, allowed: jpg, png, webp, gif")
+	}
+
+	key := fmt.Sprintf("avatars/%s%s", uuid.New().String(), ext)
+
+	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:      &s.bucket,
+		Key:         &key,
+		Body:        reader,
+		ContentType: aws.String(contentType),
+	})
+	if err != nil {
+		return "", fmt.Errorf("upload failed: %w", err)
+	}
+
+	domain := strings.TrimPrefix(s.publicDomain, "https://")
+	domain = strings.TrimPrefix(domain, "http://")
+	domain = strings.TrimRight(domain, "/")
+	publicURL := fmt.Sprintf("https://%s/%s", domain, key)
+	return publicURL, nil
+}
+
 func (s *StorageService) UploadImage(ctx context.Context, productID uuid.UUID, filename string, reader io.Reader, size int64) (string, error) {
 	if s == nil {
 		return "", fmt.Errorf("storage service not configured")

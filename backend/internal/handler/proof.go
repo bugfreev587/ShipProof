@@ -457,6 +457,35 @@ func (h *ProofHandler) RemoveTag(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// POST /api/upload/avatar
+func (h *ProofHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
+	if h.storageService == nil {
+		http.Error(w, `{"error":"storage service not configured"}`, http.StatusServiceUnavailable)
+		return
+	}
+
+	if err := r.ParseMultipartForm(5 << 20); err != nil {
+		http.Error(w, `{"error":"invalid form data"}`, http.StatusBadRequest)
+		return
+	}
+
+	file, header, err := r.FormFile("avatar")
+	if err != nil {
+		http.Error(w, `{"error":"avatar file is required"}`, http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	url, err := h.storageService.UploadAvatar(r.Context(), header.Filename, file, header.Size)
+	if err != nil {
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"url": url})
+}
+
 // POST /api/proofs/extract-screenshot
 func (h *ProofHandler) ExtractScreenshot(w http.ResponseWriter, r *http.Request) {
 	if h.extractService == nil {

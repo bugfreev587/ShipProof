@@ -16,6 +16,7 @@ import {
   removeProofFromSpace,
   listProductTags,
   extractScreenshot,
+  uploadAvatar,
   type Proof,
   type Product,
   type Space,
@@ -589,7 +590,9 @@ function ProofModal({
     }
   };
 
-  const handleAvatarPaste = (e: React.ClipboardEvent) => {
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const handleAvatarPaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData?.items;
     if (!items) return;
     for (const item of Array.from(items)) {
@@ -597,12 +600,22 @@ function ProofModal({
         e.preventDefault();
         const file = item.getAsFile();
         if (file) {
-          // Convert pasted image to a data URL for preview
-          const reader = new FileReader();
-          reader.onload = () => {
-            setAuthorAvatarUrl(reader.result as string);
-          };
-          reader.readAsDataURL(file);
+          setUploadingAvatar(true);
+          try {
+            const token = await getToken();
+            if (!token) return;
+            const url = await uploadAvatar(file, token);
+            setAuthorAvatarUrl(url);
+          } catch {
+            // Fall back to data URL if upload fails
+            const reader = new FileReader();
+            reader.onload = () => {
+              setAuthorAvatarUrl(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+          } finally {
+            setUploadingAvatar(false);
+          }
         }
         return;
       }
@@ -675,7 +688,15 @@ function ProofModal({
             <label className="block text-xs text-[#9CA3AF] mb-1">
               Author Avatar (optional)
             </label>
-            {authorAvatarUrl ? (
+            {uploadingAvatar ? (
+              <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Uploading avatar...
+              </div>
+            ) : authorAvatarUrl ? (
               <div className="flex items-center gap-3">
                 <img
                   src={authorAvatarUrl}
