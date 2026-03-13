@@ -2,6 +2,7 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   listSpaces,
   createSpace,
@@ -15,13 +16,14 @@ import {
   deleteWall,
   updateWallConfig,
   listProofs,
+  listWallProofs,
   addProofToWall,
   removeProofFromWall,
-  listWallProofs,
   type Space,
   type Wall,
   type Proof,
   type Product,
+  getCurrentUser,
   ApiError,
 } from "@/lib/api";
 
@@ -37,17 +39,20 @@ export default function WidgetWallTab({ product, onPlanLimit, activeSection = "s
   const [walls, setWalls] = useState<Wall[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [userPlan, setUserPlan] = useState<"free" | "pro" | "business">("free");
 
   const fetchData = useCallback(async () => {
     try {
       const token = await getToken();
       if (!token) return;
-      const [s, w] = await Promise.all([
+      const [s, w, user] = await Promise.all([
         listSpaces(product.id, token),
         listWalls(product.id, token),
+        getCurrentUser(token),
       ]);
       setSpaces(s);
       setWalls(w);
+      setUserPlan(user.plan);
     } catch {
       // ignore
     } finally {
@@ -75,6 +80,7 @@ export default function WidgetWallTab({ product, onPlanLimit, activeSection = "s
         <SpacesSection
           product={product}
           spaces={spaces}
+          userPlan={userPlan}
           onUpdated={fetchData}
           setError={setError}
           onPlanLimit={onPlanLimit}
@@ -97,12 +103,14 @@ export default function WidgetWallTab({ product, onPlanLimit, activeSection = "s
 function SpacesSection({
   product,
   spaces,
+  userPlan,
   onUpdated,
   setError,
   onPlanLimit,
 }: {
   product: Product;
   spaces: Space[];
+  userPlan: "free" | "pro" | "business";
   onUpdated: () => void;
   setError: (e: string) => void;
   onPlanLimit?: (message: string) => void;
@@ -135,6 +143,7 @@ function SpacesSection({
               key={space.id}
               space={space}
               product={product}
+              userPlan={userPlan}
               onUpdated={onUpdated}
             />
           ))}
@@ -324,10 +333,12 @@ function SpaceProofCard({
 function SpaceCard({
   space,
   product,
+  userPlan,
   onUpdated,
 }: {
   space: Space;
   product: Product;
+  userPlan: "free" | "pro" | "business";
   onUpdated: () => void;
 }) {
   const { getToken } = useAuth();
@@ -583,17 +594,19 @@ function SpaceCard({
                 Show platform icons
               </label>
 
-              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={config.show_branding}
-                  onChange={(e) =>
-                    handleConfigChange({ show_branding: e.target.checked })
-                  }
-                  className="rounded border-[#2A2A30]"
-                />
-                Show &quot;Powered by ShipProof&quot;
-              </label>
+              {userPlan === "business" && (
+                <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.show_branding}
+                    onChange={(e) =>
+                      handleConfigChange({ show_branding: e.target.checked })
+                    }
+                    className="rounded border-[#2A2A30]"
+                  />
+                  Show &quot;Powered by ShipProof&quot;
+                </label>
+              )}
             </div>
           </div>
 
