@@ -590,19 +590,29 @@ function SpaceCard({
                 Show platform icons
               </label>
 
-              {userPlan === "business" && (
-                <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
+              <div>
+                <label
+                  className={`flex items-center gap-2 text-sm ${
+                    userPlan === "business" ? "text-[#F1F1F3] cursor-pointer" : "text-[#6B7280] cursor-not-allowed"
+                  }`}
+                >
                   <input
                     type="checkbox"
-                    checked={config.show_branding}
+                    checked={!config.show_branding}
+                    disabled={userPlan !== "business"}
                     onChange={(e) =>
-                      handleConfigChange({ show_branding: e.target.checked })
+                      handleConfigChange({ show_branding: !e.target.checked })
                     }
                     className="rounded border-[#2A2A30]"
                   />
-                  Show &quot;Powered by ShipProof&quot;
+                  Remove &quot;Powered by ShipProof&quot;
                 </label>
-              )}
+                {userPlan !== "business" && (
+                  <p className="text-[10px] text-[#6B7280] ml-6 mt-0.5">
+                    Business plan only
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

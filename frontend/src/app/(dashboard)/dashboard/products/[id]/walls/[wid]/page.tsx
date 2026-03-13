@@ -237,12 +237,12 @@ export default function WallEditPage() {
                 >
                   <input
                     type="checkbox"
-                    checked={wall.show_branding}
+                    checked={!wall.show_branding}
                     disabled={userPlan !== "business"}
-                    onChange={(e) => handleConfigChange({ show_branding: e.target.checked })}
+                    onChange={(e) => handleConfigChange({ show_branding: !e.target.checked })}
                     className="rounded border-[#2A2A30]"
                   />
-                  Show &quot;Powered by ShipProof&quot;
+                  Remove &quot;Powered by ShipProof&quot;
                 </label>
                 {userPlan !== "business" && (
                   <p className="text-[10px] text-[#6B7280] ml-6 mt-0.5">
