@@ -140,7 +140,7 @@ export default function WallEditPage() {
           {error || "Wall not found."}
         </div>
         <Link
-          href={`/dashboard/products/${productId}`}
+          href={`/dashboard/products/${productId}?tab=walls`}
           className="mt-4 inline-block text-sm text-[#6366F1] hover:text-[#818CF8]"
         >
           Back to product
@@ -155,7 +155,7 @@ export default function WallEditPage() {
     <div className="max-w-[1400px] mx-auto px-4 py-6">
       {/* Back link */}
       <Link
-        href={`/dashboard/products/${productId}`}
+        href={`/dashboard/products/${productId}?tab=walls`}
         className="inline-flex items-center gap-1 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors mb-4"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
