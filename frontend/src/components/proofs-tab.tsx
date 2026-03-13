@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   listProofs,
   createProofJson,
@@ -361,7 +361,6 @@ function ProofModal({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [existingTags, setExistingTags] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -694,12 +693,11 @@ function ProofModal({
                 </div>
               ) : (
                 <div>
-                  {/* Paste zone — primary */}
+                  {/* Paste zone */}
                   <div
                     onPaste={handlePaste}
                     tabIndex={0}
-                    className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#6366F1]/40 bg-[#6366F1]/5 px-4 py-8 text-center cursor-pointer hover:border-[#6366F1]/70 hover:bg-[#6366F1]/10 transition-colors focus:outline-none focus:border-[#6366F1]"
-                    onClick={() => fileInputRef.current?.click()}
+                    className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#6366F1]/40 bg-[#6366F1]/5 px-4 py-8 text-center hover:border-[#6366F1]/70 hover:bg-[#6366F1]/10 transition-colors focus:outline-none focus:border-[#6366F1]"
                   >
                     <svg className="h-8 w-8 text-[#6366F1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 0l3-3m-3 3l3 3M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
@@ -709,21 +707,10 @@ function ProofModal({
                         Paste screenshot here
                       </p>
                       <p className="text-xs text-[#9CA3AF]">
-                        Press {navigator?.platform?.includes("Mac") ? "⌘V" : "Ctrl+V"} to paste, or click to choose file
+                        Press {navigator?.platform?.includes("Mac") ? "⌘V" : "Ctrl+V"} to paste from clipboard
                       </p>
                     </div>
                   </div>
-                  {/* Hidden file input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    onChange={(e) => handleImageSelected(e.target.files?.[0] || null)}
-                    className="hidden"
-                  />
-                  <p className="mt-2 text-xs text-[#6B7280]">
-                    Max 5MB. JPG, PNG, WebP, or GIF.
-                  </p>
                 </div>
               )}
             </div>
