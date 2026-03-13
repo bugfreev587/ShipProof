@@ -87,11 +87,19 @@ export default async function WallPage({
               >
                 {/* Author */}
                 <div className="flex items-center gap-2 mb-3">
-                  <span
-                    className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
-                  >
-                    {PLATFORM_LABELS[proof.source_platform] || "O"}
-                  </span>
+                  {proof.author_avatar_url ? (
+                    <img
+                      src={proof.author_avatar_url}
+                      alt={proof.author_name}
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <span
+                      className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+                    >
+                      {PLATFORM_LABELS[proof.source_platform] || "O"}
+                    </span>
+                  )}
                   <div>
                     <div className="text-sm font-medium text-[#F1F1F3]">
                       {proof.author_name}
