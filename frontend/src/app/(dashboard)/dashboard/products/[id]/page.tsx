@@ -137,17 +137,7 @@ export default function ProductDetailPage() {
           {/* Embed Widgets — collapsible parent */}
           <div className="mt-2">
             <button
-              onClick={() => {
-                if (!embedExpanded) {
-                  setEmbedExpanded(true);
-                  // If not already on a sub-tab, navigate to spaces
-                  if (activeTab !== "spaces" && activeTab !== "walls") {
-                    setActiveTab("spaces");
-                  }
-                } else {
-                  setEmbedExpanded(false);
-                }
-              }}
+              onClick={() => setEmbedExpanded(!embedExpanded)}
               className={`flex items-center justify-between w-full rounded-lg px-3 py-2 text-sm transition-colors ${
                 activeTab === "spaces" || activeTab === "walls"
                   ? "text-[#F1F1F3] font-medium"
