@@ -239,6 +239,69 @@ const PLATFORM_LABELS: Record<string, string> = {
   other: "O",
 };
 
+function SpaceProofCard({
+  proof,
+  isDark,
+  showPlatformIcon,
+}: {
+  proof: Proof;
+  isDark: boolean;
+  showPlatformIcon: boolean;
+}) {
+  const [showFull, setShowFull] = useState(false);
+  const TEXT_LIMIT = 100;
+  const isLong = (proof.content_text?.length ?? 0) > TEXT_LIMIT;
+
+  return (
+    <div
+      className="flex-shrink-0 rounded-lg border p-3 flex flex-col"
+      style={{
+        width: "220px",
+        height: showFull ? "auto" : "120px",
+        minHeight: "120px",
+        borderColor: isDark ? "#2A2A30" : "#E5E7EB",
+        background: isDark ? "#242429" : "#FFFFFF",
+      }}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        {showPlatformIcon && (
+          <span
+            className={`inline-flex items-center justify-center w-4 h-4 rounded text-[8px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+          >
+            {PLATFORM_LABELS[proof.source_platform] || "O"}
+          </span>
+        )}
+        <span
+          className="text-xs font-medium truncate"
+          style={{ color: isDark ? "#F1F1F3" : "#111827" }}
+        >
+          {proof.author_name}
+        </span>
+      </div>
+      {proof.content_text && (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <p
+            className="text-[11px] leading-relaxed"
+            style={{ color: isDark ? "#9CA3AF" : "#4B5563" }}
+          >
+            {showFull || !isLong
+              ? proof.content_text
+              : proof.content_text.slice(0, TEXT_LIMIT) + "..."}
+          </p>
+          {isLong && (
+            <button
+              onClick={() => setShowFull(!showFull)}
+              className="text-[11px] text-[#6366F1] hover:text-[#818CF8] mt-0.5"
+            >
+              {showFull ? "less" : "more"}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SpaceCard({
   space,
   product,
@@ -403,39 +466,12 @@ function SpaceCard({
             style={{ scrollbarWidth: "thin" }}
           >
             {spaceProofs.map((proof) => (
-              <div
+              <SpaceProofCard
                 key={proof.id}
-                className="flex-shrink-0 rounded-lg border p-3"
-                style={{
-                  width: "220px",
-                  borderColor: isDark ? "#2A2A30" : "#E5E7EB",
-                  background: isDark ? "#242429" : "#FFFFFF",
-                }}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  {config.show_platform_icon && (
-                    <span
-                      className={`inline-flex items-center justify-center w-4 h-4 rounded text-[8px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
-                    >
-                      {PLATFORM_LABELS[proof.source_platform] || "O"}
-                    </span>
-                  )}
-                  <span
-                    className="text-xs font-medium truncate"
-                    style={{ color: isDark ? "#F1F1F3" : "#111827" }}
-                  >
-                    {proof.author_name}
-                  </span>
-                </div>
-                {proof.content_text && (
-                  <p
-                    className="text-[11px] leading-relaxed line-clamp-3"
-                    style={{ color: isDark ? "#9CA3AF" : "#4B5563" }}
-                  >
-                    {proof.content_text}
-                  </p>
-                )}
-              </div>
+                proof={proof}
+                isDark={isDark}
+                showPlatformIcon={config.show_platform_icon}
+              />
             ))}
           </div>
         )}
