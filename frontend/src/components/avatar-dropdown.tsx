@@ -29,13 +29,13 @@ export default function AvatarDropdown() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6366F1] text-xs font-semibold text-white hover:bg-[#818CF8] transition-colors"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6366F1] text-sm font-semibold text-white hover:bg-[#818CF8] transition-colors"
       >
         {user?.imageUrl ? (
           <img
             src={user.imageUrl}
             alt=""
-            className="h-8 w-8 rounded-full object-cover"
+            className="h-9 w-9 rounded-full object-cover"
           />
         ) : (
           initials
