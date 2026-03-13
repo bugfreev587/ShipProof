@@ -1,9 +1,8 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState, useCallback } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { getProduct, type Product } from "@/lib/api";
 import LaunchContentTab from "@/components/launch-content-tab";
 import ProofsTab from "@/components/proofs-tab";
@@ -11,18 +10,68 @@ import WidgetWallTab from "@/components/widget-wall-tab";
 import ProductInfoEditor from "@/components/product-info-editor";
 import UpgradeNudgeModal from "@/components/upgrade-nudge-modal";
 
+type TabKey = "content" | "proofs" | "widget";
+
+const sidebarItems: { key: TabKey; label: string; icon: React.ReactNode }[] = [
+  {
+    key: "content",
+    label: "Content",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3l1.912 5.813a2 2 0 001.272 1.272L21 12l-5.816 1.915a2 2 0 00-1.272 1.272L12 21l-1.912-5.813a2 2 0 00-1.272-1.272L3 12l5.816-1.915a2 2 0 001.272-1.272L12 3z" />
+      </svg>
+    ),
+  },
+  {
+    key: "proofs",
+    label: "Proofs",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+        <path d="M8 10h.01M12 10h.01M16 10h.01" />
+      </svg>
+    ),
+  },
+  {
+    key: "widget",
+    label: "Embed Widget",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="16 18 22 12 16 6" />
+        <polyline points="8 6 2 12 8 18" />
+      </svg>
+    ),
+  },
+];
+
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { getToken } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"proofs" | "launch" | "widget">(
-    "launch",
-  );
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [nudge, setNudge] = useState<{ open: boolean; message: string }>({
     open: false,
     message: "",
   });
+
+  const tabParam = searchParams.get("tab");
+  const activeTab: TabKey =
+    tabParam === "proofs" || tabParam === "widget" || tabParam === "content"
+      ? tabParam
+      : "content";
+
+  const setActiveTab = useCallback(
+    (tab: TabKey) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", tab);
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router],
+  );
 
   const handlePlanLimit = (message: string) => {
     setNudge({ open: true, message });
@@ -53,52 +102,89 @@ export default function ProductDetailPage() {
     return <div className="text-[#9CA3AF]">Product not found.</div>;
   }
 
-  const tabs = [
-    { key: "launch" as const, label: "Launch Content" },
-    { key: "proofs" as const, label: "Proofs" },
-    { key: "widget" as const, label: "Widget & Wall" },
-  ];
-
   return (
-    <div>
-      <div className="mb-2">
-        <Link
-          href="/dashboard"
-          className="text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+    <div className="-mx-6 -mt-8 flex flex-col" style={{ height: "calc(100vh - 3.5rem)" }}>
+      {/* Product Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A2A30]">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#6366F1] text-white font-semibold text-lg">
+            {product.name.charAt(0).toUpperCase()}
+          </div>
+          <h1 className="text-2xl font-medium text-[#F1F1F3]">{product.name}</h1>
+        </div>
+        <button
+          onClick={() => setEditModalOpen(true)}
+          className="flex items-center gap-2 rounded-lg border border-[#3F3F46] px-3 py-1.5 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F] transition-colors"
         >
-          &larr; Back to Products
-        </Link>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+          </svg>
+          Edit product
+        </button>
       </div>
 
-      <ProductInfoEditor
-        product={product}
-        onUpdated={(updated) => setProduct(updated)}
-      />
+      {/* Sidebar + Content */}
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar — hidden on mobile, shown md+ */}
+        <nav className="hidden md:flex w-60 flex-col gap-1 border-r border-[#2A2A30] p-4">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setActiveTab(item.key)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                activeTab === item.key
+                  ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
+                  : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+              }`}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </nav>
 
-      <div className="mb-6 flex gap-1 border-b border-[#2A2A30]">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? "border-b-2 border-[#6366F1] text-[#F1F1F3]"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {/* Mobile horizontal tabs */}
+        <div className="flex md:hidden border-b border-[#2A2A30] w-full">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setActiveTab(item.key)}
+              className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
+                activeTab === item.key
+                  ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
+                  : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+              }`}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {activeTab === "content" && (
+            <LaunchContentTab product={product} onPlanLimit={handlePlanLimit} />
+          )}
+          {activeTab === "proofs" && (
+            <ProofsTab product={product} onPlanLimit={handlePlanLimit} />
+          )}
+          {activeTab === "widget" && (
+            <WidgetWallTab product={product} onPlanLimit={handlePlanLimit} />
+          )}
+        </div>
       </div>
 
-      {activeTab === "proofs" && (
-        <ProofsTab product={product} onPlanLimit={handlePlanLimit} />
-      )}
-      {activeTab === "launch" && (
-        <LaunchContentTab product={product} onPlanLimit={handlePlanLimit} />
-      )}
-      {activeTab === "widget" && (
-        <WidgetWallTab product={product} onPlanLimit={handlePlanLimit} />
+      {/* Edit Product Modal */}
+      {editModalOpen && (
+        <ProductInfoEditor
+          product={product}
+          onUpdated={(updated) => {
+            setProduct(updated);
+            setEditModalOpen(false);
+          }}
+          onClose={() => setEditModalOpen(false)}
+        />
       )}
 
       <UpgradeNudgeModal
