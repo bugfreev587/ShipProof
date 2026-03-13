@@ -1,4 +1,5 @@
 import { fetchPublicProofs, fetchPublicSpaceProofs } from "@/lib/api";
+import { getThemeColors, type DashboardTheme } from "@/lib/theme";
 
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
@@ -66,7 +67,7 @@ export default async function EmbedPage({
     }
   }
 
-  const isDark = widget.theme !== "light";
+  const t = getThemeColors((widget.theme || "dark") as DashboardTheme);
   const radius = `${widget.border_radius}px`;
   const spacing = `${widget.card_spacing}px`;
 
@@ -97,8 +98,8 @@ export default async function EmbedPage({
                 maxWidth: "320px",
                 padding: "16px",
                 borderRadius: radius,
-                border: `1px solid ${isDark ? "#2A2A30" : "#E5E7EB"}`,
-                background: isDark ? "#1A1A1F" : "#FFFFFF",
+                border: `1px solid ${t.border}`,
+                background: t.bgSurface,
                 flexShrink: 0,
               }}
             >
@@ -122,7 +123,7 @@ export default async function EmbedPage({
                     style={{
                       fontSize: "13px",
                       fontWeight: 600,
-                      color: isDark ? "#F1F1F3" : "#111827",
+                      color: t.textPrimary,
                     }}
                   >
                     {proof.author_name}
@@ -131,7 +132,7 @@ export default async function EmbedPage({
                     <div
                       style={{
                         fontSize: "11px",
-                        color: isDark ? "#6B7280" : "#9CA3AF",
+                        color: t.textTertiary,
                       }}
                     >
                       {proof.author_title}
@@ -145,7 +146,7 @@ export default async function EmbedPage({
                   style={{
                     fontSize: "13px",
                     lineHeight: "1.5",
-                    color: isDark ? "#9CA3AF" : "#4B5563",
+                    color: t.textSecondary,
                     margin: 0,
                   }}
                 >
@@ -174,7 +175,7 @@ export default async function EmbedPage({
               textAlign: "center",
               marginTop: "8px",
               fontSize: "11px",
-              color: isDark ? "#6B7280" : "#9CA3AF",
+              color: t.textTertiary,
             }}
           >
             Powered by{" "}

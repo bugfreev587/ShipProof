@@ -22,6 +22,7 @@ import {
   type Product,
   ApiError,
 } from "@/lib/api";
+import { getThemeColors, type DashboardTheme } from "@/lib/theme";
 
 interface Props {
   product: Product;
@@ -248,18 +249,19 @@ const PLATFORM_LABELS: Record<string, string> = {
 
 function SpaceProofCard({
   proof,
-  isDark,
+  themeKey,
   showPlatformIcon,
   borderRadius,
 }: {
   proof: Proof;
-  isDark: boolean;
+  themeKey: string;
   showPlatformIcon: boolean;
   borderRadius: number;
 }) {
   const [showFull, setShowFull] = useState(false);
   const TEXT_LIMIT = 100;
   const isLong = (proof.content_text?.length ?? 0) > TEXT_LIMIT;
+  const t = getThemeColors((themeKey || "dark") as DashboardTheme);
 
   return (
     <div
@@ -269,8 +271,8 @@ function SpaceProofCard({
         height: showFull ? "auto" : "160px",
         minHeight: "160px",
         borderRadius: `${borderRadius}px`,
-        borderColor: isDark ? "#2A2A30" : "#E5E7EB",
-        background: isDark ? "#242429" : "#FFFFFF",
+        borderColor: t.border,
+        background: t.bgElevated,
       }}
     >
       <div className="flex items-center gap-2 mb-1">
@@ -289,7 +291,7 @@ function SpaceProofCard({
         ) : null}
         <span
           className="text-xs font-semibold truncate"
-          style={{ color: isDark ? "#F1F1F3" : "#111827" }}
+          style={{ color: t.textPrimary }}
         >
           {proof.author_name}
         </span>
@@ -297,7 +299,7 @@ function SpaceProofCard({
       {proof.author_title && (
         <p
           className="text-[10px] truncate mb-2"
-          style={{ color: isDark ? "#6B7280" : "var(--text-secondary)" }}
+          style={{ color: t.textTertiary }}
         >
           {proof.author_title}
         </p>
@@ -306,7 +308,7 @@ function SpaceProofCard({
         <div className="flex-1 min-h-0 overflow-hidden mt-1">
           <p
             className="text-[11px] leading-relaxed"
-            style={{ color: isDark ? "#9CA3AF" : "#4B5563" }}
+            style={{ color: t.textSecondary }}
           >
             {showFull || !isLong
               ? proof.content_text
@@ -461,8 +463,6 @@ function SpaceCard({
     onUpdated();
   };
 
-  const isDark = config.theme !== "light";
-
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
       {/* Header: name + delete */}
@@ -495,7 +495,7 @@ function SpaceCard({
               <SpaceProofCard
                 key={proof.id}
                 proof={proof}
-                isDark={isDark}
+                themeKey={config.theme}
                 showPlatformIcon={config.show_platform_icon}
                 borderRadius={config.border_radius}
               />
