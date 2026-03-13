@@ -118,6 +118,8 @@ func main() {
 			// Stripe
 			r.Post("/api/stripe/create-checkout", stripeHandler.CreateCheckout)
 			r.Post("/api/stripe/create-portal", stripeHandler.CreatePortal)
+			r.Get("/api/stripe/subscription-status", stripeHandler.GetSubscriptionStatus)
+			r.Post("/api/stripe/reactivate", stripeHandler.ReactivateSubscription)
 
 			// Products
 			r.Get("/api/products", productHandler.List)

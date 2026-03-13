@@ -13,6 +13,7 @@ import (
 	"github.com/stripe/stripe-go/v82"
 	"github.com/stripe/stripe-go/v82/billingportal/session"
 	checkoutsession "github.com/stripe/stripe-go/v82/checkout/session"
+	stripesub "github.com/stripe/stripe-go/v82/subscription"
 	"github.com/stripe/stripe-go/v82/webhook"
 
 	db "github.com/xiaobo/shipproof/internal/db"
@@ -125,6 +126,73 @@ func (h *StripeHandler) CreatePortal(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"url": sess.URL})
+}
+
+// GET /api/stripe/subscription-status
+func (h *StripeHandler) GetSubscriptionStatus(w http.ResponseWriter, r *http.Request) {
+	clerkID := middleware.GetClerkUserID(r.Context())
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
+	if err != nil {
+		http.Error(w, `{"error":"user not found"}`, http.StatusNotFound)
+		return
+	}
+
+	if !user.StripeSubscriptionID.Valid || user.StripeSubscriptionID.String == "" {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"has_subscription":      false,
+			"cancel_at_period_end":  false,
+			"current_period_end":    nil,
+		})
+		return
+	}
+
+	sub, err := stripesub.Get(user.StripeSubscriptionID.String, nil)
+	if err != nil {
+		slog.Error("failed to fetch subscription from stripe", "error", err)
+		http.Error(w, `{"error":"failed to fetch subscription"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// CurrentPeriodEnd is on subscription items in stripe-go v82
+	var periodEnd int64
+	if len(sub.Items.Data) > 0 {
+		periodEnd = sub.Items.Data[0].CurrentPeriodEnd
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"has_subscription":      true,
+		"cancel_at_period_end":  sub.CancelAtPeriodEnd,
+		"current_period_end":    periodEnd,
+	})
+}
+
+// POST /api/stripe/reactivate
+func (h *StripeHandler) ReactivateSubscription(w http.ResponseWriter, r *http.Request) {
+	clerkID := middleware.GetClerkUserID(r.Context())
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
+	if err != nil {
+		http.Error(w, `{"error":"user not found"}`, http.StatusNotFound)
+		return
+	}
+
+	if !user.StripeSubscriptionID.Valid || user.StripeSubscriptionID.String == "" {
+		http.Error(w, `{"error":"no active subscription"}`, http.StatusBadRequest)
+		return
+	}
+
+	_, err = stripesub.Update(user.StripeSubscriptionID.String, &stripe.SubscriptionParams{
+		CancelAtPeriodEnd: stripe.Bool(false),
+	})
+	if err != nil {
+		slog.Error("failed to reactivate subscription", "error", err)
+		http.Error(w, `{"error":"failed to reactivate subscription"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "reactivated"})
 }
 
 // POST /api/webhooks/stripe

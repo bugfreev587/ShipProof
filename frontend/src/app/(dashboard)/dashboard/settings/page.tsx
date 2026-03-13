@@ -1,11 +1,14 @@
 "use client";
 
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   getCurrentUser,
   createBillingPortalSession,
+  getSubscriptionStatus,
+  reactivateSubscription,
   type User,
+  type SubscriptionStatus,
 } from "@/lib/api";
 
 const planBadgeColors: Record<string, string> = {
@@ -23,29 +26,71 @@ const planLimits: Record<
   business: { products: "10", proofs: "Unlimited", generations: "Unlimited", versions: "Unlimited" },
 };
 
+function useCountdown(targetTimestamp: number | null) {
+  const [remaining, setRemaining] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!targetTimestamp) {
+      setRemaining(null);
+      return;
+    }
+
+    const calc = () => {
+      const now = Date.now();
+      const end = targetTimestamp * 1000;
+      const diff = end - now;
+      if (diff <= 0) {
+        setRemaining(null);
+        return;
+      }
+      setRemaining({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+      });
+    };
+
+    calc();
+    const interval = setInterval(calc, 60_000);
+    return () => clearInterval(interval);
+  }, [targetTimestamp]);
+
+  return remaining;
+}
+
 export default function SettingsPage() {
   const { getToken } = useAuth();
   const { user: clerkUser } = useUser();
   const [user, setUser] = useState<User | null>(null);
+  const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [yearly, setYearly] = useState(false);
+  const [reactivating, setReactivating] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const [userData, subData] = await Promise.all([
+        getCurrentUser(token),
+        getSubscriptionStatus(token),
+      ]);
+      setUser(userData);
+      setSubStatus(subData);
+    } catch {
+      // handle error
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken]);
 
   useEffect(() => {
-    async function fetchUser() {
-      try {
-        const token = await getToken();
-        if (!token) return;
-        const data = await getCurrentUser(token);
-        setUser(data);
-      } catch {
-        // handle error
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    fetchData();
+  }, [fetchData]);
 
   const handleUpgrade = (plan: string) => {
     void plan;
@@ -63,6 +108,24 @@ export default function SettingsPage() {
     }
   };
 
+  const handleReactivate = async () => {
+    setReactivating(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await reactivateSubscription(token);
+      await fetchData();
+    } catch {
+      // handle error
+    } finally {
+      setReactivating(false);
+    }
+  };
+
+  const countdown = useCountdown(
+    subStatus?.cancel_at_period_end ? subStatus.current_period_end : null,
+  );
+
   if (loading) {
     return <div className="text-[#9CA3AF]">Loading...</div>;
   }
@@ -73,6 +136,63 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-[#F1F1F3]">Settings</h1>
+
+      {/* Cancellation Countdown Card */}
+      {subStatus?.cancel_at_period_end && countdown && (
+        <div className="rounded-xl border border-[#F59E0B]/40 bg-[#F59E0B]/5 p-6">
+          <div className="mb-3 flex items-center gap-2">
+            <svg
+              className="h-5 w-5 text-[#F59E0B]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+            <h3 className="text-base font-semibold text-[#F59E0B]">
+              Subscription Cancelling
+            </h3>
+          </div>
+
+          <p className="mb-4 text-sm text-[#9CA3AF]">
+            Your <span className="font-medium text-[#F1F1F3] capitalize">{plan}</span> plan
+            will be cancelled at the end of your billing period. You&apos;ll continue to have
+            access until then.
+          </p>
+
+          {/* Countdown */}
+          <div className="mb-4 flex gap-4">
+            {[
+              { value: countdown.days, label: "Days" },
+              { value: countdown.hours, label: "Hours" },
+              { value: countdown.minutes, label: "Minutes" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-4 py-3 text-center"
+              >
+                <div className="text-2xl font-bold text-[#F1F1F3]">
+                  {String(item.value).padStart(2, "0")}
+                </div>
+                <div className="text-xs text-[#6B7280]">{item.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={handleReactivate}
+            disabled={reactivating}
+            className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
+          >
+            {reactivating ? "Reactivating..." : "Revoke Cancellation"}
+          </button>
+        </div>
+      )}
 
       {/* Plan & Billing */}
       <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">

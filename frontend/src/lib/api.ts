@@ -119,6 +119,28 @@ export function createBillingPortalSession(token: string) {
   );
 }
 
+export interface SubscriptionStatus {
+  has_subscription: boolean;
+  cancel_at_period_end: boolean;
+  current_period_end: number | null;
+}
+
+export function getSubscriptionStatus(token: string) {
+  return fetchApi<SubscriptionStatus>(
+    "/api/stripe/subscription-status",
+    {},
+    token,
+  );
+}
+
+export function reactivateSubscription(token: string) {
+  return fetchApi<{ status: string }>(
+    "/api/stripe/reactivate",
+    { method: "POST" },
+    token,
+  );
+}
+
 // --- Products ---
 
 export function listProducts(token: string) {
