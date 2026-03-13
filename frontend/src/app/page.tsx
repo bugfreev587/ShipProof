@@ -152,8 +152,8 @@ export default function HomePage() {
           <p className="mb-12 text-[#9CA3AF]">
             Embed a widget on your site or share a Wall of Love page.
           </p>
-          <div className="mx-auto max-w-2xl rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8">
-            <div className="space-y-4">
+          <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8">
+            <div className="flex gap-5 overflow-x-auto pb-2" style={{ scrollbarWidth: "thin" }}>
               {[
                 {
                   name: "Alex Chen",
@@ -173,12 +173,13 @@ export default function HomePage() {
               ].map((t) => (
                 <div
                   key={t.name}
-                  className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-4 text-left"
+                  className="flex-shrink-0 rounded-xl border border-[#2A2A30] bg-[#0F0F10] p-6 text-left"
+                  style={{ width: "340px" }}
                 >
-                  <p className="mb-2 text-sm text-[#F1F1F3]">
+                  <p className="mb-4 text-base leading-relaxed text-[#F1F1F3]">
                     &ldquo;{t.text}&rdquo;
                   </p>
-                  <div className="text-xs text-[#9CA3AF]">
+                  <div className="text-sm text-[#9CA3AF]">
                     <span className="font-medium text-[#F1F1F3]">{t.name}</span>
                     {" — "}
                     {t.title}
