@@ -172,7 +172,7 @@ function SettingsContent() {
       {/* Cancellation countdown — shown above sidebar + content */}
       {subStatus?.cancel_at_period_end && countdown && (
         <div className="px-10 pt-6">
-          <div className="rounded-xl border border-[#F59E0B]/40 bg-[#F59E0B]/5 p-6">
+          <div className="rounded-xl border border-[#F59E0B]/40 bg-[#F59E0B]/5 p-6 flex flex-col items-center text-center">
             <div className="mb-3 flex items-center gap-2">
               <svg
                 className="h-5 w-5 text-[#F59E0B]"
@@ -198,7 +198,7 @@ function SettingsContent() {
               access until then.
             </p>
 
-            <div className="mb-4 flex gap-4">
+            <div className="mb-4 flex justify-center gap-4">
               {[
                 { value: countdown.days, label: "Days" },
                 { value: countdown.hours, label: "Hours" },
