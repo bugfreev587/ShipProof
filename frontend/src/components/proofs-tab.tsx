@@ -266,7 +266,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
                 {/* Expanded action bar */}
                 {isExpanded && (
-                  <div className="mt-3 flex items-center justify-center gap-4 border-t border-[#2A2A30] pt-3">
+                  <div className="mt-3 flex items-center justify-end gap-4 border-t border-[#2A2A30] pt-3">
                     <button
                       onClick={() => {
                         setEditingProof(proof);
