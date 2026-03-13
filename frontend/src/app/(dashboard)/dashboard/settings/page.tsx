@@ -175,7 +175,7 @@ function SettingsContent() {
   });
 
   return (
-    <div className="-mx-10 -mt-8 flex flex-col" style={{ height: "calc(100vh - 4rem)" }}>
+    <div className="-mx-10 -mt-8 flex flex-col overflow-hidden" style={{ height: "calc(100vh - 4rem)" }}>
       {/* Header */}
       <div className="flex items-center px-10 py-6" style={{ borderBottom: `1px solid ${colors.border}` }}>
         <h1 className="text-2xl font-medium" style={{ color: colors.textPrimary }}>Settings</h1>
