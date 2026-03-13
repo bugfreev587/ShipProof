@@ -17,6 +17,8 @@ import {
   type Proof,
   type Product,
 } from "@/lib/api";
+import { getCompanyLogoUrl } from "@/lib/company-logo";
+import { CompanyLogoImg } from "@/components/company-logo";
 
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
@@ -377,7 +379,7 @@ function WallPreview({
             {proofs.map((proof) => (
               <div
                 key={proof.id}
-                className="break-inside-avoid p-5"
+                className="break-inside-avoid p-5 relative"
                 style={{
                   marginBottom: spacing,
                   borderRadius: radius,
@@ -385,6 +387,10 @@ function WallPreview({
                   background: t.bgCard,
                 }}
               >
+                {(() => {
+                  const logoUrl = getCompanyLogoUrl(proof.author_title);
+                  return logoUrl ? <CompanyLogoImg url={logoUrl} /> : null;
+                })()}
                 {/* Author */}
                 <div className="flex items-center gap-2 mb-3">
                   {proof.author_avatar_url ? (

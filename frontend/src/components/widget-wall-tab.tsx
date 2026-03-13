@@ -23,6 +23,8 @@ import {
   ApiError,
 } from "@/lib/api";
 import { getThemeColors, type DashboardTheme } from "@/lib/theme";
+import { getCompanyLogoUrl } from "@/lib/company-logo";
+import { CompanyLogoImg } from "@/components/company-logo";
 
 interface Props {
   product: Product;
@@ -265,7 +267,7 @@ function SpaceProofCard({
 
   return (
     <div
-      className="flex-shrink-0 border p-3 flex flex-col"
+      className="flex-shrink-0 border p-3 flex flex-col relative transition-all duration-200 hover:brightness-125 hover:border-[#6366F1]/50"
       style={{
         width: "220px",
         height: showFull ? "auto" : "160px",
@@ -275,6 +277,10 @@ function SpaceProofCard({
         background: t.bgElevated,
       }}
     >
+      {(() => {
+        const logoUrl = getCompanyLogoUrl(proof.author_title);
+        return logoUrl ? <CompanyLogoImg url={logoUrl} top="8px" right="8px" /> : null;
+      })()}
       <div className="flex items-center gap-2 mb-1">
         {proof.author_avatar_url ? (
           <img

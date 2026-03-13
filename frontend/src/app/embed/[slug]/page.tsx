@@ -1,5 +1,7 @@
 import { fetchPublicProofs, fetchPublicSpaceProofs } from "@/lib/api";
 import { getThemeColors, type DashboardTheme } from "@/lib/theme";
+import { getCompanyLogoUrl } from "@/lib/company-logo";
+import { CompanyLogoImg } from "@/components/company-logo";
 
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
@@ -90,7 +92,9 @@ export default async function EmbedPage({
             paddingBottom: "8px",
           }}
         >
-          {proofs.map((proof) => (
+          {proofs.map((proof) => {
+            const companyLogoUrl = getCompanyLogoUrl(proof.author_title);
+            return (
             <div
               key={proof.id}
               style={{
@@ -101,8 +105,12 @@ export default async function EmbedPage({
                 border: `1px solid ${t.border}`,
                 background: t.bgSurface,
                 flexShrink: 0,
+                position: "relative",
               }}
             >
+              {companyLogoUrl && (
+                <CompanyLogoImg url={companyLogoUrl} />
+              )}
               <div
                 style={{
                   display: "flex",
@@ -166,7 +174,8 @@ export default async function EmbedPage({
                 />
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {widget.show_branding && (

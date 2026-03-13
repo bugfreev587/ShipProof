@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import { fetchPublicWallProofs } from "@/lib/api";
+import { getCompanyLogoUrl } from "@/lib/company-logo";
+import { CompanyLogoImg } from "@/components/company-logo";
 
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
@@ -108,10 +110,12 @@ export default async function WallPage({
             className="columns-1 sm:columns-2 lg:columns-3"
             style={{ columnGap: spacing }}
           >
-            {proofs.map((proof) => (
+            {proofs.map((proof) => {
+              const companyLogoUrl = getCompanyLogoUrl(proof.author_title);
+              return (
               <div
                 key={proof.id}
-                className="break-inside-avoid p-5"
+                className="break-inside-avoid p-5 relative"
                 style={{
                   marginBottom: spacing,
                   borderRadius: radius,
@@ -119,6 +123,9 @@ export default async function WallPage({
                   background: t.bgCard,
                 }}
               >
+                {companyLogoUrl && (
+                  <CompanyLogoImg url={companyLogoUrl} />
+                )}
                 {/* Author */}
                 <div className="flex items-center gap-2 mb-3">
                   {proof.author_avatar_url ? (
@@ -174,7 +181,8 @@ export default async function WallPage({
                   })}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
