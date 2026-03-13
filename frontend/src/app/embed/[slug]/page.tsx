@@ -128,7 +128,7 @@ export default async function EmbedPage({
 
               {proof.content_image_url && (
                 <img
-                  src={proof.content_image_url}
+                  src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
                   alt="Proof"
                   style={{
                     marginTop: "8px",

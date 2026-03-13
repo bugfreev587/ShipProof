@@ -85,6 +85,9 @@ func (s *StorageService) UploadImage(ctx context.Context, productID uuid.UUID, f
 		return "", fmt.Errorf("upload failed: %w", err)
 	}
 
-	publicURL := fmt.Sprintf("https://%s/%s", s.publicDomain, key)
+	domain := strings.TrimPrefix(s.publicDomain, "https://")
+	domain = strings.TrimPrefix(domain, "http://")
+	domain = strings.TrimRight(domain, "/")
+	publicURL := fmt.Sprintf("https://%s/%s", domain, key)
 	return publicURL, nil
 }

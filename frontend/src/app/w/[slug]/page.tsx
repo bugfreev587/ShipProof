@@ -113,7 +113,7 @@ export default async function WallPage({
 
                 {proof.content_image_url && (
                   <img
-                    src={proof.content_image_url}
+                    src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
                     alt="Proof"
                     className="mt-3 w-full rounded-lg border border-[#2A2A30]"
                   />

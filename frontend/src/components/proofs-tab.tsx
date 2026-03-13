@@ -206,7 +206,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                   {proof.content_image_url && (
                     <div className="mb-2">
                       <img
-                        src={proof.content_image_url}
+                        src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
                         alt="Proof screenshot"
                         className="max-h-40 rounded-lg border border-[#2A2A30]"
                       />
@@ -345,6 +345,7 @@ function ProofModal({
   const [tab, setTab] = useState<"text" | "url" | "upload">("text");
   const [saving, setSaving] = useState(false);
   const [extracting, setExtracting] = useState(false);
+  const [extracted, setExtracted] = useState(false);
   const [error, setError] = useState("");
 
   // Form fields
@@ -422,7 +423,8 @@ function ProofModal({
         for (const t of tags) {
           if (!oldTags.includes(t)) await addProofTag(proof!.id, t, token);
         }
-      } else if (imageFile) {
+      } else if (imageFile && !extracted) {
+        // Upload screenshot as image proof (no extraction happened)
         const formData = new FormData();
         formData.append("image", imageFile);
         formData.append("author_name", authorName);
@@ -483,6 +485,7 @@ function ProofModal({
           if (result.author_title && !authorTitle) setAuthorTitle(result.author_title);
           if (result.content_text && !contentText) setContentText(result.content_text);
           if (result.platform && sourcePlatform === "other") setSourcePlatform(result.platform);
+          setExtracted(true);
         }
       } catch {
         // Extraction is best-effort; ignore errors
@@ -492,6 +495,7 @@ function ProofModal({
     } else {
       setImageFile(null);
       setImagePreview(null);
+      setExtracted(false);
     }
   };
 
