@@ -169,6 +169,64 @@ function SettingsContent() {
         <h1 className="text-2xl font-medium text-[#F1F1F3]">Settings</h1>
       </div>
 
+      {/* Cancellation countdown — shown above sidebar + content */}
+      {subStatus?.cancel_at_period_end && countdown && (
+        <div className="px-10 pt-6">
+          <div className="rounded-xl border border-[#F59E0B]/40 bg-[#F59E0B]/5 p-6">
+            <div className="mb-3 flex items-center gap-2">
+              <svg
+                className="h-5 w-5 text-[#F59E0B]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+              <h3 className="text-base font-semibold text-[#F59E0B]">
+                Subscription Cancelling
+              </h3>
+            </div>
+
+            <p className="mb-4 text-sm text-[#9CA3AF]">
+              Your <span className="font-medium text-[#F1F1F3] capitalize">{plan}</span> plan
+              will be cancelled at the end of your billing period. You&apos;ll continue to have
+              access until then.
+            </p>
+
+            <div className="mb-4 flex gap-4">
+              {[
+                { value: countdown.days, label: "Days" },
+                { value: countdown.hours, label: "Hours" },
+                { value: countdown.minutes, label: "Minutes" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-4 py-3 text-center"
+                >
+                  <div className="text-2xl font-bold text-[#F1F1F3]">
+                    {String(item.value).padStart(2, "0")}
+                  </div>
+                  <div className="text-xs text-[#6B7280]">{item.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={handleReactivate}
+              disabled={reactivating}
+              className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
+            >
+              {reactivating ? "Reactivating..." : "Revoke Cancellation"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar + Content */}
       <div className="flex flex-1 min-h-0">
         {/* Sidebar — hidden on mobile */}
@@ -255,63 +313,6 @@ function SettingsContent() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-12 py-8">
-          {/* Cancellation countdown — always shown regardless of active tab */}
-          {subStatus?.cancel_at_period_end && countdown && (
-            <div className="rounded-xl border border-[#F59E0B]/40 bg-[#F59E0B]/5 p-6 mb-6">
-              <div className="mb-3 flex items-center gap-2">
-                <svg
-                  className="h-5 w-5 text-[#F59E0B]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-                <h3 className="text-base font-semibold text-[#F59E0B]">
-                  Subscription Cancelling
-                </h3>
-              </div>
-
-              <p className="mb-4 text-sm text-[#9CA3AF]">
-                Your <span className="font-medium text-[#F1F1F3] capitalize">{plan}</span> plan
-                will be cancelled at the end of your billing period. You&apos;ll continue to have
-                access until then.
-              </p>
-
-              <div className="mb-4 flex gap-4">
-                {[
-                  { value: countdown.days, label: "Days" },
-                  { value: countdown.hours, label: "Hours" },
-                  { value: countdown.minutes, label: "Minutes" },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-4 py-3 text-center"
-                  >
-                    <div className="text-2xl font-bold text-[#F1F1F3]">
-                      {String(item.value).padStart(2, "0")}
-                    </div>
-                    <div className="text-xs text-[#6B7280]">{item.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={handleReactivate}
-                disabled={reactivating}
-                className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
-              >
-                {reactivating ? "Reactivating..." : "Revoke Cancellation"}
-              </button>
-            </div>
-          )}
-
-          {/* Tab content */}
           {activeTab === "general" && <GeneralTab />}
           {activeTab === "profile" && (
             <ProfileTab user={user} clerkUser={clerkUser} />
