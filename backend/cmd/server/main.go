@@ -91,7 +91,8 @@ func main() {
 		// Storage service (graceful: nil if R2 not configured)
 		storageService, _ := service.NewStorageService()
 
-		proofHandler := handler.NewProofHandler(queries, userService, storageService, planService)
+		extractService := service.NewProofExtractService()
+		proofHandler := handler.NewProofHandler(queries, userService, storageService, planService, extractService)
 		widgetHandler := handler.NewWidgetHandler(queries, userService, planService)
 		wallHandler := handler.NewWallHandler(queries, userService, planService)
 		publicHandler := handler.NewPublicHandler(queries)
@@ -148,6 +149,7 @@ func main() {
 			r.Get("/api/products/{id}/tags", proofHandler.ListProductTags)
 			r.Post("/api/proofs/{pid}/tags", proofHandler.AddTag)
 			r.Delete("/api/proofs/{pid}/tags/{tag}", proofHandler.RemoveTag)
+			r.Post("/api/proofs/extract-screenshot", proofHandler.ExtractScreenshot)
 
 			// Widget Config
 			r.Get("/api/products/{id}/widget", widgetHandler.Get)

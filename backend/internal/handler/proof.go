@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 
@@ -19,10 +20,11 @@ type ProofHandler struct {
 	userService    *service.UserService
 	storageService *service.StorageService
 	planService    *service.PlanService
+	extractService *service.ProofExtractService
 }
 
-func NewProofHandler(queries *db.Queries, userService *service.UserService, storageService *service.StorageService, planService *service.PlanService) *ProofHandler {
-	return &ProofHandler{queries: queries, userService: userService, storageService: storageService, planService: planService}
+func NewProofHandler(queries *db.Queries, userService *service.UserService, storageService *service.StorageService, planService *service.PlanService, extractService *service.ProofExtractService) *ProofHandler {
+	return &ProofHandler{queries: queries, userService: userService, storageService: storageService, planService: planService, extractService: extractService}
 }
 
 // verifyProductOwnership returns the product if the current user owns it.
@@ -453,4 +455,45 @@ func (h *ProofHandler) RemoveTag(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// POST /api/proofs/extract-screenshot
+func (h *ProofHandler) ExtractScreenshot(w http.ResponseWriter, r *http.Request) {
+	if h.extractService == nil {
+		http.Error(w, `{"error":"screenshot extraction not configured"}`, http.StatusServiceUnavailable)
+		return
+	}
+
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		http.Error(w, `{"error":"invalid form data"}`, http.StatusBadRequest)
+		return
+	}
+
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		http.Error(w, `{"error":"image file is required"}`, http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	imageBytes, err := io.ReadAll(file)
+	if err != nil {
+		http.Error(w, `{"error":"failed to read image"}`, http.StatusBadRequest)
+		return
+	}
+
+	// Detect media type from Content-Type header or filename
+	mediaType := header.Header.Get("Content-Type")
+	if mediaType == "" || mediaType == "application/octet-stream" {
+		mediaType = "image/png"
+	}
+
+	result, err := h.extractService.ExtractFromScreenshot(r.Context(), imageBytes, mediaType)
+	if err != nil {
+		http.Error(w, `{"error":"extraction failed: `+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
 }

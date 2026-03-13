@@ -12,6 +12,7 @@ import {
   addProofTag,
   removeProofTag,
   listProductTags,
+  extractScreenshot,
   type Proof,
   type Product,
   ApiError,
@@ -343,6 +344,7 @@ function ProofModal({
 
   const [tab, setTab] = useState<"text" | "url" | "upload">("text");
   const [saving, setSaving] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState("");
 
   // Form fields
@@ -464,11 +466,29 @@ function ProofModal({
     }
   };
 
-  const handleImageSelected = (file: File | null) => {
+  const handleImageSelected = async (file: File | null) => {
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     if (file) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+
+      // Auto-extract text from screenshot
+      setExtracting(true);
+      try {
+        const token = await getToken();
+        if (token) {
+          const result = await extractScreenshot(file, token);
+          // Only fill empty fields
+          if (result.author_name && !authorName) setAuthorName(result.author_name);
+          if (result.author_title && !authorTitle) setAuthorTitle(result.author_title);
+          if (result.content_text && !contentText) setContentText(result.content_text);
+          if (result.platform && sourcePlatform === "other") setSourcePlatform(result.platform);
+        }
+      } catch {
+        // Extraction is best-effort; ignore errors
+      } finally {
+        setExtracting(false);
+      }
     } else {
       setImageFile(null);
       setImagePreview(null);
@@ -629,6 +649,17 @@ function ProofModal({
                       alt="Screenshot preview"
                       className="max-h-48 w-full rounded object-contain"
                     />
+                    {extracting && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-[#0F0F10]/60 rounded">
+                        <div className="flex items-center gap-2 text-sm text-[#9CA3AF]">
+                          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          Extracting text...
+                        </div>
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleImageSelected(null)}
@@ -640,6 +671,22 @@ function ProofModal({
                     </button>
                   </div>
                   <p className="mt-1 text-xs text-[#6B7280]">{imageFile?.name}</p>
+
+                  {/* Extracted / editable fields */}
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <label className="block text-xs text-[#9CA3AF] mb-1">
+                        Proof Text
+                      </label>
+                      <textarea
+                        value={contentText}
+                        onChange={(e) => setContentText(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
+                        placeholder={extracting ? "Extracting..." : "Extracted text will appear here..."}
+                      />
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div>

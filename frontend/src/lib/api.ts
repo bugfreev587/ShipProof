@@ -457,6 +457,34 @@ export function removeProofTag(proofId: string, tag: string, token: string) {
   );
 }
 
+// --- Screenshot Extraction ---
+
+export interface ExtractResult {
+  author_name: string;
+  author_title: string;
+  content_text: string;
+  platform: string;
+}
+
+export function extractScreenshot(
+  file: File,
+  token: string,
+): Promise<ExtractResult> {
+  const formData = new FormData();
+  formData.append("image", file);
+  return fetch(`${API_URL}/api/proofs/extract-screenshot`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  }).then(async (res) => {
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: "Unknown error" }));
+      throw new ApiError(res.status, body.error || "Unknown error");
+    }
+    return res.json() as Promise<ExtractResult>;
+  });
+}
+
 export function listProductTags(productId: string, token: string) {
   return fetchApi<string[]>(
     `/api/products/${productId}/tags`,
