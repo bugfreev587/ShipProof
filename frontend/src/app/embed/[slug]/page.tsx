@@ -66,7 +66,7 @@ export default async function EmbedPage({
     }
   }
 
-  const isDark = widget.theme === "dark";
+  const isDark = widget.theme !== "light";
   const radius = `${widget.border_radius}px`;
   const spacing = `${widget.card_spacing}px`;
 

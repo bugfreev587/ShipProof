@@ -21,6 +21,31 @@ const PLATFORM_LABELS: Record<string, string> = {
   other: "O",
 };
 
+function getThemeColors(theme: string) {
+  switch (theme) {
+    case "dim":
+      return {
+        bgBase: "#15202B", bgCard: "#1E2D3D", borderColor: "#2B3D4F",
+        textPrimary: "#F1F1F3", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
+      };
+    case "gray":
+      return {
+        bgBase: "#2A2A30", bgCard: "#343440", borderColor: "#45454F",
+        textPrimary: "#F1F1F3", textSecondary: "#B0B0B8", textTertiary: "#8A8A94",
+      };
+    case "light":
+      return {
+        bgBase: "#F9FAFB", bgCard: "#FFFFFF", borderColor: "#E5E7EB",
+        textPrimary: "#111827", textSecondary: "#6B7280", textTertiary: "#9CA3AF",
+      };
+    default: // dark
+      return {
+        bgBase: "#0F0F10", bgCard: "#1A1A1F", borderColor: "#2A2A30",
+        textPrimary: "#F1F1F3", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
+      };
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -57,31 +82,25 @@ export default async function WallPage({
   }
 
   const { wall, product, proofs } = data;
-  const isDark = wall.theme === "dark";
-  const bgBase = isDark ? "#0F0F10" : "#F9FAFB";
-  const bgCard = isDark ? "#1A1A1F" : "#FFFFFF";
-  const borderColor = isDark ? "#2A2A30" : "#E5E7EB";
-  const textPrimary = isDark ? "#F1F1F3" : "#111827";
-  const textSecondary = isDark ? "#9CA3AF" : "#6B7280";
-  const textTertiary = isDark ? "#6B7280" : "#9CA3AF";
+  const t = getThemeColors(wall.theme);
   const radius = `${wall.border_radius}px`;
   const spacing = `${wall.card_spacing}px`;
 
   return (
-    <div className="min-h-screen" style={{ background: bgBase }}>
+    <div className="min-h-screen" style={{ background: t.bgBase }}>
       {/* Header */}
       <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: textPrimary }}>{wall.name}</h1>
-        <p style={{ color: textSecondary }}>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>{wall.name}</h1>
+        <p style={{ color: t.textSecondary }}>
           What people are saying about{" "}
-          <span className="font-medium" style={{ color: textPrimary }}>{product.name}</span>
+          <span className="font-medium" style={{ color: t.textPrimary }}>{product.name}</span>
         </p>
       </div>
 
       {/* Masonry Grid */}
       <div className="max-w-6xl mx-auto px-4 pb-12">
         {proofs.length === 0 ? (
-          <div className="text-center py-12" style={{ color: textTertiary }}>
+          <div className="text-center py-12" style={{ color: t.textTertiary }}>
             No proofs yet.
           </div>
         ) : (
@@ -96,8 +115,8 @@ export default async function WallPage({
                 style={{
                   marginBottom: spacing,
                   borderRadius: radius,
-                  border: `1px solid ${borderColor}`,
-                  background: bgCard,
+                  border: `1px solid ${t.borderColor}`,
+                  background: t.bgCard,
                 }}
               >
                 {/* Author */}
@@ -116,11 +135,11 @@ export default async function WallPage({
                     </span>
                   ) : null}
                   <div>
-                    <div className="text-sm font-medium" style={{ color: textPrimary }}>
+                    <div className="text-sm font-medium" style={{ color: t.textPrimary }}>
                       {proof.author_name}
                     </div>
                     {proof.author_title && (
-                      <div className="text-xs" style={{ color: textTertiary }}>
+                      <div className="text-xs" style={{ color: t.textTertiary }}>
                         {proof.author_title}
                       </div>
                     )}
@@ -129,7 +148,7 @@ export default async function WallPage({
 
                 {/* Content */}
                 {proof.content_text && (
-                  <p className="text-sm leading-relaxed" style={{ color: textSecondary }}>
+                  <p className="text-sm leading-relaxed" style={{ color: t.textSecondary }}>
                     {proof.content_text}
                   </p>
                 )}
@@ -141,13 +160,13 @@ export default async function WallPage({
                     className="mt-3 w-full"
                     style={{
                       borderRadius: `${Math.max(wall.border_radius - 4, 0)}px`,
-                      border: `1px solid ${borderColor}`,
+                      border: `1px solid ${t.borderColor}`,
                     }}
                   />
                 )}
 
                 {/* Date */}
-                <div className="mt-3 text-xs" style={{ color: textTertiary }}>
+                <div className="mt-3 text-xs" style={{ color: t.textTertiary }}>
                   {new Date(proof.created_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -162,7 +181,7 @@ export default async function WallPage({
 
       {/* Footer */}
       {wall.show_branding && (
-        <div className="text-center pb-8 text-xs" style={{ color: textTertiary }}>
+        <div className="text-center pb-8 text-xs" style={{ color: t.textTertiary }}>
           Powered by{" "}
           <a
             href="https://shipproof.io"

@@ -461,7 +461,7 @@ function SpaceCard({
     onUpdated();
   };
 
-  const isDark = config.theme === "dark";
+  const isDark = config.theme !== "light";
 
   return (
     <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] overflow-hidden">
@@ -540,6 +540,8 @@ function SpaceCard({
                   className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
                 >
                   <option value="dark">Dark</option>
+                  <option value="dim">Dim</option>
+                  <option value="gray">Gray</option>
                   <option value="light">Light</option>
                 </select>
               </div>
