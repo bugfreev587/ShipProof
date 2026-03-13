@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import FlywheelAnimation from "@/components/flywheel-animation";
 import PricingCards from "@/components/pricing-cards";
@@ -72,12 +70,7 @@ const faqs = [
   },
 ];
 
-export default async function HomePage() {
-  const { userId } = await auth();
-  if (userId) {
-    redirect("/dashboard");
-  }
-
+export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0F0F10]">
       {/* Nav */}

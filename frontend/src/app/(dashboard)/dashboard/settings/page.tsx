@@ -314,14 +314,6 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-        <button
-          onClick={() =>
-            (window.location.href = "/user-profile")
-          }
-          className="mt-4 rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
-        >
-          Manage Account
-        </button>
       </div>
     </div>
   );

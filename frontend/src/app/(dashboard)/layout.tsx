@@ -87,18 +87,10 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-[#0F0F10]">
       <nav className="sticky top-0 z-50 border-b border-[#2A2A30] bg-[#0F0F10]">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-lg font-bold text-[#F1F1F3]">
-              <span>Ship</span>
-              <span className="text-[#6366F1]">Proof</span>
-            </Link>
-            <Link
-              href="/dashboard"
-              className="text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
-            >
-              Products
-            </Link>
-          </div>
+          <Link href="/dashboard" className="text-lg font-bold text-[#F1F1F3]">
+            <span>Ship</span>
+            <span className="text-[#6366F1]">Proof</span>
+          </Link>
           <AvatarDropdown />
         </div>
       </nav>
