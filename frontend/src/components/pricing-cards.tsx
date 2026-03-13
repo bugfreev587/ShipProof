@@ -34,10 +34,10 @@ const plans = [
     badgeColor: "bg-[#6366F1]",
     features: [
       { text: "1 product", included: true },
+      { text: "1 space", included: true },
       { text: "Unlimited proofs", included: true },
       { text: "Unlimited AI generations", included: true },
       { text: "Unlimited versions", included: true },
-      { text: "1 space", included: true },
       { text: "Embed widget (with branding)", included: true },
       { text: "Wall of Love pages", included: true },
       { text: "Remove branding", included: false },
@@ -54,10 +54,10 @@ const plans = [
     badgeColor: "",
     features: [
       { text: "10 products", included: true },
+      { text: "Unlimited spaces", included: true },
       { text: "Unlimited proofs", included: true },
       { text: "Unlimited AI generations", included: true },
       { text: "Unlimited versions", included: true },
-      { text: "Unlimited spaces", included: true },
       { text: "Embed widget", included: true },
       { text: "Wall of Love pages", included: true },
       { text: "Remove branding", included: true },
