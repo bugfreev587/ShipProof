@@ -9,6 +9,7 @@ import {
   deleteSpace,
   addProofToSpace,
   removeProofFromSpace,
+  fetchPublicSpaceProofs,
   listWalls,
   createWall,
   deleteWall,
@@ -218,6 +219,26 @@ function CreateSpaceButton({
   );
 }
 
+const PLATFORM_COLORS: Record<string, string> = {
+  product_hunt: "bg-red-500",
+  reddit: "bg-orange-500",
+  twitter: "bg-zinc-700",
+  hackernews: "bg-orange-400",
+  indiehackers: "bg-blue-500",
+  direct: "bg-green-500",
+  other: "bg-gray-500",
+};
+
+const PLATFORM_LABELS: Record<string, string> = {
+  product_hunt: "P",
+  reddit: "R",
+  twitter: "X",
+  hackernews: "H",
+  indiehackers: "I",
+  direct: "D",
+  other: "O",
+};
+
 function SpaceCard({
   space,
   product,
@@ -228,12 +249,13 @@ function SpaceCard({
   onUpdated: () => void;
 }) {
   const { getToken } = useAuth();
-  const [showConfig, setShowConfig] = useState(false);
-  const [showProofs, setShowProofs] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [config, setConfig] = useState(space);
-  const [proofs, setProofs] = useState<Proof[]>([]);
+  const [spaceProofs, setSpaceProofs] = useState<Proof[]>([]);
+  const [allProofs, setAllProofs] = useState<Proof[]>([]);
   const [spaceProofIds, setSpaceProofIds] = useState<Set<string>>(new Set());
-  const [loadingProofs, setLoadingProofs] = useState(false);
+  const [loadingPreview, setLoadingPreview] = useState(true);
+  const [loadingAllProofs, setLoadingAllProofs] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const embedUrl =
@@ -248,6 +270,48 @@ function SpaceCard({
     navigator.clipboard.writeText(embedCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Load space proofs for preview on mount
+  const fetchSpaceProofs = useCallback(async () => {
+    setLoadingPreview(true);
+    try {
+      const data = await fetchPublicSpaceProofs(space.slug);
+      setSpaceProofs(data.proofs);
+      setSpaceProofIds(new Set(data.proofs.map((p: Proof) => p.id)));
+    } catch {
+      // space may have no proofs yet
+      setSpaceProofs([]);
+      setSpaceProofIds(new Set());
+    } finally {
+      setLoadingPreview(false);
+    }
+  }, [space.slug]);
+
+  useEffect(() => {
+    fetchSpaceProofs();
+  }, [fetchSpaceProofs]);
+
+  // Load all product proofs when expanding
+  const handleExpand = async () => {
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+    setExpanded(true);
+    if (allProofs.length === 0) {
+      setLoadingAllProofs(true);
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const proofs = await listProofs(product.id, token);
+        setAllProofs(proofs);
+      } catch {
+        // ignore
+      } finally {
+        setLoadingAllProofs(false);
+      }
+    }
   };
 
   const handleConfigChange = (updates: Partial<Space>) => {
@@ -277,25 +341,6 @@ function SpaceCard({
     }, 500);
   };
 
-  const handleExpandProofs = async () => {
-    if (showProofs) {
-      setShowProofs(false);
-      return;
-    }
-    setShowProofs(true);
-    setLoadingProofs(true);
-    try {
-      const token = await getToken();
-      if (!token) return;
-      const allProofs = await listProofs(product.id, token);
-      setProofs(allProofs);
-    } catch {
-      // ignore
-    } finally {
-      setLoadingProofs(false);
-    }
-  };
-
   const handleToggleProof = async (proofId: string) => {
     const token = await getToken();
     if (!token) return;
@@ -307,9 +352,13 @@ function SpaceCard({
           next.delete(proofId);
           return next;
         });
+        setSpaceProofs((prev) => prev.filter((p) => p.id !== proofId));
       } else {
         await addProofToSpace(space.id, proofId, spaceProofIds.size, token);
         setSpaceProofIds((prev) => new Set(prev).add(proofId));
+        // Add the proof to preview list
+        const proof = allProofs.find((p) => p.id === proofId);
+        if (proof) setSpaceProofs((prev) => [...prev, proof]);
       }
     } catch {
       // ignore
@@ -323,177 +372,247 @@ function SpaceCard({
     onUpdated();
   };
 
+  const isDark = config.theme === "dark";
+
   return (
-    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4 space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] overflow-hidden">
+      {/* Header: name + delete */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <h4 className="text-sm font-medium text-[#F1F1F3]">{space.name}</h4>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowConfig(!showConfig)}
-            className="text-xs text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
-          >
-            {showConfig ? "Hide Config" : "Config"}
-          </button>
-          <button
-            onClick={handleExpandProofs}
-            className="text-xs text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
-          >
-            {showProofs ? "Hide Proofs" : "Manage Proofs"}
-          </button>
-          <button
-            onClick={handleDelete}
-            className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
-          >
-            Delete
-          </button>
-        </div>
+        <button
+          onClick={handleDelete}
+          className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
+        >
+          Delete
+        </button>
       </div>
 
-      {/* Embed Code */}
-      <div className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3">
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-xs text-[#6B7280]">Embed Code</p>
-          <button
-            onClick={handleCopy}
-            className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
+      {/* Horizontal proof preview */}
+      <div className="px-4 pb-2">
+        {loadingPreview ? (
+          <div className="h-24 flex items-center justify-center text-xs text-[#6B7280]">
+            Loading preview...
+          </div>
+        ) : spaceProofs.length === 0 ? (
+          <div className="h-24 flex items-center justify-center rounded-lg border border-dashed border-[#2A2A30] text-xs text-[#6B7280]">
+            No proofs added yet. Expand to add proofs.
+          </div>
+        ) : (
+          <div
+            className="flex gap-3 overflow-x-auto pb-2"
+            style={{ scrollbarWidth: "thin" }}
           >
-            {copied ? "Copied!" : "Copy"}
-          </button>
-        </div>
-        <pre className="text-xs text-[#9CA3AF] overflow-x-auto font-mono">
-          {embedCode}
-        </pre>
-      </div>
-
-      {/* Config Panel */}
-      {showConfig && (
-        <div className="rounded-lg border border-[#2A2A30] bg-[#242429] p-4 space-y-4">
-          <p className="text-xs text-[#6B7280]">Widget Configuration</p>
-
-          <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">Theme</label>
-            <select
-              value={config.theme}
-              onChange={(e) => handleConfigChange({ theme: e.target.value })}
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
-            >
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">
-              Max Items: {config.max_items}
-            </label>
-            <input
-              type="range"
-              min={1}
-              max={20}
-              value={config.max_items}
-              onChange={(e) =>
-                handleConfigChange({ max_items: Number(e.target.value) })
-              }
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">
-              Border Radius: {config.border_radius}px
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={24}
-              value={config.border_radius}
-              onChange={(e) =>
-                handleConfigChange({ border_radius: Number(e.target.value) })
-              }
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">
-              Card Spacing: {config.card_spacing}px
-            </label>
-            <input
-              type="range"
-              min={4}
-              max={32}
-              value={config.card_spacing}
-              onChange={(e) =>
-                handleConfigChange({ card_spacing: Number(e.target.value) })
-              }
-              className="w-full"
-            />
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
-            <input
-              type="checkbox"
-              checked={config.show_platform_icon}
-              onChange={(e) =>
-                handleConfigChange({ show_platform_icon: e.target.checked })
-              }
-              className="rounded border-[#2A2A30]"
-            />
-            Show platform icons
-          </label>
-
-          <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
-            <input
-              type="checkbox"
-              checked={config.show_branding}
-              onChange={(e) =>
-                handleConfigChange({ show_branding: e.target.checked })
-              }
-              className="rounded border-[#2A2A30]"
-            />
-            Show &quot;Powered by ShipProof&quot;
-          </label>
-        </div>
-      )}
-
-      {/* Manage Proofs */}
-      {showProofs && (
-        <div className="rounded-lg border border-[#2A2A30] bg-[#242429] p-4">
-          <p className="text-xs text-[#6B7280] mb-3">Select proofs to include in this space</p>
-          {loadingProofs ? (
-            <p className="text-xs text-[#6B7280]">Loading proofs...</p>
-          ) : proofs.length === 0 ? (
-            <p className="text-xs text-[#6B7280]">
-              No proofs available. Add proofs in the Proofs tab first.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {proofs.map((proof) => (
-                <label
-                  key={proof.id}
-                  className="flex items-center gap-3 rounded-lg bg-[#0F0F10] p-2 cursor-pointer hover:bg-[#1A1A1F] transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={spaceProofIds.has(proof.id)}
-                    onChange={() => handleToggleProof(proof.id)}
-                    className="rounded border-[#2A2A30]"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm text-[#F1F1F3]">
-                      {proof.author_name}
+            {spaceProofs.map((proof) => (
+              <div
+                key={proof.id}
+                className="flex-shrink-0 rounded-lg border p-3"
+                style={{
+                  width: "220px",
+                  borderColor: isDark ? "#2A2A30" : "#E5E7EB",
+                  background: isDark ? "#242429" : "#FFFFFF",
+                }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  {config.show_platform_icon && (
+                    <span
+                      className={`inline-flex items-center justify-center w-4 h-4 rounded text-[8px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+                    >
+                      {PLATFORM_LABELS[proof.source_platform] || "O"}
                     </span>
-                    {proof.content_text && (
-                      <p className="text-xs text-[#6B7280] truncate">
-                        {proof.content_text}
-                      </p>
-                    )}
-                  </div>
+                  )}
+                  <span
+                    className="text-xs font-medium truncate"
+                    style={{ color: isDark ? "#F1F1F3" : "#111827" }}
+                  >
+                    {proof.author_name}
+                  </span>
+                </div>
+                {proof.content_text && (
+                  <p
+                    className="text-[11px] leading-relaxed line-clamp-3"
+                    style={{ color: isDark ? "#9CA3AF" : "#4B5563" }}
+                  >
+                    {proof.content_text}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Expand chevron */}
+      <button
+        onClick={handleExpand}
+        className="flex items-center justify-center w-full py-2 border-t border-[#2A2A30] text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#242429] transition-colors"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {/* Expanded panel: config + proofs + embed code */}
+      {expanded && (
+        <div className="border-t border-[#2A2A30] p-4 space-y-5">
+          {/* Widget Configuration */}
+          <div className="space-y-4">
+            <p className="text-xs font-medium text-[#F1F1F3]">Widget Configuration</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">Theme</label>
+                <select
+                  value={config.theme}
+                  onChange={(e) => handleConfigChange({ theme: e.target.value })}
+                  className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+                >
+                  <option value="dark">Dark</option>
+                  <option value="light">Light</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">
+                  Max Items: {config.max_items}
                 </label>
-              ))}
+                <input
+                  type="range"
+                  min={1}
+                  max={20}
+                  value={config.max_items}
+                  onChange={(e) =>
+                    handleConfigChange({ max_items: Number(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">
+                  Border Radius: {config.border_radius}px
+                </label>
+                <input
+                  type="range"
+                  min={0}
+                  max={24}
+                  value={config.border_radius}
+                  onChange={(e) =>
+                    handleConfigChange({ border_radius: Number(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#9CA3AF] mb-1">
+                  Card Spacing: {config.card_spacing}px
+                </label>
+                <input
+                  type="range"
+                  min={4}
+                  max={32}
+                  value={config.card_spacing}
+                  onChange={(e) =>
+                    handleConfigChange({ card_spacing: Number(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
             </div>
-          )}
+
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.show_platform_icon}
+                  onChange={(e) =>
+                    handleConfigChange({ show_platform_icon: e.target.checked })
+                  }
+                  className="rounded border-[#2A2A30]"
+                />
+                Show platform icons
+              </label>
+
+              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.show_branding}
+                  onChange={(e) =>
+                    handleConfigChange({ show_branding: e.target.checked })
+                  }
+                  className="rounded border-[#2A2A30]"
+                />
+                Show &quot;Powered by ShipProof&quot;
+              </label>
+            </div>
+          </div>
+
+          {/* Manage Proofs */}
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-[#F1F1F3]">Proofs</p>
+            {loadingAllProofs ? (
+              <p className="text-xs text-[#6B7280]">Loading proofs...</p>
+            ) : allProofs.length === 0 ? (
+              <p className="text-xs text-[#6B7280]">
+                No proofs available. Add proofs in the Proofs tab first.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {allProofs.map((proof) => (
+                  <label
+                    key={proof.id}
+                    className="flex items-center gap-3 rounded-lg bg-[#0F0F10] p-2.5 cursor-pointer hover:bg-[#242429] transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={spaceProofIds.has(proof.id)}
+                      onChange={() => handleToggleProof(proof.id)}
+                      className="rounded border-[#2A2A30] flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-[#F1F1F3]">
+                        {proof.author_name}
+                      </span>
+                      {proof.content_text && (
+                        <p className="text-xs text-[#6B7280] truncate">
+                          {proof.content_text}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Embed Code */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-[#F1F1F3]">Embed Code</p>
+            <div className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-[#6B7280]">Copy and paste into your website</p>
+                <button
+                  onClick={handleCopy}
+                  className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+              <pre className="text-xs text-[#9CA3AF] overflow-x-auto font-mono">
+                {embedCode}
+              </pre>
+            </div>
+          </div>
         </div>
       )}
     </div>
