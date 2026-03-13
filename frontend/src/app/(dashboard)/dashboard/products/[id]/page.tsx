@@ -71,26 +71,26 @@ export default function ProductDetailPage() {
   }, [id]);
 
   if (loading) {
-    return <div className="text-[#9CA3AF]">Loading...</div>;
+    return <div className="text-[var(--text-secondary)]">Loading...</div>;
   }
 
   if (!product) {
-    return <div className="text-[#9CA3AF]">Product not found.</div>;
+    return <div className="text-[var(--text-secondary)]">Product not found.</div>;
   }
 
   return (
     <div className="-mx-10 -mt-8 flex flex-col overflow-hidden" style={{ height: "calc(100vh - 4rem)" }}>
       {/* Product Header */}
-      <div className="flex items-center justify-between px-10 py-6 border-b border-[#2A2A30]">
+      <div className="flex items-center justify-between px-10 py-6 border-b border-[var(--border)]">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#6366F1] text-white font-semibold text-lg">
             {product.name.charAt(0).toUpperCase()}
           </div>
-          <h1 className="text-2xl font-medium text-[#F1F1F3]">{product.name}</h1>
+          <h1 className="text-2xl font-medium text-[var(--text-primary)]">{product.name}</h1>
         </div>
         <button
           onClick={() => setEditModalOpen(true)}
-          className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-[#0F0F10] hover:bg-[#E5E5E5] transition-colors"
+          className="flex items-center gap-2 rounded-lg bg-[var(--text-primary)] px-4 py-2 text-sm font-medium text-[var(--bg-base)] hover:opacity-80 transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
@@ -108,8 +108,8 @@ export default function ProductDetailPage() {
             onClick={() => setActiveTab("content")}
             className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
               activeTab === "content"
-                ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+                ? "bg-[var(--bg-surface)] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
             }`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -123,8 +123,8 @@ export default function ProductDetailPage() {
             onClick={() => setActiveTab("proofs")}
             className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
               activeTab === "proofs"
-                ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+                ? "bg-[var(--bg-surface)] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
             }`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -140,8 +140,8 @@ export default function ProductDetailPage() {
               onClick={() => setEmbedExpanded(!embedExpanded)}
               className={`flex items-center justify-between w-full rounded-lg px-3 py-2 text-sm transition-colors ${
                 activeTab === "spaces" || activeTab === "walls"
-                  ? "text-[#F1F1F3] font-medium"
-                  : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+                  ? "text-[var(--text-primary)] font-medium"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
               }`}
             >
               <span className="flex items-center gap-3">
@@ -168,13 +168,13 @@ export default function ProductDetailPage() {
 
             {/* Sub-items */}
             {embedExpanded && (
-              <div className="ml-4 mt-1 flex flex-col gap-1 border-l border-[#2A2A30] pl-3">
+              <div className="ml-4 mt-1 flex flex-col gap-1 border-l border-[var(--border)] pl-3">
                 <button
                   onClick={() => setActiveTab("spaces")}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                     activeTab === "spaces"
-                      ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
-                      : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+                      ? "bg-[var(--bg-surface)] text-[var(--text-primary)] font-medium"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
                   }`}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -189,8 +189,8 @@ export default function ProductDetailPage() {
                   onClick={() => setActiveTab("walls")}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                     activeTab === "walls"
-                      ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
-                      : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
+                      ? "bg-[var(--bg-surface)] text-[var(--text-primary)] font-medium"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
                   }`}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -204,13 +204,13 @@ export default function ProductDetailPage() {
         </nav>
 
         {/* Mobile horizontal tabs */}
-        <div className="flex md:hidden border-b border-[#2A2A30] w-full">
+        <div className="flex md:hidden border-b border-[var(--border)] w-full">
           <button
             onClick={() => setActiveTab("content")}
             className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
               activeTab === "content"
-                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                ? "border-b-2 border-[#6366F1] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             Content
@@ -219,8 +219,8 @@ export default function ProductDetailPage() {
             onClick={() => setActiveTab("proofs")}
             className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
               activeTab === "proofs"
-                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                ? "border-b-2 border-[#6366F1] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             Proofs
@@ -229,8 +229,8 @@ export default function ProductDetailPage() {
             onClick={() => setActiveTab("spaces")}
             className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
               activeTab === "spaces"
-                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                ? "border-b-2 border-[#6366F1] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             Spaces
@@ -239,8 +239,8 @@ export default function ProductDetailPage() {
             onClick={() => setActiveTab("walls")}
             className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
               activeTab === "walls"
-                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                ? "border-b-2 border-[#6366F1] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             Walls

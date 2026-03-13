@@ -37,7 +37,7 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[#F1F1F3]">Products</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Products</h1>
         <button
           onClick={() => setShowModal(true)}
           className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
@@ -47,10 +47,10 @@ export default function DashboardPage() {
       </div>
 
       {loading ? (
-        <div className="text-[#9CA3AF]">Loading...</div>
+        <div className="text-[var(--text-secondary)]">Loading...</div>
       ) : products.length === 0 ? (
-        <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-12 text-center">
-          <p className="text-[#9CA3AF]">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-12 text-center">
+          <p className="text-[var(--text-secondary)]">
             No products yet. Create your first product to get started.
           </p>
         </div>
@@ -60,12 +60,12 @@ export default function DashboardPage() {
             <Link
               key={product.id}
               href={`/dashboard/products/${product.id}`}
-              className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6 hover:border-[#3F3F46] transition-colors"
+              className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 hover:border-[var(--border-hover)] transition-colors"
             >
-              <h2 className="text-lg font-semibold text-[#F1F1F3]">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 {product.name}
               </h2>
-              <div className="mt-2 flex items-center gap-4 text-sm text-[#9CA3AF]">
+              <div className="mt-2 flex items-center gap-4 text-sm text-[var(--text-secondary)]">
                 <span>0 proofs</span>
                 <span>
                   Created{" "}
@@ -143,13 +143,13 @@ function NewProductModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-md rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-        <h2 className="mb-4 text-lg font-semibold text-[#F1F1F3]">
+      <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
+        <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
           New Product
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm text-[#9CA3AF]">
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">
               Product Name *
             </label>
             <input
@@ -157,12 +157,12 @@ function NewProductModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="My Awesome Product"
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
               required
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-[#9CA3AF]">
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">
               URL (optional)
             </label>
             <input
@@ -170,11 +170,11 @@ function NewProductModal({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://myproduct.com"
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-[#9CA3AF]">
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">
               Description (optional)
             </label>
             <textarea
@@ -182,7 +182,7 @@ function NewProductModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="A brief description of your product"
               rows={3}
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none resize-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none resize-none"
             />
           </div>
           {error && (
@@ -192,7 +192,7 @@ function NewProductModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
+              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
             >
               Cancel
             </button>

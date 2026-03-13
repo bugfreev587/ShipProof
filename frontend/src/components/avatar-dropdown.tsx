@@ -43,32 +43,32 @@ export default function AvatarDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-48 rounded-xl border border-[#2A2A30] bg-[#1A1A1F] py-1 shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-48 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] py-1 shadow-lg z-50">
           <Link
             href="/dashboard"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#242429] transition-colors"
+            className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
           >
             Dashboard
           </Link>
           <Link
             href="/pricing"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#242429] transition-colors"
+            className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
           >
             Upgrade
           </Link>
           <Link
             href="/dashboard/settings"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#242429] transition-colors"
+            className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
           >
             Settings
           </Link>
-          <div className="my-1 border-t border-[#2A2A30]" />
+          <div className="my-1 border-t border-[var(--border)]" />
           <button
             onClick={() => signOut({ redirectUrl: "/" })}
-            className="block w-full px-4 py-2 text-left text-sm text-[#9CA3AF] hover:bg-[#242429] hover:text-[#F1F1F3] transition-colors"
+            className="block w-full px-4 py-2 text-left text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
           >
             Sign out
           </button>

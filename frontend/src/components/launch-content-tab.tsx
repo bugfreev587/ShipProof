@@ -246,7 +246,7 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
     await navigator.clipboard.writeText(text);
   };
 
-  if (loading) return <div className="text-[#9CA3AF]">Loading...</div>;
+  if (loading) return <div className="text-[var(--text-secondary)]">Loading...</div>;
 
   return (
     <div className="space-y-8">
@@ -297,11 +297,11 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
 
       {/* Version History */}
       <div>
-        <h3 className="mb-4 text-lg font-semibold text-[#F1F1F3]">
+        <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
           Version History
         </h3>
         {versions.length === 0 ? (
-          <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-8 text-center text-[var(--text-secondary)]">
             No versions yet. Generate and confirm your first launch content.
           </div>
         ) : (
@@ -310,19 +310,19 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
               <div key={v.id}>
                 <button
                   onClick={() => handleExpandVersion(v.id)}
-                  className="w-full rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4 text-left hover:border-[#3F3F46] transition-colors"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-4 text-left hover:border-[var(--border-hover)] transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="mr-2 font-mono text-sm text-[#6366F1]">
                         {v.version_label}
                       </span>
-                      <span className="font-medium text-[#F1F1F3]">
+                      <span className="font-medium text-[var(--text-primary)]">
                         {v.title}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-[#9CA3AF]">
-                      <span className="rounded bg-[#242429] px-2 py-0.5 text-xs">
+                    <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+                      <span className="rounded bg-[var(--bg-elevated)] px-2 py-0.5 text-xs">
                         {v.launch_type.replace("_", " ")}
                       </span>
                       <span>
@@ -333,11 +333,11 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
                   </div>
                 </button>
                 {expandedVersion === v.id && expandedVersionData && (
-                  <div className="mt-2 rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4">
+                  <div className="mt-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
                     {expandedVersionData.launch_notes?.Valid && (
-                      <div className="mb-4 rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3">
-                        <span className="text-xs font-medium text-[#9CA3AF]">Launch Notes</span>
-                        <p className="mt-1 text-sm text-[#F1F1F3] whitespace-pre-wrap">
+                      <div className="mb-4 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] p-3">
+                        <span className="text-xs font-medium text-[var(--text-secondary)]">Launch Notes</span>
+                        <p className="mt-1 text-sm text-[var(--text-primary)] whitespace-pre-wrap">
                           {expandedVersionData.launch_notes.String}
                         </p>
                       </div>
@@ -361,11 +361,11 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
       {/* Confirm Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-md rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-            <h3 className="mb-4 text-lg font-semibold text-[#F1F1F3]">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
+            <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
               Confirm & Save Version
             </h3>
-            <p className="mb-4 text-sm text-[#9CA3AF]">
+            <p className="mb-4 text-sm text-[var(--text-secondary)]">
               This will save the current draft as an immutable version.
             </p>
             <input
@@ -373,12 +373,12 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
               value={versionTitle}
               onChange={(e) => setVersionTitle(e.target.value)}
               placeholder="Version title (e.g. Product Hunt Launch)"
-              className="mb-4 w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none"
+              className="mb-4 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
             />
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30]"
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
               >
                 Cancel
               </button>
@@ -445,14 +445,14 @@ function GenerateForm({
   };
 
   return (
-    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-      <h3 className="mb-4 text-lg font-semibold text-[#F1F1F3]">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
+      <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
         Generate Launch Content
       </h3>
 
       {/* Launch Type */}
       <div className="mb-4">
-        <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">
+        <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
           Launch Type
         </label>
         <div className="flex gap-3">
@@ -467,7 +467,7 @@ function GenerateForm({
               className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                 launchType === lt.key
                   ? "border-[#6366F1] bg-[#6366F1]/10 text-[#6366F1]"
-                  : "border-[#2A2A30] text-[#9CA3AF] hover:border-[#3F3F46]"
+                  : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-hover)]"
               }`}
             >
               {lt.label}
@@ -478,7 +478,7 @@ function GenerateForm({
 
       {/* Platforms */}
       <div className="mb-4">
-        <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">
+        <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
           Target Platforms
         </label>
         <div className="flex flex-wrap gap-3">
@@ -489,7 +489,7 @@ function GenerateForm({
               className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                 selectedPlatforms.includes(p.key)
                   ? "border-[#6366F1] bg-[#6366F1]/10 text-[#6366F1]"
-                  : "border-[#2A2A30] text-[#9CA3AF] hover:border-[#3F3F46]"
+                  : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-hover)]"
               }`}
             >
               {p.label}
@@ -500,8 +500,8 @@ function GenerateForm({
 
       {/* Reddit subreddits */}
       {selectedPlatforms.includes("reddit") && (
-        <div className="mb-4 ml-4 rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-4">
-          <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">
+        <div className="mb-4 ml-4 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] p-4">
+          <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
             Subreddits
           </label>
           <div className="flex flex-wrap gap-2 mb-2">
@@ -512,7 +512,7 @@ function GenerateForm({
                 className={`rounded-md border px-2 py-1 text-xs transition-colors ${
                   selectedSubreddits.includes(sr)
                     ? "border-[#6366F1] bg-[#6366F1]/10 text-[#6366F1]"
-                    : "border-[#2A2A30] text-[#9CA3AF] hover:border-[#3F3F46]"
+                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-hover)]"
                 }`}
               >
                 {sr}
@@ -524,14 +524,14 @@ function GenerateForm({
             value={customSubreddit}
             onChange={(e) => setCustomSubreddit(e.target.value)}
             placeholder="Custom subreddit (e.g. r/react)"
-            className="w-full rounded-md border border-[#2A2A30] bg-[#0F0F10] px-2 py-1 text-xs text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none"
+            className="w-full rounded-md border border-[var(--border)] bg-[var(--bg-base)] px-2 py-1 text-xs text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
           />
         </div>
       )}
 
       {/* Launch Notes */}
       <div className="mb-4">
-        <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">
+        <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">
           Launch Notes
         </label>
         <textarea
@@ -539,9 +539,9 @@ function GenerateForm({
           onChange={(e) => setLaunchNotes(e.target.value)}
           rows={4}
           placeholder="Key talking points, unique angles, specific features to highlight, tone preferences, or any context the AI should use when generating content..."
-          className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none resize-none"
+          className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none resize-none"
         />
-        <p className="mt-1 text-xs text-[#6B7280]">
+        <p className="mt-1 text-xs text-[var(--text-tertiary)]">
           These notes will be used as the primary context for AI-generated content across all platforms.
         </p>
       </div>
@@ -584,15 +584,15 @@ function DraftPreviewCard({
   );
 
   return (
-    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-[#F1F1F3]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           Saved Draft{" "}
-          <span className="text-sm font-normal text-[#9CA3AF]">
+          <span className="text-sm font-normal text-[var(--text-secondary)]">
             ({draft.launch_type.replace("_", " ")})
           </span>
         </h3>
-        <span className="text-xs text-[#6B7280]">
+        <span className="text-xs text-[var(--text-tertiary)]">
           Saved {new Date(draft.updated_at).toLocaleString()}
         </span>
       </div>
@@ -614,7 +614,7 @@ function DraftPreviewCard({
       <div className="flex items-center gap-3">
         <button
           onClick={onEdit}
-          className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
+          className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
         >
           Continue Editing
         </button>
@@ -703,25 +703,25 @@ function DraftEditor({
   };
 
   return (
-    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-[#F1F1F3]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           Draft{" "}
-          <span className="text-sm font-normal text-[#9CA3AF]">
+          <span className="text-sm font-normal text-[var(--text-secondary)]">
             ({draft.launch_type.replace("_", " ")})
           </span>
         </h3>
       </div>
 
       {remainingPlatforms.length === 0 ? (
-        <div className="text-sm text-[#9CA3AF] py-8 text-center">
+        <div className="text-sm text-[var(--text-secondary)] py-8 text-center">
           All platforms have been discarded. Save to delete this draft, or
           regenerate content.
         </div>
       ) : (
         <>
           {/* Platform tabs */}
-          <div className="mb-4 flex gap-1 border-b border-[#2A2A30]">
+          <div className="mb-4 flex gap-1 border-b border-[var(--border)]">
             {remainingPlatforms.map((p) => {
               const label =
                 PLATFORMS.find((pl) => pl.key === p)?.label || p;
@@ -731,8 +731,8 @@ function DraftEditor({
                     onClick={() => setActivePlatform(p)}
                     className={`px-4 py-2 text-sm font-medium transition-colors ${
                       activePlatform === p
-                        ? "border-b-2 border-[#6366F1] text-[#F1F1F3]"
-                        : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                        ? "border-b-2 border-[#6366F1] text-[var(--text-primary)]"
+                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                     }`}
                   >
                     {label}
@@ -740,7 +740,7 @@ function DraftEditor({
                   {remainingPlatforms.length > 1 && (
                     <button
                       onClick={() => setDiscardPlatformConfirm(p)}
-                      className="ml-0.5 rounded p-0.5 text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      className="ml-0.5 rounded p-0.5 text-[var(--text-tertiary)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
                       title={`Discard ${label}`}
                     >
                       <svg
@@ -777,25 +777,25 @@ function DraftEditor({
       {error && <p className="mt-4 text-sm text-[#EF4444]">{error}</p>}
 
       {/* Action bar */}
-      <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-[#2A2A30] pt-4">
+      <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-4">
         <button
           onClick={onRegenerate}
           disabled={generating}
-          className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:bg-[#2A2A30] hover:text-[#F1F1F3] disabled:opacity-50 transition-colors"
+          className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] disabled:opacity-50 transition-colors"
         >
           {generating ? "Regenerating..." : "Regenerate All"}
         </button>
         <button
           onClick={() => setShowDiscardAllConfirm(true)}
           disabled={remainingPlatforms.length === 0}
-          className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:bg-[#2A2A30] hover:text-[#F1F1F3] disabled:opacity-50 transition-colors"
+          className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] disabled:opacity-50 transition-colors"
         >
           Discard All
         </button>
         <button
           onClick={onSave}
           disabled={saving}
-          className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30] disabled:opacity-50 transition-colors"
+          className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] disabled:opacity-50 transition-colors"
         >
           {saving ? "Saving..." : "Save Draft"}
         </button>
@@ -817,18 +817,18 @@ function DraftEditor({
       {/* Discard All Confirmation */}
       {showDiscardAllConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-sm rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-            <h4 className="mb-2 text-base font-semibold text-[#F1F1F3]">
+          <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
+            <h4 className="mb-2 text-base font-semibold text-[var(--text-primary)]">
               Discard all content?
             </h4>
-            <p className="mb-4 text-sm text-[#9CA3AF]">
+            <p className="mb-4 text-sm text-[var(--text-secondary)]">
               This will remove generated content for all platforms. This
               cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDiscardAllConfirm(false)}
-                className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30]"
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
               >
                 Keep
               </button>
@@ -846,21 +846,21 @@ function DraftEditor({
       {/* Per-platform Discard Confirmation */}
       {discardPlatformConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-sm rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-            <h4 className="mb-2 text-base font-semibold text-[#F1F1F3]">
+          <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
+            <h4 className="mb-2 text-base font-semibold text-[var(--text-primary)]">
               Discard{" "}
               {PLATFORMS.find((pl) => pl.key === discardPlatformConfirm)
                 ?.label || discardPlatformConfirm}
               ?
             </h4>
-            <p className="mb-4 text-sm text-[#9CA3AF]">
+            <p className="mb-4 text-sm text-[var(--text-secondary)]">
               This will remove all generated content for this platform. This
               cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDiscardPlatformConfirm(null)}
-                className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30]"
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
               >
                 Keep
               </button>
@@ -951,7 +951,7 @@ function ContentEditor({
   const discardButton = (field: string) => (
     <button
       onClick={() => discardField(field)}
-      className="shrink-0 rounded px-2 py-1 text-xs text-[#9CA3AF] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+      className="shrink-0 rounded px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors"
     >
       Discard
     </button>
@@ -959,7 +959,7 @@ function ContentEditor({
 
   if (!platformContent) {
     return (
-      <div className="text-sm text-[#9CA3AF]">
+      <div className="text-sm text-[var(--text-secondary)]">
         No content generated for this platform.
       </div>
     );
@@ -997,7 +997,7 @@ function ContentEditor({
     }>;
     if (posts.length === 0) {
       return (
-        <div className="text-sm text-[#9CA3AF]">
+        <div className="text-sm text-[var(--text-secondary)]">
           All Reddit posts have been discarded. Use &quot;Regenerate&quot; to generate new content.
         </div>
       );
@@ -1007,7 +1007,7 @@ function ContentEditor({
         {posts.map((post, i) => (
           <div
             key={i}
-            className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-4"
+            className="rounded-lg border border-[var(--border)] bg-[var(--bg-base)] p-4"
           >
             <div className="mb-2">
               <span className="text-sm font-medium text-[#6366F1]">
@@ -1055,7 +1055,7 @@ function ContentEditor({
                     onChange({ ...content, reddit: updated });
                   }
                 }}
-                className="shrink-0 rounded px-2 py-1 text-xs text-[#9CA3AF] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                className="shrink-0 rounded px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors"
               >
                 Discard
               </button>
@@ -1087,7 +1087,7 @@ function ContentEditor({
     const thread = tw.thread || [];
     if (thread.length === 0) {
       return (
-        <div className="text-sm text-[#9CA3AF]">
+        <div className="text-sm text-[var(--text-secondary)]">
           All tweets have been discarded. Use &quot;Regenerate&quot; to generate new content.
         </div>
       );
@@ -1097,7 +1097,7 @@ function ContentEditor({
         {thread.map((tweet, i) => (
           <div key={i} className="relative">
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-xs text-[#9CA3AF]">
+              <span className="text-xs text-[var(--text-secondary)]">
                 Tweet {i + 1}
               </span>
               <div className="flex items-center gap-2">
@@ -1117,12 +1117,12 @@ function ContentEditor({
                       onChange({ ...content, twitter: { thread: updated } });
                     }
                   }}
-                  className="shrink-0 rounded px-2 py-1 text-xs text-[#9CA3AF] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                  className="shrink-0 rounded px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors"
                 >
                   Discard
                 </button>
                 <span
-                  className={`text-xs ${tweet.length > 280 ? "text-[#EF4444]" : "text-[#9CA3AF]"}`}
+                  className={`text-xs ${tweet.length > 280 ? "text-[#EF4444]" : "text-[var(--text-secondary)]"}`}
                 >
                   {tweet.length}/280
                 </span>
@@ -1140,7 +1140,7 @@ function ContentEditor({
                   });
                 }}
                 rows={3}
-                className="flex-1 rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
+                className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none resize-none"
               />
               <CopyButton text={tweet} onCopy={copyToClipboard} />
             </div>
@@ -1166,7 +1166,7 @@ function ContentEditor({
     );
   }
 
-  return <div className="text-sm text-[#9CA3AF]">Unknown platform</div>;
+  return <div className="text-sm text-[var(--text-secondary)]">Unknown platform</div>;
 }
 
 function ContentViewer({
@@ -1184,7 +1184,7 @@ function ContentViewer({
 
   return (
     <div>
-      <div className="mb-4 flex gap-1 border-b border-[#2A2A30]">
+      <div className="mb-4 flex gap-1 border-b border-[var(--border)]">
         {platforms.map((p) => {
           const label = PLATFORMS.find((pl) => pl.key === p)?.label || p;
           return (
@@ -1193,8 +1193,8 @@ function ContentViewer({
               onClick={() => setActive(p)}
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                 active === p
-                  ? "border-b-2 border-[#6366F1] text-[#F1F1F3]"
-                  : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                  ? "border-b-2 border-[#6366F1] text-[var(--text-primary)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
               {label}
@@ -1241,7 +1241,7 @@ function ReadOnlyContent({
     return (
       <div className="space-y-4">
         {posts.map((post, i) => (
-          <div key={i} className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3">
+          <div key={i} className="rounded-lg border border-[var(--border)] bg-[var(--bg-base)] p-3">
             <div className="mb-2 text-sm font-medium text-[#6366F1]">{post.subreddit}</div>
             <ReadOnlyField label="Title" value={post.title} onCopy={copyToClipboard} />
             <div className="mt-2"><ReadOnlyField label="Body" value={post.body} onCopy={copyToClipboard} /></div>
@@ -1267,8 +1267,8 @@ function ReadOnlyContent({
       <div className="space-y-2">
         {(tw.thread || []).map((tweet, i) => (
           <div key={i} className="flex items-start gap-2">
-            <div className="flex-1 rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-2 text-sm text-[#F1F1F3] whitespace-pre-wrap">
-              <span className="text-xs text-[#9CA3AF]">#{i + 1} </span>
+            <div className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] p-2 text-sm text-[var(--text-primary)] whitespace-pre-wrap">
+              <span className="text-xs text-[var(--text-secondary)]">#{i + 1} </span>
               {tweet}
             </div>
             <CopyButton text={tweet} onCopy={copyToClipboard} />
@@ -1311,7 +1311,7 @@ function Field({
   return (
     <div>
       <div className="mb-1 flex items-center justify-between">
-        <label className="text-xs font-medium text-[#9CA3AF]">{label}</label>
+        <label className="text-xs font-medium text-[var(--text-secondary)]">{label}</label>
         <div className="flex items-center gap-1">
           {extraAction}
           <CopyButton text={value} onCopy={onCopy} />
@@ -1322,14 +1322,14 @@ function Field({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={rows}
-          className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
+          className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none resize-none"
         />
       ) : (
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+          className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
         />
       )}
     </div>
@@ -1348,10 +1348,10 @@ function ReadOnlyField({
   return (
     <div>
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-xs font-medium text-[#9CA3AF]">{label}</span>
+        <span className="text-xs font-medium text-[var(--text-secondary)]">{label}</span>
         <CopyButton text={value} onCopy={onCopy} />
       </div>
-      <div className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] whitespace-pre-wrap">
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] whitespace-pre-wrap">
         {value}
       </div>
     </div>
@@ -1376,7 +1376,7 @@ function CopyButton({
   return (
     <button
       onClick={handleCopy}
-      className="shrink-0 rounded px-2 py-1 text-xs text-[#9CA3AF] hover:bg-[#2A2A30] hover:text-[#F1F1F3] transition-colors"
+      className="shrink-0 rounded px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
     >
       {copied ? "Copied!" : "Copy"}
     </button>

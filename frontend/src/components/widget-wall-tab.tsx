@@ -61,7 +61,7 @@ export default function WidgetWallTab({ product, onPlanLimit, activeSection = "s
   }, [fetchData]);
 
   if (loading) {
-    return <div className="text-[#9CA3AF]">Loading...</div>;
+    return <div className="text-[var(--text-secondary)]">Loading...</div>;
   }
 
   return (
@@ -115,8 +115,8 @@ function SpacesSection({
     <div>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-[#F1F1F3]">Spaces</h3>
-          <p className="text-xs text-[#6B7280] mt-1">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Spaces</h3>
+          <p className="text-xs text-[var(--text-tertiary)] mt-1">
             Curate collections of proofs with their own embed code and styling.
           </p>
         </div>
@@ -129,7 +129,7 @@ function SpacesSection({
       </div>
 
       {spaces.length === 0 ? (
-        <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-8 text-center text-[var(--text-secondary)]">
           No spaces yet. Create your first Space to embed curated proofs!
         </div>
       ) : (
@@ -207,7 +207,7 @@ function CreateSpaceButton({
         onKeyDown={(e) => e.key === "Enter" && handleCreate()}
         placeholder="Space name..."
         autoFocus
-        className="rounded-lg border border-[#2A2A30] bg-[#1A1A1F] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+        className="rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
       />
       <button
         onClick={handleCreate}
@@ -218,7 +218,7 @@ function CreateSpaceButton({
       </button>
       <button
         onClick={() => setShowInput(false)}
-        className="rounded-lg border border-[#2A2A30] px-3 py-2 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+        className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
       >
         Cancel
       </button>
@@ -297,7 +297,7 @@ function SpaceProofCard({
       {proof.author_title && (
         <p
           className="text-[10px] truncate mb-2"
-          style={{ color: isDark ? "#6B7280" : "#9CA3AF" }}
+          style={{ color: isDark ? "#6B7280" : "var(--text-secondary)" }}
         >
           {proof.author_title}
         </p>
@@ -464,13 +464,13 @@ function SpaceCard({
   const isDark = config.theme !== "light";
 
   return (
-    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] overflow-hidden">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
       {/* Header: name + delete */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h4 className="text-sm font-medium text-[#F1F1F3]">{space.name}</h4>
+        <h4 className="text-sm font-medium text-[var(--text-primary)]">{space.name}</h4>
         <button
           onClick={handleDelete}
-          className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
+          className="text-xs text-[var(--text-secondary)] hover:text-red-400 transition-colors"
         >
           Delete
         </button>
@@ -479,11 +479,11 @@ function SpaceCard({
       {/* Horizontal proof preview */}
       <div className="px-4 pb-2">
         {loadingPreview ? (
-          <div className="h-24 flex items-center justify-center text-xs text-[#6B7280]">
+          <div className="h-24 flex items-center justify-center text-xs text-[var(--text-tertiary)]">
             Loading preview...
           </div>
         ) : spaceProofs.length === 0 ? (
-          <div className="h-24 flex items-center justify-center rounded-lg border border-dashed border-[#2A2A30] text-xs text-[#6B7280]">
+          <div className="h-24 flex items-center justify-center rounded-lg border border-dashed border-[var(--border)] text-xs text-[var(--text-tertiary)]">
             No proofs added yet. Expand to add proofs.
           </div>
         ) : (
@@ -507,7 +507,7 @@ function SpaceCard({
       {/* Expand chevron */}
       <button
         onClick={handleExpand}
-        className="flex items-center justify-center w-full py-2 border-t border-[#2A2A30] text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#242429] transition-colors"
+        className="flex items-center justify-center w-full py-2 border-t border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
       >
         <svg
           width="18"
@@ -526,18 +526,18 @@ function SpaceCard({
 
       {/* Expanded panel: config + proofs + embed code */}
       {expanded && (
-        <div className="border-t border-[#2A2A30] p-4 space-y-5">
+        <div className="border-t border-[var(--border)] p-4 space-y-5">
           {/* Widget Configuration */}
           <div className="space-y-4">
-            <p className="text-xs font-medium text-[#F1F1F3]">Widget Configuration</p>
+            <p className="text-xs font-medium text-[var(--text-primary)]">Widget Configuration</p>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-[#9CA3AF] mb-1">Theme</label>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">Theme</label>
                 <select
                   value={config.theme}
                   onChange={(e) => handleConfigChange({ theme: e.target.value })}
-                  className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
                 >
                   <option value="dark">Dark</option>
                   <option value="dim">Dim</option>
@@ -547,7 +547,7 @@ function SpaceCard({
               </div>
 
               <div>
-                <label className="block text-xs text-[#9CA3AF] mb-1">
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
                   Border Radius: {config.border_radius}px
                 </label>
                 <input
@@ -563,7 +563,7 @@ function SpaceCard({
               </div>
 
               <div>
-                <label className="block text-xs text-[#9CA3AF] mb-1">
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
                   Card Spacing: {config.card_spacing}px
                 </label>
                 <input
@@ -580,14 +580,14 @@ function SpaceCard({
             </div>
 
             <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.show_platform_icon}
                   onChange={(e) =>
                     handleConfigChange({ show_platform_icon: e.target.checked })
                   }
-                  className="rounded border-[#2A2A30]"
+                  className="rounded border-[var(--border)]"
                 />
                 Show platform icons
               </label>
@@ -595,7 +595,7 @@ function SpaceCard({
               <div>
                 <label
                   className={`flex items-center gap-2 text-sm ${
-                    userPlan === "business" ? "text-[#F1F1F3] cursor-pointer" : "text-[#6B7280] cursor-not-allowed"
+                    userPlan === "business" ? "text-[var(--text-primary)] cursor-pointer" : "text-[var(--text-tertiary)] cursor-not-allowed"
                   }`}
                 >
                   <input
@@ -605,12 +605,12 @@ function SpaceCard({
                     onChange={(e) =>
                       handleConfigChange({ show_branding: !e.target.checked })
                     }
-                    className="rounded border-[#2A2A30]"
+                    className="rounded border-[var(--border)]"
                   />
                   Remove &quot;Powered by ShipProof&quot;
                 </label>
                 {userPlan !== "business" && (
-                  <p className="text-[10px] text-[#6B7280] ml-6 mt-0.5">
+                  <p className="text-[10px] text-[var(--text-tertiary)] ml-6 mt-0.5">
                     Business plan only
                   </p>
                 )}
@@ -620,11 +620,11 @@ function SpaceCard({
 
           {/* Manage Proofs */}
           <div className="space-y-3">
-            <p className="text-xs font-medium text-[#F1F1F3]">Proofs</p>
+            <p className="text-xs font-medium text-[var(--text-primary)]">Proofs</p>
             {loadingAllProofs ? (
-              <p className="text-xs text-[#6B7280]">Loading proofs...</p>
+              <p className="text-xs text-[var(--text-tertiary)]">Loading proofs...</p>
             ) : allProofs.length === 0 ? (
-              <p className="text-xs text-[#6B7280]">
+              <p className="text-xs text-[var(--text-tertiary)]">
                 No proofs available. Add proofs in the Proofs tab first.
               </p>
             ) : (
@@ -632,20 +632,20 @@ function SpaceCard({
                 {allProofs.map((proof) => (
                   <label
                     key={proof.id}
-                    className="flex items-center gap-3 rounded-lg bg-[#0F0F10] p-2.5 cursor-pointer hover:bg-[#242429] transition-colors"
+                    className="flex items-center gap-3 rounded-lg bg-[var(--bg-base)] p-2.5 cursor-pointer hover:bg-[var(--bg-elevated)] transition-colors"
                   >
                     <input
                       type="checkbox"
                       checked={spaceProofIds.has(proof.id)}
                       onChange={() => handleToggleProof(proof.id)}
-                      className="rounded border-[#2A2A30] flex-shrink-0"
+                      className="rounded border-[var(--border)] flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm text-[#F1F1F3]">
+                      <span className="text-sm text-[var(--text-primary)]">
                         {proof.author_name}
                       </span>
                       {proof.content_text && (
-                        <p className="text-xs text-[#6B7280] truncate">
+                        <p className="text-xs text-[var(--text-tertiary)] truncate">
                           {proof.content_text}
                         </p>
                       )}
@@ -658,10 +658,10 @@ function SpaceCard({
 
           {/* Embed Code */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-[#F1F1F3]">Embed Code</p>
-            <div className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3">
+            <p className="text-xs font-medium text-[var(--text-primary)]">Embed Code</p>
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-base)] p-3">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-[#6B7280]">Copy and paste into your website</p>
+                <p className="text-xs text-[var(--text-tertiary)]">Copy and paste into your website</p>
                 <button
                   onClick={handleCopy}
                   className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
@@ -669,7 +669,7 @@ function SpaceCard({
                   {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
-              <pre className="text-xs text-[#9CA3AF] overflow-x-auto font-mono">
+              <pre className="text-xs text-[var(--text-secondary)] overflow-x-auto font-mono">
                 {embedCode}
               </pre>
             </div>
@@ -698,7 +698,7 @@ function WallsSection({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-[#F1F1F3]">Wall of Love</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Wall of Love</h3>
         <CreateWallButton
           product={product}
           onCreated={onUpdated}
@@ -708,7 +708,7 @@ function WallsSection({
       </div>
 
       {walls.length === 0 ? (
-        <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-8 text-center text-[var(--text-secondary)]">
           No walls yet. Create your first Wall of Love!
         </div>
       ) : (
@@ -785,7 +785,7 @@ function CreateWallButton({
         onKeyDown={(e) => e.key === "Enter" && handleCreate()}
         placeholder="Wall name..."
         autoFocus
-        className="rounded-lg border border-[#2A2A30] bg-[#1A1A1F] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+        className="rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
       />
       <button
         onClick={handleCreate}
@@ -796,7 +796,7 @@ function CreateWallButton({
       </button>
       <button
         onClick={() => setShowInput(false)}
-        className="rounded-lg border border-[#2A2A30] px-3 py-2 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+        className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
       >
         Cancel
       </button>
@@ -836,9 +836,9 @@ function WallCard({
   };
 
   return (
-    <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
       <div className="flex items-center justify-between mb-1">
-        <h4 className="text-sm font-medium text-[#F1F1F3]">{wall.name}</h4>
+        <h4 className="text-sm font-medium text-[var(--text-primary)]">{wall.name}</h4>
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push(`/dashboard/products/${product.id}/walls/${wall.id}`)}
@@ -848,7 +848,7 @@ function WallCard({
           </button>
           <button
             onClick={handleDelete}
-            className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
+            className="text-xs text-[var(--text-secondary)] hover:text-red-400 transition-colors"
           >
             Delete
           </button>
@@ -865,7 +865,7 @@ function WallCard({
         </a>
         <button
           onClick={handleCopy}
-          className="text-xs text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors flex-shrink-0"
+          className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
         >
           {copied ? "Copied!" : "Copy"}
         </button>

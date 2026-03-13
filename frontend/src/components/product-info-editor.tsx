@@ -63,14 +63,14 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div
-        className="w-full max-w-lg rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6 shadow-2xl"
+        className="w-full max-w-lg rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-[#F1F1F3]">Edit Product</h2>
+          <h2 className="text-lg font-medium text-[var(--text-primary)]">Edit Product</h2>
           <button
             onClick={onClose}
-            className="text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -85,29 +85,29 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
 
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-sm text-[#9CA3AF]">
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">
               Product Name *
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
               required
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-[#9CA3AF]">URL</label>
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">URL</label>
             <input
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://myproduct.com"
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-[#9CA3AF]">
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">
               Short Description
             </label>
             <input
@@ -115,11 +115,11 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="AI-powered prompt optimizer for developers"
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-[#9CA3AF]">
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">
               Detailed Description
             </label>
             <textarea
@@ -127,11 +127,11 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
               onChange={(e) => setDescriptionLong(e.target.value)}
               placeholder="2-3 sentences expanding on the core value..."
               rows={3}
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none resize-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none resize-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-[#9CA3AF]">
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">
               Target Audience
             </label>
             <input
@@ -139,7 +139,7 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
               value={targetAudience}
               onChange={(e) => setTargetAudience(e.target.value)}
               placeholder="e.g. indie hackers who use Claude Code daily"
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
             />
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
           </button>
           <button
             onClick={onClose}
-            className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
+            className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
           >
             Cancel
           </button>

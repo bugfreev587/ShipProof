@@ -47,16 +47,35 @@ const themes: Record<DashboardTheme, ThemeColors> = {
     textTertiary: "#8A8A94",
   },
   light: {
-    bgBase: "#F9FAFB",
+    bgBase: "#EEEEF0",
     bgSurface: "#FFFFFF",
-    bgElevated: "#F3F4F6",
-    border: "#E5E7EB",
-    borderHover: "#D1D5DB",
-    textPrimary: "#111827",
-    textSecondary: "#6B7280",
-    textTertiary: "#9CA3AF",
+    bgElevated: "#E0E1E6",
+    border: "#D1D5DB",
+    borderHover: "#B0B5BD",
+    textPrimary: "#000000",
+    textSecondary: "#374151",
+    textTertiary: "#6B7280",
   },
 };
+
+// CSS variable names mapped from ThemeColors keys
+const cssVarMap: Record<keyof ThemeColors, string> = {
+  bgBase: "--bg-base",
+  bgSurface: "--bg-surface",
+  bgElevated: "--bg-elevated",
+  border: "--border",
+  borderHover: "--border-hover",
+  textPrimary: "--text-primary",
+  textSecondary: "--text-secondary",
+  textTertiary: "--text-tertiary",
+};
+
+function applyCssVars(colors: ThemeColors) {
+  const root = document.documentElement;
+  for (const [key, cssVar] of Object.entries(cssVarMap)) {
+    root.style.setProperty(cssVar, colors[key as keyof ThemeColors]);
+  }
+}
 
 interface ThemeContextValue {
   theme: DashboardTheme;
@@ -86,6 +105,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem("shipproof-theme") as DashboardTheme | null;
     if (saved && themes[saved]) {
       setThemeState(saved);
+      applyCssVars(themes[saved]);
+    } else {
+      applyCssVars(themes.dark);
     }
     setMounted(true);
   }, []);
@@ -93,6 +115,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = (t: DashboardTheme) => {
     setThemeState(t);
     localStorage.setItem("shipproof-theme", t);
+    applyCssVars(themes[t]);
   };
 
   const colors = themes[theme] || themes.dark;

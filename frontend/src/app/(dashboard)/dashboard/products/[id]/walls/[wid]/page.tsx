@@ -43,22 +43,22 @@ function getThemeColors(theme: string) {
     case "dim":
       return {
         bgBase: "#15202B", bgCard: "#1E2D3D", borderColor: "#2B3D4F",
-        textPrimary: "#F1F1F3", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
+        textPrimary: "var(--text-primary)", textSecondary: "var(--text-secondary)", textTertiary: "var(--text-tertiary)",
       };
     case "gray":
       return {
-        bgBase: "#2A2A30", bgCard: "#343440", borderColor: "#45454F",
-        textPrimary: "#F1F1F3", textSecondary: "#B0B0B8", textTertiary: "#8A8A94",
+        bgBase: "var(--border)", bgCard: "#343440", borderColor: "#45454F",
+        textPrimary: "var(--text-primary)", textSecondary: "#B0B0B8", textTertiary: "#8A8A94",
       };
     case "light":
       return {
         bgBase: "#F9FAFB", bgCard: "#FFFFFF", borderColor: "#E5E7EB",
-        textPrimary: "#111827", textSecondary: "#6B7280", textTertiary: "#9CA3AF",
+        textPrimary: "#111827", textSecondary: "var(--text-tertiary)", textTertiary: "var(--text-secondary)",
       };
     default: // dark
       return {
-        bgBase: "#0F0F10", bgCard: "#1A1A1F", borderColor: "#2A2A30",
-        textPrimary: "#F1F1F3", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
+        bgBase: "var(--bg-base)", bgCard: "var(--bg-surface)", borderColor: "var(--border)",
+        textPrimary: "var(--text-primary)", textSecondary: "var(--text-secondary)", textTertiary: "var(--text-tertiary)",
       };
   }
 }
@@ -152,7 +152,7 @@ export default function WallEditPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] text-[#9CA3AF]">
+      <div className="flex items-center justify-center min-h-[60vh] text-[var(--text-secondary)]">
         Loading...
       </div>
     );
@@ -181,7 +181,7 @@ export default function WallEditPage() {
       {/* Back link */}
       <Link
         href={`/dashboard/products/${productId}?tab=walls`}
-        className="inline-flex items-center gap-1 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors mb-4"
+        className="inline-flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
@@ -189,23 +189,23 @@ export default function WallEditPage() {
         Back to {product.name}
       </Link>
 
-      <h1 className="text-xl font-semibold text-[#F1F1F3] mb-6">
+      <h1 className="text-xl font-semibold text-[var(--text-primary)] mb-6">
         Edit Wall: {wall.name}
       </h1>
 
       <div className="flex gap-6" style={{ minHeight: "calc(100vh - 200px)" }}>
         {/* Left panel — edit controls */}
         <div className="w-1/4 min-w-[280px] flex-shrink-0 space-y-6">
-          <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-5 space-y-5">
-            <h2 className="text-sm font-medium text-[#F1F1F3]">Configuration</h2>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-5">
+            <h2 className="text-sm font-medium text-[var(--text-primary)]">Configuration</h2>
 
             {/* Theme */}
             <div>
-              <label className="block text-xs text-[#9CA3AF] mb-1">Theme</label>
+              <label className="block text-xs text-[var(--text-secondary)] mb-1">Theme</label>
               <select
                 value={wall.theme}
                 onChange={(e) => handleConfigChange({ theme: e.target.value })}
-                className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
               >
                 <option value="dark">Dark</option>
                 <option value="dim">Dim</option>
@@ -216,7 +216,7 @@ export default function WallEditPage() {
 
             {/* Border Radius */}
             <div>
-              <label className="block text-xs text-[#9CA3AF] mb-1">
+              <label className="block text-xs text-[var(--text-secondary)] mb-1">
                 Border Radius: {wall.border_radius}px
               </label>
               <input
@@ -231,7 +231,7 @@ export default function WallEditPage() {
 
             {/* Card Spacing */}
             <div>
-              <label className="block text-xs text-[#9CA3AF] mb-1">
+              <label className="block text-xs text-[var(--text-secondary)] mb-1">
                 Card Spacing: {wall.card_spacing}px
               </label>
               <input
@@ -246,12 +246,12 @@ export default function WallEditPage() {
 
             {/* Checkboxes */}
             <div className="space-y-3">
-              <label className="flex items-center gap-2 text-sm text-[#F1F1F3] cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={wall.show_platform_icon}
                   onChange={(e) => handleConfigChange({ show_platform_icon: e.target.checked })}
-                  className="rounded border-[#2A2A30]"
+                  className="rounded border-[var(--border)]"
                 />
                 Show platform icons
               </label>
@@ -259,7 +259,7 @@ export default function WallEditPage() {
               <div>
                 <label
                   className={`flex items-center gap-2 text-sm ${
-                    userPlan === "business" ? "text-[#F1F1F3] cursor-pointer" : "text-[#6B7280] cursor-not-allowed"
+                    userPlan === "business" ? "text-[var(--text-primary)] cursor-pointer" : "text-[var(--text-tertiary)] cursor-not-allowed"
                   }`}
                 >
                   <input
@@ -267,12 +267,12 @@ export default function WallEditPage() {
                     checked={!wall.show_branding}
                     disabled={userPlan !== "business"}
                     onChange={(e) => handleConfigChange({ show_branding: !e.target.checked })}
-                    className="rounded border-[#2A2A30]"
+                    className="rounded border-[var(--border)]"
                   />
                   Remove &quot;Powered by ShipProof&quot;
                 </label>
                 {userPlan !== "business" && (
-                  <p className="text-[10px] text-[#6B7280] ml-6 mt-0.5">
+                  <p className="text-[10px] text-[var(--text-tertiary)] ml-6 mt-0.5">
                     Business plan only
                   </p>
                 )}
@@ -281,10 +281,10 @@ export default function WallEditPage() {
           </div>
 
           {/* Proofs list */}
-          <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-5 space-y-3">
-            <h2 className="text-sm font-medium text-[#F1F1F3]">Proofs</h2>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-3">
+            <h2 className="text-sm font-medium text-[var(--text-primary)]">Proofs</h2>
             {allProofs.length === 0 ? (
-              <p className="text-xs text-[#6B7280]">
+              <p className="text-xs text-[var(--text-tertiary)]">
                 No proofs available. Add proofs in the Proofs tab first.
               </p>
             ) : (
@@ -292,20 +292,20 @@ export default function WallEditPage() {
                 {allProofs.map((proof) => (
                   <label
                     key={proof.id}
-                    className="flex items-center gap-3 rounded-lg bg-[#0F0F10] p-2.5 cursor-pointer hover:bg-[#242429] transition-colors"
+                    className="flex items-center gap-3 rounded-lg bg-[var(--bg-base)] p-2.5 cursor-pointer hover:bg-[var(--bg-elevated)] transition-colors"
                   >
                     <input
                       type="checkbox"
                       checked={wallProofIds.has(proof.id)}
                       onChange={() => handleToggleProof(proof.id)}
-                      className="rounded border-[#2A2A30] flex-shrink-0"
+                      className="rounded border-[var(--border)] flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm text-[#F1F1F3]">
+                      <span className="text-sm text-[var(--text-primary)]">
                         {proof.author_name}
                       </span>
                       {proof.content_text && (
-                        <p className="text-xs text-[#6B7280] truncate">
+                        <p className="text-xs text-[var(--text-tertiary)] truncate">
                           {proof.content_text}
                         </p>
                       )}
@@ -319,9 +319,9 @@ export default function WallEditPage() {
 
         {/* Right panel — live preview */}
         <div className="flex-1 min-w-0">
-          <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] overflow-hidden h-full">
-            <div className="px-5 py-3 border-b border-[#2A2A30]">
-              <h2 className="text-sm font-medium text-[#F1F1F3]">Live Preview</h2>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden h-full">
+            <div className="px-5 py-3 border-b border-[var(--border)]">
+              <h2 className="text-sm font-medium text-[var(--text-primary)]">Live Preview</h2>
             </div>
             <WallPreview
               wall={wall}

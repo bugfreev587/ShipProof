@@ -115,7 +115,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
   });
 
   if (loading) {
-    return <div className="text-[#9CA3AF]">Loading proofs...</div>;
+    return <div className="text-[var(--text-secondary)]">Loading proofs...</div>;
   }
 
   return (
@@ -140,7 +140,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
           placeholder="Search proofs..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="rounded-lg border border-[#2A2A30] bg-[#1A1A1F] px-3 py-2 text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:border-[#6366F1] focus:outline-none"
+          className="rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
         />
 
         {allTags.length > 0 && (
@@ -150,7 +150,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 filterTag === ""
                   ? "bg-[#6366F1] text-white"
-                  : "bg-[#242429] text-[#9CA3AF] hover:text-[#F1F1F3]"
+                  : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
               All
@@ -162,7 +162,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                   filterTag === tag
                     ? "bg-[#6366F1] text-white"
-                    : "bg-[#242429] text-[#9CA3AF] hover:text-[#F1F1F3]"
+                    : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 {tag}
@@ -174,7 +174,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
       {/* Proof Cards */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8 text-center text-[#9CA3AF]">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-8 text-center text-[var(--text-secondary)]">
           {proofs.length === 0
             ? "No proofs yet. Add your first proof!"
             : "No proofs match your filters."}
@@ -186,7 +186,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
             return (
               <div
                 key={proof.id}
-                className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4"
+                className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-4"
               >
                 <div className="flex items-start gap-3">
                   {/* Avatar or Platform badge */}
@@ -203,11 +203,11 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                   <div className="flex-1 min-w-0">
                     {/* Author */}
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-[#F1F1F3]">
+                      <span className="text-sm font-medium text-[var(--text-primary)]">
                         {proof.author_name}
                       </span>
                       {proof.author_title && (
-                        <span className="text-xs text-[#6B7280]">
+                        <span className="text-xs text-[var(--text-tertiary)]">
                           {proof.author_title}
                         </span>
                       )}
@@ -215,7 +215,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
                     {/* Content */}
                     {proof.content_text && (
-                      <p className="text-sm text-[#9CA3AF] mb-2 line-clamp-3">
+                      <p className="text-sm text-[var(--text-secondary)] mb-2 line-clamp-3">
                         {proof.content_text}
                       </p>
                     )}
@@ -225,7 +225,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                         <img
                           src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
                           alt="Proof screenshot"
-                          className="max-h-40 rounded-lg border border-[#2A2A30]"
+                          className="max-h-40 rounded-lg border border-[var(--border)]"
                         />
                       </div>
                     )}
@@ -236,7 +236,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                         {proof.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-full bg-[#242429] px-2 py-0.5 text-xs text-[#9CA3AF]"
+                            className="rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-secondary)]"
                           >
                             {tag}
                           </span>
@@ -263,7 +263,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                     className={`text-lg ${
                       proof.is_featured
                         ? "text-yellow-400"
-                        : "text-[#6B7280] hover:text-yellow-400"
+                        : "text-[var(--text-tertiary)] hover:text-yellow-400"
                     } transition-colors`}
                     title={
                       proof.is_featured ? "Unfeature" : "Feature this proof"
@@ -275,13 +275,13 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
                 {/* Expanded action bar */}
                 {isExpanded && (
-                  <div className="mt-3 flex items-center justify-end gap-4 border-t border-[#2A2A30] pt-3">
+                  <div className="mt-3 flex items-center justify-end gap-4 border-t border-[var(--border)] pt-3">
                     <button
                       onClick={() => {
                         setEditingProof(proof);
                         setExpandedProofId(null);
                       }}
-                      className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+                      className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -293,7 +293,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                         setDeletingProof(proof);
                         setExpandedProofId(null);
                       }}
-                      className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-red-400 transition-colors"
+                      className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-red-400 transition-colors"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -305,7 +305,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                         setAddToSpaceProof(proof);
                         setExpandedProofId(null);
                       }}
-                      className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-[#6366F1] transition-colors"
+                      className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[#6366F1] transition-colors"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
@@ -321,7 +321,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                     onClick={() =>
                       setExpandedProofId(isExpanded ? null : proof.id)
                     }
-                    className="text-[#6B7280] hover:text-[#F1F1F3] transition-colors p-1"
+                    className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
                   >
                     <svg
                       className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
@@ -361,18 +361,18 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
       {/* Delete Confirmation */}
       {deletingProof && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-sm rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-            <h3 className="text-lg font-semibold text-[#F1F1F3] mb-2">
+          <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
               Delete Proof
             </h3>
-            <p className="text-sm text-[#9CA3AF] mb-4">
+            <p className="text-sm text-[var(--text-secondary)] mb-4">
               Are you sure you want to delete this proof from{" "}
               {deletingProof.author_name}? This cannot be undone.
             </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setDeletingProof(null)}
-                className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               >
                 Cancel
               </button>
@@ -625,8 +625,8 @@ function ProofModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-        <h3 className="text-lg font-semibold text-[#F1F1F3] mb-4">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           {isEdit ? "Edit Proof" : "Add Proof"}
         </h3>
 
@@ -639,41 +639,41 @@ function ProofModal({
         <div className="space-y-3">
           {/* Author Name */}
           <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">
+            <label className="block text-xs text-[var(--text-secondary)] mb-1">
               Author Name *
             </label>
             <input
               type="text"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
               placeholder="John Doe"
             />
           </div>
 
           {/* Author Title */}
           <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">
+            <label className="block text-xs text-[var(--text-secondary)] mb-1">
               Author Title
             </label>
             <input
               type="text"
               value={authorTitle}
               onChange={(e) => setAuthorTitle(e.target.value)}
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
               placeholder="CEO at Acme Inc."
             />
           </div>
 
           {/* Platform */}
           <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">
+            <label className="block text-xs text-[var(--text-secondary)] mb-1">
               Source Platform
             </label>
             <select
               value={sourcePlatform}
               onChange={(e) => setSourcePlatform(e.target.value)}
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
             >
               {PLATFORMS.map((p) => (
                 <option key={p.key} value={p.key}>
@@ -685,11 +685,11 @@ function ProofModal({
 
           {/* Author Avatar */}
           <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">
+            <label className="block text-xs text-[var(--text-secondary)] mb-1">
               Author Avatar (optional)
             </label>
             {uploadingAvatar ? (
-              <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+              <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -701,12 +701,12 @@ function ProofModal({
                 <img
                   src={authorAvatarUrl}
                   alt="Avatar"
-                  className="h-10 w-10 rounded-full object-cover border border-[#2A2A30]"
+                  className="h-10 w-10 rounded-full object-cover border border-[var(--border)]"
                 />
                 <button
                   type="button"
                   onClick={() => setAuthorAvatarUrl("")}
-                  className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
+                  className="text-xs text-[var(--text-secondary)] hover:text-red-400 transition-colors"
                 >
                   Remove
                 </button>
@@ -715,7 +715,7 @@ function ProofModal({
               <div
                 onPaste={handleAvatarPaste}
                 tabIndex={0}
-                className="flex items-center gap-2 rounded-lg border border-dashed border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#6B7280] hover:border-[#6366F1]/40 focus:outline-none focus:border-[#6366F1] transition-colors cursor-text"
+                className="flex items-center gap-2 rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-tertiary)] hover:border-[#6366F1]/40 focus:outline-none focus:border-[#6366F1] transition-colors cursor-text"
               >
                 <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
@@ -726,7 +726,7 @@ function ProofModal({
                   onChange={(e) => setAuthorAvatarUrl(e.target.value)}
                   onPaste={handleAvatarPaste}
                   placeholder="Paste avatar image or URL"
-                  className="flex-1 bg-transparent text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:outline-none"
+                  className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none"
                 />
               </div>
             )}
@@ -735,17 +735,17 @@ function ProofModal({
           {/* Content mode toggle (only for add) */}
           {!isEdit && (
             <div>
-              <label className="block text-xs text-[#9CA3AF] mb-1">
+              <label className="block text-xs text-[var(--text-secondary)] mb-1">
                 Content
               </label>
-              <div className="flex gap-1 rounded-lg bg-[#0F0F10] p-1 mb-3">
+              <div className="flex gap-1 rounded-lg bg-[var(--bg-base)] p-1 mb-3">
                 <button
                   type="button"
                   onClick={() => setContentMode("text")}
                   className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                     contentMode === "text"
-                      ? "bg-[#242429] text-[#F1F1F3]"
-                      : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                      ? "bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   }`}
                 >
                   Paste Text
@@ -755,8 +755,8 @@ function ProofModal({
                   onClick={() => setContentMode("screenshot")}
                   className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                     contentMode === "screenshot"
-                      ? "bg-[#242429] text-[#F1F1F3]"
-                      : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                      ? "bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   }`}
                 >
                   Paste Screenshot
@@ -769,7 +769,7 @@ function ProofModal({
           {(contentMode === "text" || isEdit) && (
             <div>
               {isEdit && (
-                <label className="block text-xs text-[#9CA3AF] mb-1">
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
                   Proof Text
                 </label>
               )}
@@ -777,7 +777,7 @@ function ProofModal({
                 value={contentText}
                 onChange={(e) => setContentText(e.target.value)}
                 rows={4}
-                className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none resize-none"
                 placeholder="Paste the testimonial or proof text here..."
               />
             </div>
@@ -788,15 +788,15 @@ function ProofModal({
             <div>
               {imagePreview ? (
                 <div>
-                  <div className="relative rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-2">
+                  <div className="relative rounded-lg border border-[var(--border)] bg-[var(--bg-base)] p-2">
                     <img
                       src={imagePreview}
                       alt="Screenshot preview"
                       className="max-h-48 w-full rounded object-contain"
                     />
                     {extracting && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-[#0F0F10]/60 rounded">
-                        <div className="flex items-center gap-2 text-sm text-[#9CA3AF]">
+                      <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-base)]/60 rounded">
+                        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                           <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -808,24 +808,24 @@ function ProofModal({
                     <button
                       type="button"
                       onClick={() => handleImageSelected(null)}
-                      className="absolute top-3 right-3 rounded-full bg-[#0F0F10]/80 p-1 text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+                      className="absolute top-3 right-3 rounded-full bg-[var(--bg-base)]/80 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
-                  <p className="mt-1 text-xs text-[#6B7280]">{imageFile?.name}</p>
+                  <p className="mt-1 text-xs text-[var(--text-tertiary)]">{imageFile?.name}</p>
 
                   <div className="mt-3">
-                    <label className="block text-xs text-[#9CA3AF] mb-1">
+                    <label className="block text-xs text-[var(--text-secondary)] mb-1">
                       Proof Text
                     </label>
                     <textarea
                       value={contentText}
                       onChange={(e) => setContentText(e.target.value)}
                       rows={3}
-                      className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
+                      className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none resize-none"
                       placeholder={extracting ? "Extracting..." : "Extracted text will appear here..."}
                     />
                   </div>
@@ -840,10 +840,10 @@ function ProofModal({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 0l3-3m-3 3l3 3M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
                   </svg>
                   <div>
-                    <p className="text-sm font-medium text-[#F1F1F3]">
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
                       Paste screenshot here
                     </p>
-                    <p className="text-xs text-[#9CA3AF]">
+                    <p className="text-xs text-[var(--text-secondary)]">
                       Press {typeof navigator !== "undefined" && navigator?.platform?.includes("Mac") ? "\u2318V" : "Ctrl+V"} to paste from clipboard
                     </p>
                   </div>
@@ -854,34 +854,34 @@ function ProofModal({
 
           {/* Source URL */}
           <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">
+            <label className="block text-xs text-[var(--text-secondary)] mb-1">
               Source URL (optional)
             </label>
             <input
               type="url"
               value={sourceURL}
               onChange={(e) => setSourceURL(e.target.value)}
-              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
               placeholder="https://twitter.com/user/status/..."
             />
-            <p className="mt-1 text-xs text-[#6B7280]">
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
               Link to the original post. Visitors can click to view the source.
             </p>
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">Tags</label>
+            <label className="block text-xs text-[var(--text-secondary)] mb-1">Tags</label>
             <div className="flex gap-1 flex-wrap mb-2">
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 rounded-full bg-[#242429] px-2 py-0.5 text-xs text-[#9CA3AF]"
+                  className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-secondary)]"
                 >
                   {tag}
                   <button
                     onClick={() => setTags(tags.filter((t) => t !== tag))}
-                    className="text-[#6B7280] hover:text-red-400"
+                    className="text-[var(--text-tertiary)] hover:text-red-400"
                   >
                     x
                   </button>
@@ -899,13 +899,13 @@ function ProofModal({
                     handleAddTag();
                   }
                 }}
-                className="flex-1 rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-1.5 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+                className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
                 placeholder="Type tag + Enter"
               />
             </div>
             {tagSuggestions.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
-                <span className="text-xs text-[#6B7280] mr-1 self-center">
+                <span className="text-xs text-[var(--text-tertiary)] mr-1 self-center">
                   Existing:
                 </span>
                 {tagSuggestions.map((t) => (
@@ -913,7 +913,7 @@ function ProofModal({
                     key={t}
                     type="button"
                     onClick={() => setTags([...tags, t])}
-                    className="rounded-full border border-[#2A2A30] bg-[#0F0F10] px-2 py-0.5 text-xs text-[#9CA3AF] hover:border-[#6366F1] hover:text-[#6366F1] transition-colors"
+                    className="rounded-full border border-[var(--border)] bg-[var(--bg-base)] px-2 py-0.5 text-xs text-[var(--text-secondary)] hover:border-[#6366F1] hover:text-[#6366F1] transition-colors"
                   >
                     + {t}
                   </button>
@@ -927,7 +927,7 @@ function ProofModal({
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+            className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             Cancel
           </button>
@@ -1039,15 +1039,15 @@ function AddToSpaceModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-sm rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-        <h3 className="text-lg font-semibold text-[#F1F1F3] mb-4">
+      <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           Add to Space
         </h3>
 
         {loading ? (
-          <p className="text-sm text-[#9CA3AF]">Loading spaces...</p>
+          <p className="text-sm text-[var(--text-secondary)]">Loading spaces...</p>
         ) : spaces.length === 0 ? (
-          <p className="text-sm text-[#9CA3AF]">
+          <p className="text-sm text-[var(--text-secondary)]">
             No spaces yet. Create a space in the Spaces tab first.
           </p>
         ) : (
@@ -1055,15 +1055,15 @@ function AddToSpaceModal({
             {spaces.map((space) => (
               <label
                 key={space.id}
-                className="flex items-center gap-3 rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2.5 cursor-pointer hover:border-[#3F3F46] transition-colors"
+                className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2.5 cursor-pointer hover:border-[var(--border-hover)] transition-colors"
               >
                 <input
                   type="checkbox"
                   checked={selectedSpaceIds.has(space.id)}
                   onChange={() => toggleSpace(space.id)}
-                  className="h-4 w-4 rounded border-[#2A2A30] bg-[#0F0F10] text-[#6366F1] focus:ring-[#6366F1] focus:ring-offset-0"
+                  className="h-4 w-4 rounded border-[var(--border)] bg-[var(--bg-base)] text-[#6366F1] focus:ring-[#6366F1] focus:ring-offset-0"
                 />
-                <span className="text-sm text-[#F1F1F3]">{space.name}</span>
+                <span className="text-sm text-[var(--text-primary)]">{space.name}</span>
               </label>
             ))}
           </div>
@@ -1072,7 +1072,7 @@ function AddToSpaceModal({
         <div className="mt-4 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#9CA3AF] hover:text-[#F1F1F3] transition-colors"
+            className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             Cancel
           </button>
