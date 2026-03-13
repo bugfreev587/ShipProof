@@ -259,30 +259,44 @@ function SpaceProofCard({
       className="flex-shrink-0 border p-3 flex flex-col"
       style={{
         width: "220px",
-        height: showFull ? "auto" : "120px",
-        minHeight: "120px",
+        height: showFull ? "auto" : "160px",
+        minHeight: "160px",
         borderRadius: `${borderRadius}px`,
         borderColor: isDark ? "#2A2A30" : "#E5E7EB",
         background: isDark ? "#242429" : "#FFFFFF",
       }}
     >
       <div className="flex items-center gap-2 mb-1">
-        {showPlatformIcon && (
+        {proof.author_avatar_url ? (
+          <img
+            src={proof.author_avatar_url}
+            alt={proof.author_name}
+            className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+          />
+        ) : showPlatformIcon ? (
           <span
-            className={`inline-flex items-center justify-center w-4 h-4 rounded text-[8px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+            className={`inline-flex items-center justify-center w-5 h-5 rounded text-[8px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
           >
             {PLATFORM_LABELS[proof.source_platform] || "O"}
           </span>
-        )}
+        ) : null}
         <span
-          className="text-xs font-medium truncate"
+          className="text-xs font-semibold truncate"
           style={{ color: isDark ? "#F1F1F3" : "#111827" }}
         >
           {proof.author_name}
         </span>
       </div>
+      {proof.author_title && (
+        <p
+          className="text-[10px] truncate mb-2"
+          style={{ color: isDark ? "#6B7280" : "#9CA3AF" }}
+        >
+          {proof.author_title}
+        </p>
+      )}
       {proof.content_text && (
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden mt-1">
           <p
             className="text-[11px] leading-relaxed"
             style={{ color: isDark ? "#9CA3AF" : "#4B5563" }}

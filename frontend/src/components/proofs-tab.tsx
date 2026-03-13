@@ -188,8 +188,16 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                 className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-4"
               >
                 <div className="flex items-start gap-3">
-                  {/* Platform badge */}
-                  <PlatformBadge platform={proof.source_platform} />
+                  {/* Avatar or Platform badge */}
+                  {proof.author_avatar_url ? (
+                    <img
+                      src={proof.author_avatar_url}
+                      alt={proof.author_name}
+                      className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <PlatformBadge platform={proof.source_platform} />
+                  )}
 
                   <div className="flex-1 min-w-0">
                     {/* Author */}
