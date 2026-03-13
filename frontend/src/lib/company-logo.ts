@@ -87,5 +87,5 @@ export function extractCompanyDomain(authorTitle: string | null): string | null 
 export function getCompanyLogoUrl(authorTitle: string | null): string | null {
   const domain = extractCompanyDomain(authorTitle);
   if (!domain) return null;
-  return `https://logo.clearbit.com/${domain}`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 }
