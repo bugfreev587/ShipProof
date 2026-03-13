@@ -1,0 +1,2 @@
+ALTER TYPE widget_theme ADD VALUE IF NOT EXISTS 'dim';
+ALTER TYPE widget_theme ADD VALUE IF NOT EXISTS 'gray';

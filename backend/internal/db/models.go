@@ -278,6 +278,8 @@ type WidgetTheme string
 
 const (
 	WidgetThemeDark  WidgetTheme = "dark"
+	WidgetThemeDim   WidgetTheme = "dim"
+	WidgetThemeGray  WidgetTheme = "gray"
 	WidgetThemeLight WidgetTheme = "light"
 )
 
