@@ -260,6 +260,12 @@ export default function HomePage() {
             <a href="#faq" className="hover:text-[#F1F1F3] transition-colors">
               FAQ
             </a>
+            <a href="/terms" className="hover:text-[#F1F1F3] transition-colors">
+              Terms
+            </a>
+            <a href="/privacy" className="hover:text-[#F1F1F3] transition-colors">
+              Privacy
+            </a>
           </div>
         </div>
       </footer>
