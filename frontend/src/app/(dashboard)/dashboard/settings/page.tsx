@@ -11,6 +11,7 @@ import {
   type User,
   type SubscriptionStatus,
 } from "@/lib/api";
+import { useTheme, type DashboardTheme } from "@/lib/theme";
 
 type TabKey = "general" | "profile" | "billing";
 
@@ -78,6 +79,7 @@ function SettingsContent() {
   const { user: clerkUser } = useUser();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const [user, setUser] = useState<User | null>(null);
   const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
@@ -156,17 +158,27 @@ function SettingsContent() {
   );
 
   if (loading) {
-    return <div className="text-[#9CA3AF]">Loading...</div>;
+    return <div style={{ color: colors.textSecondary }}>Loading...</div>;
   }
 
   const plan = user?.plan || "free";
   const limits = planLimits[plan];
 
+  const navBtnClass = (tab: TabKey) =>
+    `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+      activeTab === tab ? "font-medium" : ""
+    }`;
+
+  const navBtnStyle = (tab: TabKey) => ({
+    background: activeTab === tab ? colors.bgSurface : "transparent",
+    color: activeTab === tab ? colors.textPrimary : colors.textSecondary,
+  });
+
   return (
     <div className="-mx-10 -mt-8 flex flex-col" style={{ height: "calc(100vh - 4rem)" }}>
       {/* Header */}
-      <div className="flex items-center px-10 py-6 border-b border-[#2A2A30]">
-        <h1 className="text-2xl font-medium text-[#F1F1F3]">Settings</h1>
+      <div className="flex items-center px-10 py-6" style={{ borderBottom: `1px solid ${colors.border}` }}>
+        <h1 className="text-2xl font-medium" style={{ color: colors.textPrimary }}>Settings</h1>
       </div>
 
       {/* Cancellation countdown — shown above sidebar + content */}
@@ -192,8 +204,8 @@ function SettingsContent() {
               </h3>
             </div>
 
-            <p className="mb-4 text-sm text-[#9CA3AF]">
-              Your <span className="font-medium text-[#F1F1F3] capitalize">{plan}</span> plan
+            <p className="mb-4 text-sm" style={{ color: colors.textSecondary }}>
+              Your <span className="font-medium capitalize" style={{ color: colors.textPrimary }}>{plan}</span> plan
               will be cancelled at the end of your billing period. You&apos;ll continue to have
               access until then.
             </p>
@@ -206,12 +218,13 @@ function SettingsContent() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-4 py-3 text-center"
+                  className="rounded-lg border px-4 py-3 text-center"
+                  style={{ borderColor: colors.border, background: colors.bgBase }}
                 >
-                  <div className="text-2xl font-bold text-[#F1F1F3]">
+                  <div className="text-2xl font-bold" style={{ color: colors.textPrimary }}>
                     {String(item.value).padStart(2, "0")}
                   </div>
-                  <div className="text-xs text-[#6B7280]">{item.label}</div>
+                  <div className="text-xs" style={{ color: colors.textTertiary }}>{item.label}</div>
                 </div>
               ))}
             </div>
@@ -231,14 +244,7 @@ function SettingsContent() {
       <div className="flex flex-1 min-h-0">
         {/* Sidebar — hidden on mobile */}
         <nav className="hidden md:flex w-60 flex-col gap-1 p-6">
-          <button
-            onClick={() => setActiveTab("general")}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-              activeTab === "general"
-                ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
-            }`}
-          >
+          <button onClick={() => setActiveTab("general")} className={navBtnClass("general")} style={navBtnStyle("general")}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
@@ -246,14 +252,7 @@ function SettingsContent() {
             General
           </button>
 
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-              activeTab === "profile"
-                ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
-            }`}
-          >
+          <button onClick={() => setActiveTab("profile")} className={navBtnClass("profile")} style={navBtnStyle("profile")}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
               <circle cx="12" cy="7" r="4" />
@@ -261,14 +260,7 @@ function SettingsContent() {
             Profile
           </button>
 
-          <button
-            onClick={() => setActiveTab("billing")}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-              activeTab === "billing"
-                ? "bg-[#1A1A1F] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3] hover:bg-[#1A1A1F]"
-            }`}
-          >
+          <button onClick={() => setActiveTab("billing")} className={navBtnClass("billing")} style={navBtnStyle("billing")}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
               <line x1="1" y1="10" x2="23" y2="10" />
@@ -278,37 +270,21 @@ function SettingsContent() {
         </nav>
 
         {/* Mobile horizontal tabs */}
-        <div className="flex md:hidden border-b border-[#2A2A30] w-full">
-          <button
-            onClick={() => setActiveTab("general")}
-            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
-              activeTab === "general"
-                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-            }`}
-          >
-            General
-          </button>
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
-              activeTab === "profile"
-                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-            }`}
-          >
-            Profile
-          </button>
-          <button
-            onClick={() => setActiveTab("billing")}
-            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
-              activeTab === "billing"
-                ? "border-b-2 border-[#6366F1] text-[#F1F1F3] font-medium"
-                : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-            }`}
-          >
-            Billing
-          </button>
+        <div className="flex md:hidden w-full" style={{ borderBottom: `1px solid ${colors.border}` }}>
+          {(["general", "profile", "billing"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors capitalize"
+              style={{
+                borderBottom: activeTab === tab ? "2px solid #6366F1" : "2px solid transparent",
+                color: activeTab === tab ? colors.textPrimary : colors.textSecondary,
+                fontWeight: activeTab === tab ? 500 : 400,
+              }}
+            >
+              {tab === "billing" ? "Billing" : tab}
+            </button>
+          ))}
         </div>
 
         {/* Content Area */}
@@ -336,64 +312,82 @@ function SettingsContent() {
 /* ─── General Tab ─── */
 
 function GeneralTab() {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const { theme, colors, setTheme } = useTheme();
 
-  useEffect(() => {
-    const saved = localStorage.getItem("shipproof-theme");
-    if (saved === "light" || saved === "dark") {
-      setTheme(saved);
-    }
-  }, []);
-
-  const handleThemeChange = (newTheme: "light" | "dark") => {
-    setTheme(newTheme);
-    localStorage.setItem("shipproof-theme", newTheme);
-  };
+  const options: { value: DashboardTheme; label: string; icon: React.ReactNode }[] = [
+    {
+      value: "dark",
+      label: "Dark",
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        </svg>
+      ),
+    },
+    {
+      value: "dim",
+      label: "Dim",
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" opacity="0.4" />
+        </svg>
+      ),
+    },
+    {
+      value: "gray",
+      label: "Gray",
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a10 10 0 000 20" fill="currentColor" opacity="0.15" />
+        </svg>
+      ),
+    },
+    {
+      value: "light",
+      label: "Light",
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-[#F1F1F3] mb-1">General</h2>
-        <p className="text-sm text-[#9CA3AF]">Manage your app preferences.</p>
+        <h2 className="text-lg font-semibold mb-1" style={{ color: colors.textPrimary }}>General</h2>
+        <p className="text-sm" style={{ color: colors.textSecondary }}>Manage your app preferences.</p>
       </div>
 
-      <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
-        <h3 className="text-sm font-medium text-[#F1F1F3] mb-4">Theme</h3>
-        <div className="flex gap-3">
-          <button
-            onClick={() => handleThemeChange("dark")}
-            className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors ${
-              theme === "dark"
-                ? "border-[#6366F1] bg-[#6366F1]/10 text-[#F1F1F3]"
-                : "border-[#2A2A30] bg-[#0F0F10] text-[#9CA3AF] hover:border-[#3F3F46]"
-            }`}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-            </svg>
-            Dark
-          </button>
-          <button
-            onClick={() => handleThemeChange("light")}
-            className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors ${
-              theme === "light"
-                ? "border-[#6366F1] bg-[#6366F1]/10 text-[#F1F1F3]"
-                : "border-[#2A2A30] bg-[#0F0F10] text-[#9CA3AF] hover:border-[#3F3F46]"
-            }`}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
-            Light
-          </button>
+      <div className="rounded-xl border p-6" style={{ borderColor: colors.border, background: colors.bgSurface }}>
+        <h3 className="text-sm font-medium mb-4" style={{ color: colors.textPrimary }}>Theme</h3>
+        <div className="flex flex-wrap gap-3">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className="flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors"
+              style={{
+                borderColor: theme === opt.value ? "#6366F1" : colors.border,
+                background: theme === opt.value ? "rgba(99,102,241,0.1)" : colors.bgBase,
+                color: theme === opt.value ? colors.textPrimary : colors.textSecondary,
+              }}
+            >
+              {opt.icon}
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
     </div>
@@ -409,14 +403,16 @@ function ProfileTab({
   user: User | null;
   clerkUser: ReturnType<typeof useUser>["user"];
 }) {
+  const { colors } = useTheme();
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-[#F1F1F3] mb-1">Profile</h2>
-        <p className="text-sm text-[#9CA3AF]">Your account information.</p>
+        <h2 className="text-lg font-semibold mb-1" style={{ color: colors.textPrimary }}>Profile</h2>
+        <p className="text-sm" style={{ color: colors.textSecondary }}>Your account information.</p>
       </div>
 
-      <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
+      <div className="rounded-xl border p-6" style={{ borderColor: colors.border, background: colors.bgSurface }}>
         <div className="flex items-center gap-4 mb-6">
           {clerkUser?.imageUrl ? (
             <img
@@ -430,10 +426,10 @@ function ProfileTab({
             </div>
           )}
           <div>
-            <div className="text-lg font-medium text-[#F1F1F3]">
+            <div className="text-lg font-medium" style={{ color: colors.textPrimary }}>
               {clerkUser?.fullName || user?.name || "—"}
             </div>
-            <div className="text-sm text-[#9CA3AF]">
+            <div className="text-sm" style={{ color: colors.textSecondary }}>
               {clerkUser?.primaryEmailAddress?.emailAddress || user?.email || "—"}
             </div>
           </div>
@@ -442,14 +438,14 @@ function ProfileTab({
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <div className="text-xs text-[#9CA3AF] mb-1">Name</div>
-              <div className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3]">
+              <div className="text-xs mb-1" style={{ color: colors.textSecondary }}>Name</div>
+              <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: colors.border, background: colors.bgBase, color: colors.textPrimary }}>
                 {clerkUser?.fullName || user?.name || "—"}
               </div>
             </div>
             <div>
-              <div className="text-xs text-[#9CA3AF] mb-1">Email</div>
-              <div className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3]">
+              <div className="text-xs mb-1" style={{ color: colors.textSecondary }}>Email</div>
+              <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: colors.border, background: colors.bgBase, color: colors.textPrimary }}>
                 {clerkUser?.primaryEmailAddress?.emailAddress || user?.email || "—"}
               </div>
             </div>
@@ -477,16 +473,18 @@ function BillingTab({
   onUpgrade: (plan: string) => void;
   onManageBilling: () => void;
 }) {
+  const { colors } = useTheme();
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-[#F1F1F3] mb-1">Plans & Billing</h2>
-        <p className="text-sm text-[#9CA3AF]">Manage your subscription and billing details.</p>
+        <h2 className="text-lg font-semibold mb-1" style={{ color: colors.textPrimary }}>Plans & Billing</h2>
+        <p className="text-sm" style={{ color: colors.textSecondary }}>Manage your subscription and billing details.</p>
       </div>
 
-      <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-6">
+      <div className="rounded-xl border p-6" style={{ borderColor: colors.border, background: colors.bgSurface }}>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-medium text-[#F1F1F3]">Current Plan</h3>
+          <h3 className="text-sm font-medium" style={{ color: colors.textPrimary }}>Current Plan</h3>
           <span
             className={`rounded-full px-3 py-0.5 text-xs font-medium capitalize ${planBadgeColors[plan]}`}
           >
@@ -504,10 +502,11 @@ function BillingTab({
           ].map((item) => (
             <div
               key={item.label}
-              className="rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-3"
+              className="rounded-lg border p-3"
+              style={{ borderColor: colors.border, background: colors.bgBase }}
             >
-              <div className="text-xs text-[#9CA3AF]">{item.label}</div>
-              <div className="mt-1 text-sm font-medium text-[#F1F1F3]">
+              <div className="text-xs" style={{ color: colors.textSecondary }}>{item.label}</div>
+              <div className="mt-1 text-sm font-medium" style={{ color: colors.textPrimary }}>
                 {item.value}
               </div>
             </div>
@@ -519,9 +518,7 @@ function BillingTab({
           {plan !== "business" && (
             <>
               <div className="flex items-center gap-2 mr-4">
-                <span
-                  className={`text-xs ${!yearly ? "text-[#F1F1F3]" : "text-[#9CA3AF]"}`}
-                >
+                <span className="text-xs" style={{ color: !yearly ? colors.textPrimary : colors.textSecondary }}>
                   Monthly
                 </span>
                 <button
@@ -536,9 +533,7 @@ function BillingTab({
                     }`}
                   />
                 </button>
-                <span
-                  className={`text-xs ${yearly ? "text-[#F1F1F3]" : "text-[#9CA3AF]"}`}
-                >
+                <span className="text-xs" style={{ color: yearly ? colors.textPrimary : colors.textSecondary }}>
                   Yearly
                 </span>
               </div>
@@ -573,7 +568,8 @@ function BillingTab({
           {plan !== "free" && (
             <button
               onClick={onManageBilling}
-              className="rounded-lg border border-[#2A2A30] px-4 py-2 text-sm text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
+              className="rounded-lg border px-4 py-2 text-sm transition-colors"
+              style={{ borderColor: colors.border, color: colors.textPrimary }}
             >
               Manage Billing
             </button>
