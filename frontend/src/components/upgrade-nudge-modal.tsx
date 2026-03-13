@@ -58,7 +58,7 @@ export default function UpgradeNudgeModal({
             Maybe Later
           </button>
           <Link
-            href="/dashboard/settings"
+            href="/pricing"
             className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
           >
             Upgrade
