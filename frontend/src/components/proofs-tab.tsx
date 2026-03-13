@@ -408,7 +408,7 @@ function ProofModal({
   const { getToken } = useAuth();
   const isEdit = !!proof;
 
-  const [tab, setTab] = useState<"text" | "url" | "upload">("text");
+  const [contentMode, setContentMode] = useState<"text" | "screenshot">("text");
   const [saving, setSaving] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [extracted, setExtracted] = useState(false);
@@ -417,6 +417,7 @@ function ProofModal({
   // Form fields
   const [authorName, setAuthorName] = useState(proof?.author_name || "");
   const [authorTitle, setAuthorTitle] = useState(proof?.author_title || "");
+  const [authorAvatarUrl, setAuthorAvatarUrl] = useState(proof?.author_avatar_url || "");
   const [contentText, setContentText] = useState(proof?.content_text || "");
   const [sourceURL, setSourceURL] = useState(proof?.source_url || "");
   const [sourcePlatform, setSourcePlatform] = useState(
@@ -474,6 +475,7 @@ function ProofModal({
             content_text: contentText,
             author_name: authorName,
             author_title: authorTitle,
+            author_avatar_url: authorAvatarUrl || undefined,
             source_platform: sourcePlatform,
             source_url: sourceURL,
           },
@@ -494,6 +496,7 @@ function ProofModal({
         formData.append("image", imageFile);
         formData.append("author_name", authorName);
         formData.append("author_title", authorTitle);
+        if (authorAvatarUrl) formData.append("author_avatar_url", authorAvatarUrl);
         formData.append("content_text", contentText);
         formData.append("source_platform", sourcePlatform);
         formData.append("source_url", sourceURL);
@@ -507,6 +510,7 @@ function ProofModal({
             content_text: contentText,
             author_name: authorName,
             author_title: authorTitle,
+            author_avatar_url: authorAvatarUrl || undefined,
             source_platform: sourcePlatform,
             source_url: sourceURL,
             content_type: "text",
@@ -577,13 +581,26 @@ function ProofModal({
     }
   };
 
-  const tabs = isEdit
-    ? []
-    : [
-        { key: "text" as const, label: "Paste Text" },
-        { key: "url" as const, label: "Paste URL" },
-        { key: "upload" as const, label: "Screenshot" },
-      ];
+  const handleAvatarPaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          // Convert pasted image to a data URL for preview
+          const reader = new FileReader();
+          reader.onload = () => {
+            setAuthorAvatarUrl(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+        }
+        return;
+      }
+    }
+    // If text was pasted, let it go through (could be a URL)
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
@@ -595,25 +612,6 @@ function ProofModal({
         {error && (
           <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
             {error}
-          </div>
-        )}
-
-        {/* Tabs (only for add) */}
-        {tabs.length > 0 && (
-          <div className="mb-4 flex gap-1 border-b border-[#2A2A30]">
-            {tabs.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`px-3 py-2 text-sm font-medium transition-colors ${
-                  tab === t.key
-                    ? "border-b-2 border-[#6366F1] text-[#F1F1F3]"
-                    : "text-[#9CA3AF] hover:text-[#F1F1F3]"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
           </div>
         )}
 
@@ -664,12 +662,88 @@ function ProofModal({
             </select>
           </div>
 
-          {/* Content - varies by tab */}
-          {(tab === "text" || isEdit) && (
+          {/* Author Avatar */}
+          <div>
+            <label className="block text-xs text-[#9CA3AF] mb-1">
+              Author Avatar (optional)
+            </label>
+            {authorAvatarUrl ? (
+              <div className="flex items-center gap-3">
+                <img
+                  src={authorAvatarUrl}
+                  alt="Avatar"
+                  className="h-10 w-10 rounded-full object-cover border border-[#2A2A30]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setAuthorAvatarUrl("")}
+                  className="text-xs text-[#9CA3AF] hover:text-red-400 transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div
+                onPaste={handleAvatarPaste}
+                tabIndex={0}
+                className="flex items-center gap-2 rounded-lg border border-dashed border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#6B7280] hover:border-[#6366F1]/40 focus:outline-none focus:border-[#6366F1] transition-colors cursor-text"
+              >
+                <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
+                </svg>
+                <input
+                  type="text"
+                  value={authorAvatarUrl}
+                  onChange={(e) => setAuthorAvatarUrl(e.target.value)}
+                  onPaste={handleAvatarPaste}
+                  placeholder="Paste avatar image or URL"
+                  className="flex-1 bg-transparent text-sm text-[#F1F1F3] placeholder-[#6B7280] focus:outline-none"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Content mode toggle (only for add) */}
+          {!isEdit && (
             <div>
               <label className="block text-xs text-[#9CA3AF] mb-1">
-                Proof Text
+                Content
               </label>
+              <div className="flex gap-1 rounded-lg bg-[#0F0F10] p-1 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setContentMode("text")}
+                  className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    contentMode === "text"
+                      ? "bg-[#242429] text-[#F1F1F3]"
+                      : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                  }`}
+                >
+                  Paste Text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setContentMode("screenshot")}
+                  className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    contentMode === "screenshot"
+                      ? "bg-[#242429] text-[#F1F1F3]"
+                      : "text-[#9CA3AF] hover:text-[#F1F1F3]"
+                  }`}
+                >
+                  Paste Screenshot
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Text input */}
+          {(contentMode === "text" || isEdit) && (
+            <div>
+              {isEdit && (
+                <label className="block text-xs text-[#9CA3AF] mb-1">
+                  Proof Text
+                </label>
+              )}
               <textarea
                 value={contentText}
                 onChange={(e) => setContentText(e.target.value)}
@@ -680,38 +754,11 @@ function ProofModal({
             </div>
           )}
 
-          {tab === "url" && !isEdit && (
-            <div>
-              <label className="block text-xs text-[#9CA3AF] mb-1">
-                Source URL
-              </label>
-              <input
-                type="url"
-                value={sourceURL}
-                onChange={(e) => setSourceURL(e.target.value)}
-                className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
-                placeholder="https://twitter.com/user/status/..."
-              />
-              <div>
-                <label className="block text-xs text-[#9CA3AF] mb-1 mt-3">
-                  Proof Text
-                </label>
-                <textarea
-                  value={contentText}
-                  onChange={(e) => setContentText(e.target.value)}
-                  rows={4}
-                  className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
-                  placeholder="Paste the testimonial text..."
-                />
-              </div>
-            </div>
-          )}
-
-          {tab === "upload" && !isEdit && (
+          {/* Screenshot paste */}
+          {contentMode === "screenshot" && !isEdit && (
             <div>
               {imagePreview ? (
                 <div>
-                  <label className="block text-xs text-[#9CA3AF] mb-1">Preview</label>
                   <div className="relative rounded-lg border border-[#2A2A30] bg-[#0F0F10] p-2">
                     <img
                       src={imagePreview}
@@ -741,62 +788,57 @@ function ProofModal({
                   </div>
                   <p className="mt-1 text-xs text-[#6B7280]">{imageFile?.name}</p>
 
-                  {/* Extracted / editable fields */}
-                  <div className="mt-3 space-y-3">
-                    <div>
-                      <label className="block text-xs text-[#9CA3AF] mb-1">
-                        Proof Text
-                      </label>
-                      <textarea
-                        value={contentText}
-                        onChange={(e) => setContentText(e.target.value)}
-                        rows={3}
-                        className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
-                        placeholder={extracting ? "Extracting..." : "Extracted text will appear here..."}
-                      />
-                    </div>
+                  <div className="mt-3">
+                    <label className="block text-xs text-[#9CA3AF] mb-1">
+                      Proof Text
+                    </label>
+                    <textarea
+                      value={contentText}
+                      onChange={(e) => setContentText(e.target.value)}
+                      rows={3}
+                      className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none resize-none"
+                      placeholder={extracting ? "Extracting..." : "Extracted text will appear here..."}
+                    />
                   </div>
                 </div>
               ) : (
-                <div>
-                  {/* Paste zone */}
-                  <div
-                    onPaste={handlePaste}
-                    tabIndex={0}
-                    className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#6366F1]/40 bg-[#6366F1]/5 px-4 py-8 text-center hover:border-[#6366F1]/70 hover:bg-[#6366F1]/10 transition-colors focus:outline-none focus:border-[#6366F1]"
-                  >
-                    <svg className="h-8 w-8 text-[#6366F1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 0l3-3m-3 3l3 3M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm font-medium text-[#F1F1F3]">
-                        Paste screenshot here
-                      </p>
-                      <p className="text-xs text-[#9CA3AF]">
-                        Press {navigator?.platform?.includes("Mac") ? "⌘V" : "Ctrl+V"} to paste from clipboard
-                      </p>
-                    </div>
+                <div
+                  onPaste={handlePaste}
+                  tabIndex={0}
+                  className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#6366F1]/40 bg-[#6366F1]/5 px-4 py-8 text-center hover:border-[#6366F1]/70 hover:bg-[#6366F1]/10 transition-colors focus:outline-none focus:border-[#6366F1]"
+                >
+                  <svg className="h-8 w-8 text-[#6366F1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 0l3-3m-3 3l3 3M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-[#F1F1F3]">
+                      Paste screenshot here
+                    </p>
+                    <p className="text-xs text-[#9CA3AF]">
+                      Press {typeof navigator !== "undefined" && navigator?.platform?.includes("Mac") ? "\u2318V" : "Ctrl+V"} to paste from clipboard
+                    </p>
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Source URL (for text/edit modes) */}
-          {(tab === "text" || isEdit) && (
-            <div>
-              <label className="block text-xs text-[#9CA3AF] mb-1">
-                Source URL (optional)
-              </label>
-              <input
-                type="url"
-                value={sourceURL}
-                onChange={(e) => setSourceURL(e.target.value)}
-                className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
-                placeholder="https://..."
-              />
-            </div>
-          )}
+          {/* Source URL */}
+          <div>
+            <label className="block text-xs text-[#9CA3AF] mb-1">
+              Source URL (optional)
+            </label>
+            <input
+              type="url"
+              value={sourceURL}
+              onChange={(e) => setSourceURL(e.target.value)}
+              className="w-full rounded-lg border border-[#2A2A30] bg-[#0F0F10] px-3 py-2 text-sm text-[#F1F1F3] focus:border-[#6366F1] focus:outline-none"
+              placeholder="https://twitter.com/user/status/..."
+            />
+            <p className="mt-1 text-xs text-[#6B7280]">
+              Link to the original post. Visitors can click to view the source.
+            </p>
+          </div>
 
           {/* Tags */}
           <div>
