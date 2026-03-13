@@ -11,16 +11,24 @@ export function CompanyLogoImg({
   top?: string;
   right?: string;
 }) {
-  const [hidden, setHidden] = useState(false);
-  if (hidden) return null;
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+  if (status === "error") return null;
   return (
     <img
       src={url}
       alt=""
       width={20}
       height={20}
-      style={{ borderRadius: "4px", position: "absolute", top, right }}
-      onError={() => setHidden(true)}
+      style={{
+        borderRadius: "4px",
+        position: "absolute",
+        top,
+        right,
+        opacity: status === "loaded" ? 1 : 0,
+        transition: "opacity 0.2s",
+      }}
+      onLoad={() => setStatus("loaded")}
+      onError={() => setStatus("error")}
     />
   );
 }
