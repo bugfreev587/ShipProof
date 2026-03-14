@@ -103,16 +103,12 @@ export default async function EmbedPage({
         background: "transparent",
         fontFamily:
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
       }}
     >
       <script
         dangerouslySetInnerHTML={{
           __html: `(function(){
-var cw=${cardWidth},sp=${widget.card_spacing},page=0,totalCards=0,perPage=1;
+var cw=${cardWidth},sp=${widget.card_spacing},page=0,totalCards=0,perPage=1,lastH=0,resizeTimer=0;
 function getTrack(){return document.getElementById("shipproof-track")}
 function getViewport(){return document.getElementById("shipproof-viewport")}
 function adjust(){
@@ -159,12 +155,13 @@ function updateArrows(){
 }
 function send(){
   var el=document.getElementById("shipproof-embed");
-  if(el&&window.parent!==window){window.parent.postMessage({type:"shipproof-resize",height:el.scrollHeight},"*")}
+  if(el&&window.parent!==window){var h=el.scrollHeight;if(h!==lastH){lastH=h;window.parent.postMessage({type:"shipproof-resize",height:h},"*")}}
 }
 window.__shipproof_prev=function(){page=(page-1+totalPages())%totalPages();slideTo();updateDots();send()};
 window.__shipproof_next=function(){page=(page+1)%totalPages();slideTo();updateDots();send()};
+function debouncedAdjust(){clearTimeout(resizeTimer);resizeTimer=setTimeout(adjust,100)}
 if(document.readyState==="complete")adjust();else window.addEventListener("load",adjust);
-window.addEventListener("resize",adjust);
+window.addEventListener("resize",debouncedAdjust);
 })();`,
         }}
       />
