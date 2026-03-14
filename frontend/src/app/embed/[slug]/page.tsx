@@ -29,6 +29,7 @@ interface WidgetSettings {
   border_radius: number;
   card_spacing: number;
   show_branding: boolean;
+  max_items?: number;
   visible_count?: number;
   card_size?: number;
   card_height?: number;
@@ -91,9 +92,7 @@ export default async function EmbedPage({
   const textFontSize = widget.text_font_size || 13;
   const textFont = widget.text_font || "Inter";
   const textBold = widget.text_bold || false;
-  const visibleCount = widget.visible_count || 3;
-  const displayCount = Math.min(visibleCount, proofs.length);
-  const containerMaxWidth = displayCount * cardWidth + (displayCount - 1) * widget.card_spacing;
+  const maxItems = widget.max_items || 6;
 
   return (
     <div
@@ -108,20 +107,20 @@ export default async function EmbedPage({
     >
       <script
         dangerouslySetInnerHTML={{
-          __html: `(function(){function send(){var el=document.getElementById("shipproof-embed");if(el&&window.parent!==window){window.parent.postMessage({type:"shipproof-resize",height:el.scrollHeight},"*")}}if(document.readyState==="complete")send();else window.addEventListener("load",send);new MutationObserver(send).observe(document.body,{childList:true,subtree:true});window.addEventListener("resize",send)})();`,
+          __html: `(function(){var cw=${cardWidth},sp=${widget.card_spacing};function adjust(){var c=document.getElementById("shipproof-cards");if(!c)return;var pw=c.parentElement.clientWidth;var n=Math.max(1,Math.floor((pw+sp)/(cw+sp)));c.style.maxWidth=(n*cw+(n-1)*sp)+"px";for(var i=0;i<c.children.length;i++){c.children[i].style.display=i<n?"":"none"}send()}function send(){var el=document.getElementById("shipproof-embed");if(el&&window.parent!==window){window.parent.postMessage({type:"shipproof-resize",height:el.scrollHeight},"*")}}if(document.readyState==="complete")adjust();else window.addEventListener("load",adjust);window.addEventListener("resize",adjust);new MutationObserver(adjust).observe(document.body,{childList:true,subtree:true})})();`,
         }}
       />
         <div
+          id="shipproof-cards"
           style={{
             display: "flex",
             gap: spacing,
             overflow: "hidden",
             paddingBottom: "8px",
-            maxWidth: `${containerMaxWidth}px`,
             margin: "0 auto",
           }}
         >
-          {proofs.slice(0, displayCount).map((proof) => {
+          {proofs.slice(0, maxItems).map((proof) => {
             const authorTitle = pgStr(proof.author_title);
             const contentText = pgStr(proof.content_text);
             const contentImageUrl = pgStr(proof.content_image_url);

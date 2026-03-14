@@ -352,11 +352,92 @@ function SpaceProofCard({
   );
 }
 
+function AutoFitPreview({
+  proofs,
+  config,
+  loadingPreview,
+}: {
+  proofs: Proof[];
+  config: Space;
+  loadingPreview: boolean;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(3);
+
+  const cardW = config.card_size || 280;
+  const gap = config.card_spacing || 16;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const calc = () => {
+      const w = el.clientWidth;
+      const count = Math.max(1, Math.floor((w + gap) / (cardW + gap)));
+      setVisibleCount(count);
+    };
+    calc();
+    const ro = new ResizeObserver(calc);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [cardW, gap]);
+
+  if (loadingPreview) {
+    return (
+      <div className="px-4 pb-2">
+        <div className="h-24 flex items-center justify-center text-xs text-[var(--text-tertiary)]">
+          Loading preview...
+        </div>
+      </div>
+    );
+  }
+
+  if (proofs.length === 0) {
+    return (
+      <div className="px-4 pb-2">
+        <div className="h-24 flex items-center justify-center rounded-lg border border-dashed border-[var(--border)] text-xs text-[var(--text-tertiary)]">
+          No proofs added yet. Expand to add proofs.
+        </div>
+      </div>
+    );
+  }
+
+  const displayCount = Math.min(visibleCount, proofs.length);
+  const containerW = displayCount * cardW + (displayCount - 1) * gap;
+
+  return (
+    <div ref={containerRef} className="px-4 pb-2">
+      <div className="flex justify-center">
+        <div
+          className="flex overflow-hidden"
+          style={{
+            gap: `${gap}px`,
+            maxWidth: `${containerW}px`,
+          }}
+        >
+          {proofs.slice(0, displayCount).map((proof) => (
+            <SpaceProofCard
+              key={proof.id}
+              proof={proof}
+              themeKey={config.theme}
+              showPlatformIcon={config.show_platform_icon}
+              borderRadius={config.border_radius}
+              cardWidth={cardW}
+              cardHeight={config.card_height || 0}
+              textFontSize={config.text_font_size || 13}
+              textFont={config.text_font || "Inter"}
+              textBold={config.text_bold || false}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const SPACE_DEFAULTS: Partial<Space> = {
   theme: "dark",
   border_radius: 12,
   card_spacing: 16,
-  visible_count: 3,
   card_size: 280,
   card_height: 0,
   max_items: 6,
@@ -523,48 +604,11 @@ function SpaceCard({
       </div>
 
       {/* Horizontal proof preview */}
-      <div className="px-4 pb-2">
-        {loadingPreview ? (
-          <div className="h-24 flex items-center justify-center text-xs text-[var(--text-tertiary)]">
-            Loading preview...
-          </div>
-        ) : spaceProofs.length === 0 ? (
-          <div className="h-24 flex items-center justify-center rounded-lg border border-dashed border-[var(--border)] text-xs text-[var(--text-tertiary)]">
-            No proofs added yet. Expand to add proofs.
-          </div>
-        ) : (() => {
-          const cardW = config.card_size || 280;
-          const visCount = config.visible_count || 3;
-          const displayCount = Math.min(visCount, spaceProofs.length);
-          const containerW = displayCount * cardW + (displayCount - 1) * config.card_spacing;
-          return (
-            <div className="flex justify-center">
-              <div
-                className="flex overflow-hidden"
-                style={{
-                  gap: `${config.card_spacing}px`,
-                  maxWidth: `${containerW}px`,
-                }}
-              >
-                {spaceProofs.slice(0, displayCount).map((proof) => (
-                  <SpaceProofCard
-                    key={proof.id}
-                    proof={proof}
-                    themeKey={config.theme}
-                    showPlatformIcon={config.show_platform_icon}
-                    borderRadius={config.border_radius}
-                    cardWidth={cardW}
-                    cardHeight={config.card_height || 0}
-                    textFontSize={config.text_font_size || 13}
-                    textFont={config.text_font || "Inter"}
-                    textBold={config.text_bold || false}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })()}
-      </div>
+      <AutoFitPreview
+        proofs={spaceProofs}
+        config={config}
+        loadingPreview={loadingPreview}
+      />
 
       {/* Expand chevron */}
       <button
@@ -635,22 +679,6 @@ function SpaceCard({
                   value={config.card_spacing}
                   onChange={(e) =>
                     handleConfigChange({ card_spacing: Number(e.target.value) })
-                  }
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs text-[var(--text-secondary)] mb-1">
-                  Visible Cards: {config.visible_count}
-                </label>
-                <input
-                  type="range"
-                  min={1}
-                  max={10}
-                  value={config.visible_count}
-                  onChange={(e) =>
-                    handleConfigChange({ visible_count: Number(e.target.value) })
                   }
                   className="w-full"
                 />
