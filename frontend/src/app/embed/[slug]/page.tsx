@@ -114,7 +114,7 @@ function getViewport(){return document.getElementById("shipproof-viewport")}
 function adjust(){
   var vp=getViewport();if(!vp)return;
   var row=vp.parentElement;
-  var pw=row.parentElement.clientWidth-74;
+  var pw=row.parentElement.clientWidth-80;
   totalCards=${Math.min(proofs.length, maxItems)};
   perPage=Math.max(1,Math.floor((pw+sp)/(cw+sp)));
   var maxW=perPage*cw+(perPage-1)*sp;
@@ -160,8 +160,13 @@ function send(){
 }
 window.__shipproof_prev=function(){page=(page-1+totalPages())%totalPages();slideTo();updateDots();send()};
 window.__shipproof_next=function(){page=(page+1)%totalPages();slideTo();updateDots();send()};
+function vcenter(){
+  var el=document.getElementById("shipproof-embed");if(!el)return;
+  var wh=window.innerHeight,eh=el.scrollHeight;
+  if(wh>eh+20){el.style.paddingTop=Math.floor((wh-eh)/2)+"px"}
+}
 function debouncedAdjust(){clearTimeout(resizeTimer);resizeTimer=setTimeout(adjust,100)}
-if(document.readyState==="complete")adjust();else window.addEventListener("load",adjust);
+if(document.readyState==="complete"){adjust();vcenter()}else window.addEventListener("load",function(){adjust();vcenter()});
 window.addEventListener("resize",debouncedAdjust);
 })();`,
         }}
@@ -172,7 +177,7 @@ window.addEventListener("resize",debouncedAdjust);
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "6px",
+          gap: "12px",
           justifyContent: "center",
           margin: "0 auto",
         }}
