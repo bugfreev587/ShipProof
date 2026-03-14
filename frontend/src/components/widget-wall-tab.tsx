@@ -255,7 +255,6 @@ function SpaceProofCard({
   showPlatformIcon,
   borderRadius,
   cardWidth,
-  cardHeight,
   textFontSize,
   textFont,
   textBold,
@@ -265,7 +264,6 @@ function SpaceProofCard({
   showPlatformIcon: boolean;
   borderRadius: number;
   cardWidth: number;
-  cardHeight: number;
   textFontSize: number;
   textFont: string;
   textBold: boolean;
@@ -275,9 +273,7 @@ function SpaceProofCard({
   const isLong = (proof.content_text?.length ?? 0) > TEXT_LIMIT;
   const t = getThemeColors((themeKey || "dark") as DashboardTheme);
 
-  const heightStyle = cardHeight > 0
-    ? { height: showFull ? "auto" : `${cardHeight}px`, minHeight: `${cardHeight}px` }
-    : { height: showFull ? "auto" : "160px", minHeight: "160px" };
+  const heightStyle = { height: showFull ? "auto" : "240px", minHeight: "240px" };
 
   return (
     <div
@@ -294,7 +290,7 @@ function SpaceProofCard({
         const logoUrl = getCompanyLogoUrl(proof.author_title);
         return logoUrl ? <CompanyLogoImg url={logoUrl} top="8px" right="8px" /> : null;
       })()}
-      <div className="flex items-center gap-2.5 mb-2">
+      <div className="flex items-center gap-2.5 mb-3.5">
         {proof.author_avatar_url ? (
           <img
             src={proof.author_avatar_url}
@@ -318,7 +314,7 @@ function SpaceProofCard({
           {proof.author_title && (
             <div
               className="text-[10px] truncate"
-              style={{ color: t.textTertiary }}
+              style={{ color: t.textTertiary, marginTop: "2px" }}
             >
               {proof.author_title}
             </div>
@@ -366,7 +362,7 @@ function AutoFitPreview({
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(3);
 
-  const cardW = config.card_size || 280;
+  const cardW = config.card_size || 340;
   const gap = config.card_spacing || 16;
 
   useEffect(() => {
@@ -424,7 +420,6 @@ function AutoFitPreview({
               showPlatformIcon={config.show_platform_icon}
               borderRadius={config.border_radius}
               cardWidth={cardW}
-              cardHeight={config.card_height || 0}
               textFontSize={config.text_font_size || 13}
               textFont={config.text_font || "Inter"}
               textBold={config.text_bold || false}
@@ -440,8 +435,7 @@ const SPACE_DEFAULTS: Partial<Space> = {
   theme: "dark",
   border_radius: 12,
   card_spacing: 16,
-  card_size: 280,
-  card_height: 0,
+  card_size: 340,
   max_items: 6,
   show_platform_icon: true,
   show_branding: true,
@@ -548,7 +542,6 @@ function SpaceCard({
             show_branding: newConfig.show_branding,
             visible_count: newConfig.visible_count,
             card_size: newConfig.card_size,
-            card_height: newConfig.card_height,
             text_font_size: newConfig.text_font_size,
             text_font: newConfig.text_font,
             text_bold: newConfig.text_bold,
@@ -688,14 +681,14 @@ function SpaceCard({
 
               <div>
                 <label className="block text-xs text-[var(--text-secondary)] mb-1">
-                  Card Width: {config.card_size || 280}px
+                  Card Width: {config.card_size || 340}px
                 </label>
                 <input
                   type="range"
                   min={200}
                   max={420}
                   step={10}
-                  value={config.card_size || 280}
+                  value={config.card_size || 340}
                   onChange={(e) =>
                     handleConfigChange({ card_size: Number(e.target.value) })
                   }
@@ -703,22 +696,6 @@ function SpaceCard({
                 />
               </div>
 
-              <div>
-                <label className="block text-xs text-[var(--text-secondary)] mb-1">
-                  Card Height: {config.card_height ? `${config.card_height}px` : "Auto"}
-                </label>
-                <input
-                  type="range"
-                  min={0}
-                  max={500}
-                  step={10}
-                  value={config.card_height || 0}
-                  onChange={(e) =>
-                    handleConfigChange({ card_height: Number(e.target.value) })
-                  }
-                  className="w-full"
-                />
-              </div>
             </div>
 
             {/* Text Style */}

@@ -712,7 +712,7 @@ export function updateSpaceConfig(
     show_branding: boolean;
     visible_count: number;
     card_size: number;
-    card_height: number;
+    card_height?: number;
     text_font_size: number;
     text_font: string;
     text_bold: boolean;

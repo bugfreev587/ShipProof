@@ -87,8 +87,8 @@ export default async function EmbedPage({
   const t = getThemeColors((widget.theme || "dark") as DashboardTheme);
   const radius = `${widget.border_radius}px`;
   const spacing = `${widget.card_spacing}px`;
-  const cardWidth = widget.card_size || 280;
-  const cardHeight = widget.card_height || 0;
+  const cardWidth = widget.card_size || 340;
+  const cardHeight = 240;
   const textFontSize = widget.text_font_size || 13;
   const textFont = widget.text_font || "Inter";
   const textBold = widget.text_bold || false;
@@ -103,13 +103,124 @@ export default async function EmbedPage({
         background: "transparent",
         fontFamily:
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        position: "relative",
       }}
     >
       <script
         dangerouslySetInnerHTML={{
-          __html: `(function(){var cw=${cardWidth},sp=${widget.card_spacing};function adjust(){var c=document.getElementById("shipproof-cards");if(!c)return;var pw=c.parentElement.clientWidth;var n=Math.max(1,Math.floor((pw+sp)/(cw+sp)));c.style.maxWidth=(n*cw+(n-1)*sp)+"px";for(var i=0;i<c.children.length;i++){c.children[i].style.display=i<n?"":"none"}send()}function send(){var el=document.getElementById("shipproof-embed");if(el&&window.parent!==window){window.parent.postMessage({type:"shipproof-resize",height:el.scrollHeight},"*")}}if(document.readyState==="complete")adjust();else window.addEventListener("load",adjust);window.addEventListener("resize",adjust);new MutationObserver(adjust).observe(document.body,{childList:true,subtree:true})})();`,
+          __html: `(function(){
+var cw=${cardWidth},sp=${widget.card_spacing},page=0,totalCards=0,perPage=1;
+function getCards(){return document.getElementById("shipproof-cards")}
+function getAll(){var c=getCards();if(!c)return[];return Array.prototype.slice.call(c.children)}
+function adjust(){
+  var c=getCards();if(!c)return;
+  var pw=c.parentElement.clientWidth;
+  var cards=getAll();
+  totalCards=cards.length;
+  perPage=Math.max(1,Math.floor((pw+sp)/(cw+sp)));
+  var maxW=perPage*cw+(perPage-1)*sp;
+  c.style.maxWidth=maxW+"px";
+  if(page>Math.max(0,Math.ceil(totalCards/perPage)-1))page=Math.max(0,Math.ceil(totalCards/perPage)-1);
+  showPage();
+  updateDots();
+  updateArrows();
+  send();
+}
+function showPage(){
+  var cards=getAll();
+  var start=page*perPage;
+  for(var i=0;i<cards.length;i++){
+    cards[i].style.display=(i>=start&&i<start+perPage)?"":"none";
+  }
+}
+function totalPages(){return Math.max(1,Math.ceil(totalCards/perPage))}
+function updateDots(){
+  var dc=document.getElementById("shipproof-dots");
+  if(!dc)return;
+  var tp=totalPages();
+  dc.innerHTML="";
+  if(tp<=1){dc.style.display="none";return;}
+  dc.style.display="flex";
+  for(var i=0;i<tp;i++){
+    var d=document.createElement("span");
+    d.style.cssText="width:8px;height:8px;border-radius:50%;cursor:pointer;transition:background 0.2s;";
+    d.style.background=i===page?"${t.textSecondary}":"${t.border}";
+    d.setAttribute("data-page",i);
+    d.addEventListener("click",function(){page=parseInt(this.getAttribute("data-page"));showPage();updateDots();send()});
+    dc.appendChild(d);
+  }
+}
+function updateArrows(){
+  var la=document.getElementById("shipproof-arrow-left");
+  var ra=document.getElementById("shipproof-arrow-right");
+  var tp=totalPages();
+  if(la)la.style.display=tp<=1?"none":"flex";
+  if(ra)ra.style.display=tp<=1?"none":"flex";
+}
+function send(){
+  var el=document.getElementById("shipproof-embed");
+  if(el&&window.parent!==window){window.parent.postMessage({type:"shipproof-resize",height:el.scrollHeight},"*")}
+}
+window.__shipproof_prev=function(){page=(page-1+totalPages())%totalPages();showPage();updateDots();send()};
+window.__shipproof_next=function(){page=(page+1)%totalPages();showPage();updateDots();send()};
+if(document.readyState==="complete")adjust();else window.addEventListener("load",adjust);
+window.addEventListener("resize",adjust);
+new MutationObserver(adjust).observe(document.body,{childList:true,subtree:true});
+})();`,
         }}
       />
+
+      {/* Left arrow */}
+      <button
+        id="shipproof-arrow-left"
+        onClick={undefined}
+        style={{
+          position: "absolute",
+          left: "0",
+          top: "50%",
+          transform: "translateY(-60%)",
+          zIndex: 10,
+          width: "32px",
+          height: "32px",
+          borderRadius: "50%",
+          border: `1px solid ${t.border}`,
+          background: t.bgSurface,
+          color: t.textSecondary,
+          display: "none",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          fontSize: "18px",
+          lineHeight: 1,
+        }}
+        dangerouslySetInnerHTML={{ __html: `<span onclick="__shipproof_prev()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u2039</span>` }}
+      />
+
+      {/* Right arrow */}
+      <button
+        id="shipproof-arrow-right"
+        style={{
+          position: "absolute",
+          right: "0",
+          top: "50%",
+          transform: "translateY(-60%)",
+          zIndex: 10,
+          width: "32px",
+          height: "32px",
+          borderRadius: "50%",
+          border: `1px solid ${t.border}`,
+          background: t.bgSurface,
+          color: t.textSecondary,
+          display: "none",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          fontSize: "18px",
+          lineHeight: 1,
+        }}
+        dangerouslySetInnerHTML={{ __html: `<span onclick="__shipproof_next()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u203A</span>` }}
+      />
+
         <div
           id="shipproof-cards"
           style={{
@@ -131,7 +242,8 @@ export default async function EmbedPage({
               style={{
                 width: `${cardWidth}px`,
                 minWidth: `${cardWidth}px`,
-                ...(cardHeight > 0 ? { height: `${cardHeight}px`, overflow: "hidden" } : {}),
+                height: `${cardHeight}px`,
+                overflow: "hidden",
                 padding: "16px",
                 borderRadius: radius,
                 border: `1px solid ${t.border}`,
@@ -151,7 +263,7 @@ export default async function EmbedPage({
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  marginBottom: "10px",
+                  marginBottom: "14px",
                 }}
               >
                 {widget.show_platform_icon && (
@@ -176,6 +288,7 @@ export default async function EmbedPage({
                       style={{
                         fontSize: "11px",
                         color: t.textTertiary,
+                        marginTop: "2px",
                       }}
                     >
                       {authorTitle}
@@ -188,7 +301,7 @@ export default async function EmbedPage({
                 <p
                   style={{
                     fontSize: `${textFontSize}px`,
-                    lineHeight: "1.6",
+                    lineHeight: "1.65",
                     color: t.textSecondary,
                     margin: 0,
                     fontFamily: textFont,
@@ -214,6 +327,17 @@ export default async function EmbedPage({
             );
           })}
         </div>
+
+        {/* Dot indicators */}
+        <div
+          id="shipproof-dots"
+          style={{
+            display: "none",
+            justifyContent: "center",
+            gap: "6px",
+            paddingTop: "8px",
+          }}
+        />
 
         {widget.show_branding && (
           <div
