@@ -255,25 +255,36 @@ function SpaceProofCard({
   showPlatformIcon,
   borderRadius,
   cardWidth,
+  cardHeight,
+  textFontSize,
+  textFont,
+  textBold,
 }: {
   proof: Proof;
   themeKey: string;
   showPlatformIcon: boolean;
   borderRadius: number;
   cardWidth: number;
+  cardHeight: number;
+  textFontSize: number;
+  textFont: string;
+  textBold: boolean;
 }) {
   const [showFull, setShowFull] = useState(false);
   const TEXT_LIMIT = 100;
   const isLong = (proof.content_text?.length ?? 0) > TEXT_LIMIT;
   const t = getThemeColors((themeKey || "dark") as DashboardTheme);
 
+  const heightStyle = cardHeight > 0
+    ? { height: showFull ? "auto" : `${cardHeight}px`, minHeight: `${cardHeight}px` }
+    : { height: showFull ? "auto" : "160px", minHeight: "160px" };
+
   return (
     <div
       className="flex-shrink-0 border p-3 flex flex-col relative transition-all duration-200 hover:brightness-125 hover:border-[#6366F1]/50"
       style={{
         width: `${cardWidth}px`,
-        height: showFull ? "auto" : "160px",
-        minHeight: "160px",
+        ...heightStyle,
         borderRadius: `${borderRadius}px`,
         borderColor: t.border,
         background: t.bgElevated,
@@ -315,8 +326,13 @@ function SpaceProofCard({
       {proof.content_text && (
         <div className="flex-1 min-h-0 overflow-hidden mt-1">
           <p
-            className="text-[11px] leading-relaxed"
-            style={{ color: t.textSecondary }}
+            className="leading-relaxed"
+            style={{
+              color: t.textSecondary,
+              fontSize: `${textFontSize}px`,
+              fontFamily: textFont,
+              fontWeight: textBold ? 700 : 400,
+            }}
           >
             {showFull || !isLong
               ? proof.content_text
@@ -335,6 +351,21 @@ function SpaceProofCard({
     </div>
   );
 }
+
+const SPACE_DEFAULTS: Partial<Space> = {
+  theme: "dark",
+  border_radius: 12,
+  card_spacing: 16,
+  visible_count: 3,
+  card_size: 280,
+  card_height: 0,
+  max_items: 6,
+  show_platform_icon: true,
+  show_branding: true,
+  text_font_size: 13,
+  text_font: "Inter",
+  text_bold: false,
+};
 
 function SpaceCard({
   space,
@@ -433,6 +464,10 @@ function SpaceCard({
             show_branding: newConfig.show_branding,
             visible_count: newConfig.visible_count,
             card_size: newConfig.card_size,
+            card_height: newConfig.card_height,
+            text_font_size: newConfig.text_font_size,
+            text_font: newConfig.text_font,
+            text_bold: newConfig.text_bold,
           },
           token,
         );
@@ -518,6 +553,10 @@ function SpaceCard({
                     showPlatformIcon={config.show_platform_icon}
                     borderRadius={config.border_radius}
                     cardWidth={cardW}
+                    cardHeight={config.card_height || 0}
+                    textFontSize={config.text_font_size || 13}
+                    textFont={config.text_font || "Inter"}
+                    textBold={config.text_bold || false}
                   />
                 ))}
               </div>
@@ -618,7 +657,7 @@ function SpaceCard({
 
               <div>
                 <label className="block text-xs text-[var(--text-secondary)] mb-1">
-                  Card Size: {config.card_size || 280}px
+                  Card Width: {config.card_size || 280}px
                 </label>
                 <input
                   type="range"
@@ -631,6 +670,72 @@ function SpaceCard({
                   }
                   className="w-full"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  Card Height: {config.card_height ? `${config.card_height}px` : "Auto"}
+                </label>
+                <input
+                  type="range"
+                  min={0}
+                  max={500}
+                  step={10}
+                  value={config.card_height || 0}
+                  onChange={(e) =>
+                    handleConfigChange({ card_height: Number(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Text Style */}
+            <p className="text-xs font-medium text-[var(--text-primary)] mt-4">Text Style</p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  Font Size: {config.text_font_size || 13}px
+                </label>
+                <input
+                  type="range"
+                  min={10}
+                  max={20}
+                  value={config.text_font_size || 13}
+                  onChange={(e) =>
+                    handleConfigChange({ text_font_size: Number(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">Font Family</label>
+                <select
+                  value={config.text_font || "Inter"}
+                  onChange={(e) => handleConfigChange({ text_font: e.target.value })}
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
+                >
+                  <option value="Inter">Inter</option>
+                  <option value="System UI">System UI</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Merriweather">Merriweather</option>
+                  <option value="JetBrains Mono">JetBrains Mono</option>
+                </select>
+              </div>
+
+              <div className="flex items-end pb-1">
+                <label className="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.text_bold || false}
+                    onChange={(e) =>
+                      handleConfigChange({ text_bold: e.target.checked })
+                    }
+                    className="rounded border-[var(--border)]"
+                  />
+                  Bold
+                </label>
               </div>
             </div>
 
@@ -671,6 +776,13 @@ function SpaceCard({
                 )}
               </div>
             </div>
+
+            <button
+              onClick={() => handleConfigChange(SPACE_DEFAULTS)}
+              className="mt-2 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)] transition-colors"
+            >
+              Reset to Defaults
+            </button>
           </div>
 
           {/* Manage Proofs */}

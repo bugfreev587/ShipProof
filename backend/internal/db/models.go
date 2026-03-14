@@ -398,6 +398,10 @@ type Space struct {
 	UpdatedAt        time.Time   `json:"updated_at"`
 	VisibleCount     int32       `json:"visible_count"`
 	CardSize         int32       `json:"card_size"`
+	CardHeight       int32       `json:"card_height"`
+	TextFontSize     int32       `json:"text_font_size"`
+	TextFont         string      `json:"text_font"`
+	TextBold         bool        `json:"text_bold"`
 }
 
 type SpaceProof struct {

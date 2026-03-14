@@ -366,6 +366,10 @@ export interface Space {
   show_branding: boolean;
   visible_count: number;
   card_size: number;
+  card_height: number;
+  text_font_size: number;
+  text_font: string;
+  text_bold: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -708,6 +712,10 @@ export function updateSpaceConfig(
     show_branding: boolean;
     visible_count: number;
     card_size: number;
+    card_height: number;
+    text_font_size: number;
+    text_font: string;
+    text_bold: boolean;
   },
   token: string,
 ) {
@@ -780,6 +788,10 @@ export interface PublicSpaceResponse {
     show_branding: boolean;
     visible_count: number;
     card_size: number;
+    card_height: number;
+    text_font_size: number;
+    text_font: string;
+    text_bold: boolean;
   };
   product: Product;
   proofs: (Proof & { space_display_order: number })[];

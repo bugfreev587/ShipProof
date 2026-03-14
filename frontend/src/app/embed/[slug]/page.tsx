@@ -31,6 +31,10 @@ interface WidgetSettings {
   show_branding: boolean;
   visible_count?: number;
   card_size?: number;
+  card_height?: number;
+  text_font_size?: number;
+  text_font?: string;
+  text_bold?: boolean;
 }
 
 type PgText = { String: string; Valid: boolean } | string | null;
@@ -83,6 +87,10 @@ export default async function EmbedPage({
   const radius = `${widget.border_radius}px`;
   const spacing = `${widget.card_spacing}px`;
   const cardWidth = widget.card_size || 280;
+  const cardHeight = widget.card_height || 0;
+  const textFontSize = widget.text_font_size || 13;
+  const textFont = widget.text_font || "Inter";
+  const textBold = widget.text_bold || false;
   const visibleCount = widget.visible_count || 3;
   const displayCount = Math.min(visibleCount, proofs.length);
   const containerMaxWidth = displayCount * cardWidth + (displayCount - 1) * widget.card_spacing;
@@ -118,6 +126,7 @@ export default async function EmbedPage({
               style={{
                 width: `${cardWidth}px`,
                 minWidth: `${cardWidth}px`,
+                ...(cardHeight > 0 ? { height: `${cardHeight}px`, overflow: "hidden" } : {}),
                 padding: "16px",
                 borderRadius: radius,
                 border: `1px solid ${t.border}`,
@@ -170,10 +179,12 @@ export default async function EmbedPage({
               {contentText && (
                 <p
                   style={{
-                    fontSize: "13px",
+                    fontSize: `${textFontSize}px`,
                     lineHeight: "1.5",
                     color: t.textSecondary,
                     margin: 0,
+                    fontFamily: textFont,
+                    fontWeight: textBold ? 700 : 400,
                   }}
                 >
                   {contentText}

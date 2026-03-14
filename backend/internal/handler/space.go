@@ -197,6 +197,10 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		ShowBranding     bool   `json:"show_branding"`
 		VisibleCount     int32  `json:"visible_count"`
 		CardSize         int32  `json:"card_size"`
+		CardHeight       int32  `json:"card_height"`
+		TextFontSize     int32  `json:"text_font_size"`
+		TextFont         string `json:"text_font"`
+		TextBold         bool   `json:"text_bold"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
@@ -210,6 +214,16 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	if req.CardSize < 200 || req.CardSize > 420 {
 		req.CardSize = 280
 	}
+	if req.CardHeight < 0 || req.CardHeight > 500 {
+		req.CardHeight = 0
+	}
+	if req.TextFontSize < 10 || req.TextFontSize > 20 {
+		req.TextFontSize = 13
+	}
+	allowedFonts := map[string]bool{"Inter": true, "System UI": true, "Georgia": true, "Merriweather": true, "JetBrains Mono": true}
+	if !allowedFonts[req.TextFont] {
+		req.TextFont = "Inter"
+	}
 
 	space, err := h.queries.UpdateSpaceConfig(r.Context(), db.UpdateSpaceConfigParams{
 		ID:               spaceID,
@@ -221,6 +235,10 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		ShowBranding:     req.ShowBranding,
 		VisibleCount:     req.VisibleCount,
 		CardSize:         req.CardSize,
+		CardHeight:       req.CardHeight,
+		TextFontSize:     req.TextFontSize,
+		TextFont:         req.TextFont,
+		TextBold:         req.TextBold,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update space config"}`, http.StatusInternalServerError)

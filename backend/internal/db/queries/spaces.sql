@@ -27,6 +27,10 @@ UPDATE spaces SET
     show_branding = $7,
     visible_count = $8,
     card_size = $9,
+    card_height = $10,
+    text_font_size = $11,
+    text_font = $12,
+    text_bold = $13,
     updated_at = now()
 WHERE id = $1
 RETURNING *;
