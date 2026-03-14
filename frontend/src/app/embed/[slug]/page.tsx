@@ -224,7 +224,6 @@ export default async function EmbedPage({
               color: t.textTertiary,
             }}
           >
-            Powered by
             <a
               href="https://shipproof.io"
               target="_blank"

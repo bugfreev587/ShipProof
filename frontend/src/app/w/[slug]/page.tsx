@@ -190,7 +190,6 @@ export default async function WallPage({
       {/* Footer */}
       {wall.show_branding && (
         <div className="flex items-center justify-center gap-1 pb-8 text-xs" style={{ color: t.textTertiary }}>
-          Powered by
           <a
             href="https://shipproof.io"
             className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"

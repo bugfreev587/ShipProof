@@ -796,7 +796,7 @@ function SpaceCard({
                     }
                     className="rounded border-[var(--border)]"
                   />
-                  Remove &quot;Powered by ShipProof&quot;
+                  Remove ShipProof branding
                 </label>
                 {userPlan !== "business" && (
                   <p className="text-[10px] text-[var(--text-tertiary)] ml-6 mt-0.5">
