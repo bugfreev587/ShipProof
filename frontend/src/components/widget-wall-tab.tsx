@@ -393,7 +393,8 @@ function SpaceCard({
       ? `${window.location.origin}/embed/${space.slug}`
       : `/embed/${space.slug}`;
 
-  const embedCode = `<iframe src="${embedUrl}" width="100%" height="400" frameborder="0" style="border:none;"></iframe>`;
+  const embedCode = `<iframe src="${embedUrl}" width="100%" frameborder="0" style="border:none;overflow:hidden;" scrolling="no"></iframe>
+<script>window.addEventListener("message",function(e){if(e.data&&e.data.type==="shipproof-resize"){document.querySelector('iframe[src*="${space.slug}"]').style.height=e.data.height+"px"}})</script>`;
 
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {

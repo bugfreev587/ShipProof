@@ -97,6 +97,7 @@ export default async function EmbedPage({
 
   return (
     <div
+      id="shipproof-embed"
       style={{
         margin: 0,
         padding: spacing,
@@ -105,6 +106,11 @@ export default async function EmbedPage({
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){function send(){var el=document.getElementById("shipproof-embed");if(el&&window.parent!==window){window.parent.postMessage({type:"shipproof-resize",height:el.scrollHeight},"*")}}if(document.readyState==="complete")send();else window.addEventListener("load",send);new MutationObserver(send).observe(document.body,{childList:true,subtree:true});window.addEventListener("resize",send)})();`,
+        }}
+      />
         <div
           style={{
             display: "flex",
