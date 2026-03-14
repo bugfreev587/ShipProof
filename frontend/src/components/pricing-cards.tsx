@@ -175,11 +175,11 @@ export default function PricingCards() {
       )}
 
       {/* Cards */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 items-stretch">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`relative rounded-xl border ${plan.borderColor} bg-[#1A1A1F] p-6`}
+            className={`relative flex flex-col rounded-xl border ${plan.borderColor} bg-[#1A1A1F] p-6`}
           >
             {plan.badge && (
               <div
@@ -201,7 +201,7 @@ export default function PricingCards() {
               )}
             </div>
 
-            <ul className="mb-6 space-y-2">
+            <ul className="flex-1 space-y-2">
               {plan.features.map((feature) => (
                 <li key={feature.text} className="flex items-center gap-2 text-sm">
                   {feature.included ? (
@@ -244,26 +244,33 @@ export default function PricingCards() {
               ))}
             </ul>
 
-            {plan.plan === "free" ? (
-              <a
-                href={plan.ctaLink}
-                className="block w-full rounded-lg border border-[#2A2A30] px-4 py-2 text-center text-sm font-medium text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
-              >
-                {plan.ctaText}
-              </a>
-            ) : (
-              <button
-                onClick={() => handleUpgrade(plan.plan)}
-                disabled={loading === plan.plan}
-                className={`w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
-                  plan.plan === "pro"
-                    ? "bg-[#6366F1] hover:bg-[#818CF8]"
-                    : "bg-[#F59E0B] hover:bg-[#FBBF24]"
-                }`}
-              >
-                {loading === plan.plan ? "Redirecting..." : plan.ctaText}
-              </button>
-            )}
+            <div className="mt-6">
+              {plan.plan === "free" ? (
+                <a
+                  href={plan.ctaLink}
+                  className="block w-full rounded-lg border border-[#2A2A30] px-4 py-2 text-center text-sm font-medium text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
+                >
+                  {plan.ctaText}
+                </a>
+              ) : (
+                <>
+                  <button
+                    onClick={() => handleUpgrade(plan.plan)}
+                    disabled={loading === plan.plan}
+                    className={`w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
+                      plan.plan === "pro"
+                        ? "bg-[#6366F1] hover:bg-[#818CF8]"
+                        : "bg-[#F59E0B] hover:bg-[#FBBF24]"
+                    }`}
+                  >
+                    {loading === plan.plan ? "Redirecting..." : plan.ctaText}
+                  </button>
+                  <p className="mt-2 text-center text-xs text-[#9CA3AF]">
+                    7-day free trial included
+                  </p>
+                </>
+              )}
+            </div>
           </div>
         ))}
       </div>

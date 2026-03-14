@@ -202,7 +202,7 @@ export default function HomePage() {
       <section id="pricing" className="border-t border-[#2A2A30] py-20">
         <div className="mx-auto max-w-4xl px-4">
           <h2 className="mb-4 text-center text-3xl font-bold text-[#F1F1F3]">
-            Simple, transparent pricing
+            Ship fast, prove it, grow — pricing for every stage
           </h2>
           <p className="mb-12 text-center text-[#9CA3AF]">
             Start free. Upgrade when you need more.
