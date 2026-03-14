@@ -294,32 +294,7 @@ function SpaceProofCard({
         const logoUrl = getCompanyLogoUrl(proof.author_title);
         return logoUrl ? <CompanyLogoImg url={logoUrl} top="8px" right="8px" /> : null;
       })()}
-      {proof.content_text && (
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <p
-            className="leading-relaxed"
-            style={{
-              color: t.textSecondary,
-              fontSize: `${textFontSize}px`,
-              fontFamily: textFont,
-              fontWeight: textBold ? 700 : 400,
-            }}
-          >
-            {showFull || !isLong
-              ? proof.content_text
-              : proof.content_text.slice(0, TEXT_LIMIT) + "..."}
-          </p>
-          {isLong && (
-            <button
-              onClick={() => setShowFull(!showFull)}
-              className="text-[11px] text-[#6366F1] hover:text-[#818CF8] mt-0.5"
-            >
-              {showFull ? "less" : "more"}
-            </button>
-          )}
-        </div>
-      )}
-      <div className="flex items-center gap-2.5 mt-3">
+      <div className="flex items-center gap-2.5 mb-2">
         {proof.author_avatar_url ? (
           <img
             src={proof.author_avatar_url}
@@ -350,6 +325,31 @@ function SpaceProofCard({
           )}
         </div>
       </div>
+      {proof.content_text && (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <p
+            className="leading-relaxed"
+            style={{
+              color: t.textSecondary,
+              fontSize: `${textFontSize}px`,
+              fontFamily: textFont,
+              fontWeight: textBold ? 700 : 400,
+            }}
+          >
+            {showFull || !isLong
+              ? proof.content_text
+              : proof.content_text.slice(0, TEXT_LIMIT) + "..."}
+          </p>
+          {isLong && (
+            <button
+              onClick={() => setShowFull(!showFull)}
+              className="text-[11px] text-[#6366F1] hover:text-[#818CF8] mt-0.5"
+            >
+              {showFull ? "less" : "more"}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

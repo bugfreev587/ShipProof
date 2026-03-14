@@ -146,40 +146,12 @@ export default async function EmbedPage({
                 <CompanyLogoImg url={companyLogoUrl} />
               )}
 
-              {contentText && (
-                <p
-                  style={{
-                    fontSize: `${textFontSize}px`,
-                    lineHeight: "1.6",
-                    color: t.textSecondary,
-                    margin: 0,
-                    fontFamily: textFont,
-                    fontWeight: textBold ? 700 : 400,
-                    flex: 1,
-                  }}
-                >
-                  {contentText}
-                </p>
-              )}
-
-              {contentImageUrl && (
-                <img
-                  src={contentImageUrl.replace(/^https?:\/\/https?:\/\//, "https://")}
-                  alt="Proof"
-                  style={{
-                    marginTop: "8px",
-                    maxWidth: "100%",
-                    borderRadius: `${Math.max(widget.border_radius - 4, 0)}px`,
-                  }}
-                />
-              )}
-
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  marginTop: "12px",
+                  marginBottom: "10px",
                 }}
               >
                 {widget.show_platform_icon && (
@@ -211,6 +183,33 @@ export default async function EmbedPage({
                   )}
                 </div>
               </div>
+
+              {contentText && (
+                <p
+                  style={{
+                    fontSize: `${textFontSize}px`,
+                    lineHeight: "1.6",
+                    color: t.textSecondary,
+                    margin: 0,
+                    fontFamily: textFont,
+                    fontWeight: textBold ? 700 : 400,
+                  }}
+                >
+                  {contentText}
+                </p>
+              )}
+
+              {contentImageUrl && (
+                <img
+                  src={contentImageUrl.replace(/^https?:\/\/https?:\/\//, "https://")}
+                  alt="Proof"
+                  style={{
+                    marginTop: "8px",
+                    maxWidth: "100%",
+                    borderRadius: `${Math.max(widget.border_radius - 4, 0)}px`,
+                  }}
+                />
+              )}
             </div>
             );
           })}
