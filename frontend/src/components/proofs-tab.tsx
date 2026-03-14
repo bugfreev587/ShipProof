@@ -128,13 +128,6 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
       {/* Action Bar */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
-        >
-          + Add Proof
-        </button>
-
         <input
           type="text"
           placeholder="Search proofs..."
@@ -170,6 +163,13 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
             ))}
           </div>
         )}
+
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="ml-auto rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
+        >
+          + Add Proof
+        </button>
       </div>
 
       {/* Proof Cards */}
