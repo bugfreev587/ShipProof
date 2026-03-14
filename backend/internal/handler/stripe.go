@@ -11,9 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stripe/stripe-go/v82"
-	"github.com/stripe/stripe-go/v82/billingportal/session"
-	checkoutsession "github.com/stripe/stripe-go/v82/checkout/session"
-	stripesub "github.com/stripe/stripe-go/v82/subscription"
 	"github.com/stripe/stripe-go/v82/webhook"
 
 	db "github.com/xiaobo/shipproof/internal/db"
@@ -21,13 +18,45 @@ import (
 	"github.com/xiaobo/shipproof/internal/service"
 )
 
-type StripeHandler struct {
-	queries     *db.Queries
-	userService *service.UserService
+// StripeConfig holds keys and price IDs for one Stripe environment (prod or sandbox).
+type StripeConfig struct {
+	SecretKey              string
+	WebhookSecret          string
+	ProMonthlyPriceID      string
+	ProYearlyPriceID       string
+	BusinessMonthlyPriceID string
+	BusinessYearlyPriceID  string
 }
 
-func NewStripeHandler(queries *db.Queries, userService *service.UserService) *StripeHandler {
-	return &StripeHandler{queries: queries, userService: userService}
+type StripeHandler struct {
+	queries       *db.Queries
+	userService   *service.UserService
+	prodConfig    StripeConfig
+	sandboxConfig *StripeConfig // nil if sandbox not configured
+	sandboxEmails map[string]bool
+}
+
+func NewStripeHandler(queries *db.Queries, userService *service.UserService, prodConfig StripeConfig, sandboxConfig *StripeConfig, sandboxEmails map[string]bool) *StripeHandler {
+	return &StripeHandler{
+		queries:       queries,
+		userService:   userService,
+		prodConfig:    prodConfig,
+		sandboxConfig: sandboxConfig,
+		sandboxEmails: sandboxEmails,
+	}
+}
+
+// configForUser returns the sandbox config if the user is whitelisted, otherwise prod.
+func (h *StripeHandler) configForUser(email string) StripeConfig {
+	if h.sandboxConfig != nil && h.sandboxEmails[email] {
+		return *h.sandboxConfig
+	}
+	return h.prodConfig
+}
+
+// newStripeClient creates a per-request Stripe client with the given secret key.
+func newStripeClient(cfg StripeConfig) *stripe.Client {
+	return stripe.NewClient(cfg.SecretKey)
 }
 
 type createCheckoutRequest struct {
@@ -60,9 +89,12 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 		frontendURL = "http://localhost:3000"
 	}
 
-	params := &stripe.CheckoutSessionParams{
+	cfg := h.configForUser(user.Email)
+	sc := newStripeClient(cfg)
+
+	params := &stripe.CheckoutSessionCreateParams{
 		Mode: stripe.String(string(stripe.CheckoutSessionModeSubscription)),
-		LineItems: []*stripe.CheckoutSessionLineItemParams{
+		LineItems: []*stripe.CheckoutSessionCreateLineItemParams{
 			{
 				Price:    stripe.String(req.PriceID),
 				Quantity: stripe.Int64(1),
@@ -70,11 +102,9 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 		},
 		SuccessURL: stripe.String(frontendURL + "/dashboard/settings?session_id={CHECKOUT_SESSION_ID}"),
 		CancelURL:  stripe.String(frontendURL + "/dashboard/settings"),
-		Metadata: map[string]string{
-			"user_id": user.ID.String(),
-			"plan":    req.Plan,
-		},
 	}
+	params.AddMetadata("user_id", user.ID.String())
+	params.AddMetadata("plan", req.Plan)
 
 	if user.StripeCustomerID.Valid && user.StripeCustomerID.String != "" {
 		params.Customer = stripe.String(user.StripeCustomerID.String)
@@ -82,7 +112,7 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 		params.CustomerEmail = stripe.String(user.Email)
 	}
 
-	sess, err := checkoutsession.New(params)
+	sess, err := sc.V1CheckoutSessions.Create(r.Context(), params)
 	if err != nil {
 		slog.Error("failed to create checkout session", "error", err)
 		http.Error(w, `{"error":"failed to create checkout session"}`, http.StatusInternalServerError)
@@ -112,12 +142,15 @@ func (h *StripeHandler) CreatePortal(w http.ResponseWriter, r *http.Request) {
 		frontendURL = "http://localhost:3000"
 	}
 
-	params := &stripe.BillingPortalSessionParams{
+	cfg := h.configForUser(user.Email)
+	sc := newStripeClient(cfg)
+
+	params := &stripe.BillingPortalSessionCreateParams{
 		Customer:  stripe.String(user.StripeCustomerID.String),
 		ReturnURL: stripe.String(frontendURL + "/dashboard/settings"),
 	}
 
-	sess, err := session.New(params)
+	sess, err := sc.V1BillingPortalSessions.Create(r.Context(), params)
 	if err != nil {
 		slog.Error("failed to create portal session", "error", err)
 		http.Error(w, `{"error":"failed to create portal session"}`, http.StatusInternalServerError)
@@ -140,21 +173,23 @@ func (h *StripeHandler) GetSubscriptionStatus(w http.ResponseWriter, r *http.Req
 	if !user.StripeSubscriptionID.Valid || user.StripeSubscriptionID.String == "" {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"has_subscription":      false,
-			"cancel_at_period_end":  false,
-			"current_period_end":    nil,
+			"has_subscription":     false,
+			"cancel_at_period_end": false,
+			"current_period_end":   nil,
 		})
 		return
 	}
 
-	sub, err := stripesub.Get(user.StripeSubscriptionID.String, nil)
+	cfg := h.configForUser(user.Email)
+	sc := newStripeClient(cfg)
+
+	sub, err := sc.V1Subscriptions.Retrieve(r.Context(), user.StripeSubscriptionID.String, &stripe.SubscriptionRetrieveParams{})
 	if err != nil {
 		slog.Error("failed to fetch subscription from stripe", "error", err)
 		http.Error(w, `{"error":"failed to fetch subscription"}`, http.StatusInternalServerError)
 		return
 	}
 
-	// CurrentPeriodEnd is on subscription items in stripe-go v82
 	var periodEnd int64
 	if len(sub.Items.Data) > 0 {
 		periodEnd = sub.Items.Data[0].CurrentPeriodEnd
@@ -162,9 +197,9 @@ func (h *StripeHandler) GetSubscriptionStatus(w http.ResponseWriter, r *http.Req
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"has_subscription":      true,
-		"cancel_at_period_end":  sub.CancelAtPeriodEnd,
-		"current_period_end":    periodEnd,
+		"has_subscription":     true,
+		"cancel_at_period_end": sub.CancelAtPeriodEnd,
+		"current_period_end":   periodEnd,
 	})
 }
 
@@ -182,7 +217,10 @@ func (h *StripeHandler) ReactivateSubscription(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	_, err = stripesub.Update(user.StripeSubscriptionID.String, &stripe.SubscriptionParams{
+	cfg := h.configForUser(user.Email)
+	sc := newStripeClient(cfg)
+
+	_, err = sc.V1Subscriptions.Update(r.Context(), user.StripeSubscriptionID.String, &stripe.SubscriptionUpdateParams{
 		CancelAtPeriodEnd: stripe.Bool(false),
 	})
 	if err != nil {
@@ -203,10 +241,19 @@ func (h *StripeHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	webhookSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
-	event, err := webhook.ConstructEventWithOptions(body, r.Header.Get("Stripe-Signature"), webhookSecret, webhook.ConstructEventOptions{
-		IgnoreAPIVersionMismatch: true,
-	})
+	sig := r.Header.Get("Stripe-Signature")
+	opts := webhook.ConstructEventOptions{IgnoreAPIVersionMismatch: true}
+
+	// Try production webhook secret first
+	event, err := webhook.ConstructEventWithOptions(body, sig, h.prodConfig.WebhookSecret, opts)
+	usedConfig := h.prodConfig
+
+	// If prod verification fails and sandbox is configured, try sandbox secret
+	if err != nil && h.sandboxConfig != nil {
+		event, err = webhook.ConstructEventWithOptions(body, sig, h.sandboxConfig.WebhookSecret, opts)
+		usedConfig = *h.sandboxConfig
+	}
+
 	if err != nil {
 		slog.Error("stripe webhook signature verification failed", "error", err)
 		http.Error(w, `{"error":"invalid signature"}`, http.StatusBadRequest)
@@ -217,7 +264,7 @@ func (h *StripeHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	case "checkout.session.completed":
 		h.handleCheckoutCompleted(event)
 	case "customer.subscription.updated":
-		h.handleSubscriptionUpdated(event)
+		h.handleSubscriptionUpdated(event, usedConfig)
 	case "customer.subscription.deleted":
 		h.handleSubscriptionDeleted(event)
 	case "invoice.payment_failed":
@@ -258,9 +305,9 @@ func (h *StripeHandler) handleCheckoutCompleted(event stripe.Event) {
 	}
 
 	_, err = h.queries.UpdateUserPlan(r_context(), db.UpdateUserPlanParams{
-		ID:                 userID,
-		Plan:               db.UserPlan(plan),
-		StripeCustomerID:   pgtype.Text{String: customerID, Valid: customerID != ""},
+		ID:                   userID,
+		Plan:                 db.UserPlan(plan),
+		StripeCustomerID:     pgtype.Text{String: customerID, Valid: customerID != ""},
 		StripeSubscriptionID: pgtype.Text{String: subscriptionID, Valid: subscriptionID != ""},
 	})
 	if err != nil {
@@ -271,7 +318,7 @@ func (h *StripeHandler) handleCheckoutCompleted(event stripe.Event) {
 	slog.Info("user plan updated via checkout", "user_id", userIDStr, "plan", plan)
 }
 
-func (h *StripeHandler) handleSubscriptionUpdated(event stripe.Event) {
+func (h *StripeHandler) handleSubscriptionUpdated(event stripe.Event, cfg StripeConfig) {
 	var sub stripe.Subscription
 	if err := json.Unmarshal(event.Data.Raw, &sub); err != nil {
 		slog.Error("failed to parse subscription", "error", err)
@@ -296,16 +343,15 @@ func (h *StripeHandler) handleSubscriptionUpdated(event stripe.Event) {
 		return
 	}
 
-	// Map price ID to plan
-	plan := mapPriceToPlan(sub)
+	plan := h.mapPriceToPlan(sub)
 	if plan == "" {
 		return
 	}
 
 	_, err = h.queries.UpdateUserPlan(r_context(), db.UpdateUserPlanParams{
-		ID:                 user.ID,
-		Plan:               db.UserPlan(plan),
-		StripeCustomerID:   pgtype.Text{String: customerID, Valid: true},
+		ID:                   user.ID,
+		Plan:                 db.UserPlan(plan),
+		StripeCustomerID:     pgtype.Text{String: customerID, Valid: true},
 		StripeSubscriptionID: pgtype.Text{String: sub.ID, Valid: true},
 	})
 	if err != nil {
@@ -335,9 +381,9 @@ func (h *StripeHandler) handleSubscriptionDeleted(event stripe.Event) {
 	}
 
 	_, err = h.queries.UpdateUserPlan(r_context(), db.UpdateUserPlanParams{
-		ID:                 user.ID,
-		Plan:               db.UserPlanFree,
-		StripeCustomerID:   pgtype.Text{Valid: false},
+		ID:                   user.ID,
+		Plan:                 db.UserPlanFree,
+		StripeCustomerID:     pgtype.Text{Valid: false},
 		StripeSubscriptionID: pgtype.Text{Valid: false},
 	})
 	if err != nil {
@@ -347,28 +393,33 @@ func (h *StripeHandler) handleSubscriptionDeleted(event stripe.Event) {
 	slog.Info("user downgraded to free", "user_id", user.ID, "customer_id", customerID)
 }
 
-func mapPriceToPlan(sub stripe.Subscription) string {
-	proMonthly := os.Getenv("STRIPE_PRO_MONTHLY_PRICE_ID")
-	proYearly := os.Getenv("STRIPE_PRO_YEARLY_PRICE_ID")
-	bizMonthly := os.Getenv("STRIPE_BUSINESS_MONTHLY_PRICE_ID")
-	bizYearly := os.Getenv("STRIPE_BUSINESS_YEARLY_PRICE_ID")
+// mapPriceToPlan checks price IDs from both prod and sandbox configs.
+func (h *StripeHandler) mapPriceToPlan(sub stripe.Subscription) string {
+	priceMap := map[string]string{
+		h.prodConfig.ProMonthlyPriceID:      "pro",
+		h.prodConfig.ProYearlyPriceID:       "pro",
+		h.prodConfig.BusinessMonthlyPriceID: "business",
+		h.prodConfig.BusinessYearlyPriceID:  "business",
+	}
+	if h.sandboxConfig != nil {
+		priceMap[h.sandboxConfig.ProMonthlyPriceID] = "pro"
+		priceMap[h.sandboxConfig.ProYearlyPriceID] = "pro"
+		priceMap[h.sandboxConfig.BusinessMonthlyPriceID] = "business"
+		priceMap[h.sandboxConfig.BusinessYearlyPriceID] = "business"
+	}
 
 	for _, item := range sub.Items.Data {
 		if item.Price == nil {
 			continue
 		}
-		switch item.Price.ID {
-		case proMonthly, proYearly:
-			return "pro"
-		case bizMonthly, bizYearly:
-			return "business"
+		if plan, ok := priceMap[item.Price.ID]; ok {
+			return plan
 		}
 	}
 	return ""
 }
 
 // r_context returns a background context for webhook handlers
-// (webhooks don't have a request context available in sub-handlers)
 func r_context() context.Context {
 	return context.Background()
 }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	slogbetterstack "github.com/samber/slog-betterstack"
-	"github.com/stripe/stripe-go/v82"
 
 	db "github.com/xiaobo/shipproof/internal/db"
 	"github.com/xiaobo/shipproof/internal/handler"
@@ -97,11 +97,31 @@ func main() {
 		wallHandler := handler.NewWallHandler(queries, userService, planService)
 		spaceHandler := handler.NewSpaceHandler(queries, userService, planService)
 		publicHandler := handler.NewPublicHandler(queries)
-		stripeHandler := handler.NewStripeHandler(queries, userService)
-		userHandler := handler.NewUserHandler(userService)
+		// Stripe config: prod + optional sandbox
+		prodConfig := handler.StripeConfig{
+			SecretKey:              os.Getenv("STRIPE_SECRET_KEY"),
+			WebhookSecret:          os.Getenv("STRIPE_WEBHOOK_SECRET"),
+			ProMonthlyPriceID:      os.Getenv("STRIPE_PRO_MONTHLY_PRICE_ID"),
+			ProYearlyPriceID:       os.Getenv("STRIPE_PRO_YEARLY_PRICE_ID"),
+			BusinessMonthlyPriceID: os.Getenv("STRIPE_BUSINESS_MONTHLY_PRICE_ID"),
+			BusinessYearlyPriceID:  os.Getenv("STRIPE_BUSINESS_YEARLY_PRICE_ID"),
+		}
 
-		// Set Stripe API key
-		stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+		var sandboxConfig *handler.StripeConfig
+		if sk := os.Getenv("STRIPE_SANDBOX_SECRET_KEY"); sk != "" {
+			sandboxConfig = &handler.StripeConfig{
+				SecretKey:              sk,
+				WebhookSecret:          os.Getenv("STRIPE_SANDBOX_WEBHOOK_SECRET"),
+				ProMonthlyPriceID:      os.Getenv("STRIPE_SANDBOX_PRO_MONTHLY_PRICE_ID"),
+				ProYearlyPriceID:       os.Getenv("STRIPE_SANDBOX_PRO_YEARLY_PRICE_ID"),
+				BusinessMonthlyPriceID: os.Getenv("STRIPE_SANDBOX_BUSINESS_MONTHLY_PRICE_ID"),
+				BusinessYearlyPriceID:  os.Getenv("STRIPE_SANDBOX_BUSINESS_YEARLY_PRICE_ID"),
+			}
+		}
+
+		sandboxEmails := parseEmails(os.Getenv("SANDBOX_USER_EMAILS"))
+		stripeHandler := handler.NewStripeHandler(queries, userService, prodConfig, sandboxConfig, sandboxEmails)
+		userHandler := handler.NewUserHandler(userService, prodConfig, sandboxConfig, sandboxEmails)
 
 		r.Post("/api/webhooks/clerk", webhookHandler.HandleClerkWebhook)
 		r.Post("/api/webhooks/stripe", stripeHandler.HandleWebhook)
@@ -247,4 +267,16 @@ func (f fanoutHandler) WithGroup(name string) slog.Handler {
 		handlers[i] = h.WithGroup(name)
 	}
 	return fanoutHandler{handlers: handlers}
+}
+
+// parseEmails splits a comma-separated email list into a set.
+func parseEmails(s string) map[string]bool {
+	emails := make(map[string]bool)
+	for _, e := range strings.Split(s, ",") {
+		e = strings.TrimSpace(e)
+		if e != "" {
+			emails[e] = true
+		}
+	}
+	return emails
 }

@@ -94,6 +94,12 @@ export interface User {
   stripe_subscription_id: PgText;
   created_at: string;
   updated_at: string;
+  stripe_prices?: {
+    pro_monthly: string;
+    pro_yearly: string;
+    business_monthly: string;
+    business_yearly: string;
+  };
 }
 
 export function getCurrentUser(token: string) {

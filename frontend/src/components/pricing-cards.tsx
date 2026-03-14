@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { createCheckoutSession } from "@/lib/api";
+import { createCheckoutSession, getCurrentUser } from "@/lib/api";
 
 const plans = [
   {
@@ -67,7 +67,7 @@ const plans = [
   },
 ];
 
-const priceIds: Record<string, { monthly: string; yearly: string }> = {
+const fallbackPriceIds: Record<string, { monthly: string; yearly: string }> = {
   pro: {
     monthly: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID || "",
     yearly: process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID || "",
@@ -82,8 +82,30 @@ export default function PricingCards() {
   const [yearly, setYearly] = useState(false);
   const { isSignedIn, getToken } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
-
   const [error, setError] = useState("");
+  const [priceIds, setPriceIds] = useState(fallbackPriceIds);
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token || cancelled) return;
+        const user = await getCurrentUser(token);
+        const sp = user.stripe_prices;
+        if (sp && !cancelled) {
+          setPriceIds({
+            pro: { monthly: sp.pro_monthly, yearly: sp.pro_yearly },
+            business: { monthly: sp.business_monthly, yearly: sp.business_yearly },
+          });
+        }
+      } catch {
+        // fall back to env vars
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isSignedIn, getToken]);
 
   const handleUpgrade = async (plan: string) => {
     if (!isSignedIn) {
