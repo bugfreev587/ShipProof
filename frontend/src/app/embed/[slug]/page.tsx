@@ -1,5 +1,5 @@
 import { fetchPublicProofs, fetchPublicSpaceProofs } from "@/lib/api";
-import { getThemeColors, type DashboardTheme } from "@/lib/theme";
+import { getThemeColors, type DashboardTheme } from "@/lib/theme-colors";
 import { getCompanyLogoUrl } from "@/lib/company-logo";
 import { CompanyLogoImg } from "@/components/company-logo";
 
@@ -82,16 +82,15 @@ export default async function EmbedPage({
   const spacing = `${widget.card_spacing}px`;
 
   return (
-    <html>
-      <body
-        style={{
-          margin: 0,
-          padding: spacing,
-          background: "transparent",
-          fontFamily:
-            'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        }}
-      >
+    <div
+      style={{
+        margin: 0,
+        padding: spacing,
+        background: "transparent",
+        fontFamily:
+          'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      }}
+    >
         <div
           style={{
             display: "flex",
@@ -209,7 +208,6 @@ export default async function EmbedPage({
             </a>
           </div>
         )}
-      </body>
-    </html>
+    </div>
   );
 }
