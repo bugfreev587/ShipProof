@@ -734,7 +734,6 @@ function SpaceCard({
                   onChange={(e) =>
                     handleConfigChange({ bg_opacity: Number(e.target.value) })
                   }
-                  disabled={!config.bg_color}
                   className="w-full"
                 />
               </div>
