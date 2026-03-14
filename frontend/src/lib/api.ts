@@ -53,6 +53,7 @@ export interface Product {
   description: PgText;
   description_long: PgText;
   target_audience: PgText;
+  logo_url: PgText;
   created_at: string;
   updated_at: string;
 }
@@ -158,7 +159,7 @@ export function getProduct(id: string, token: string) {
 }
 
 export function createProduct(
-  data: { name: string; url?: string; description?: string },
+  data: { name: string; url?: string; description?: string; logo_url?: string },
   token: string,
 ) {
   return fetchApi<Product>(
@@ -176,6 +177,7 @@ export function updateProduct(
     description?: string;
     description_long?: string;
     target_audience?: string;
+    logo_url?: string;
   },
   token: string,
 ) {

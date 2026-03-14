@@ -13,9 +13,9 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :one
-INSERT INTO products (user_id, name, slug, url, description)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at
+INSERT INTO products (user_id, name, slug, url, description, logo_url)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url
 `
 
 type CreateProductParams struct {
@@ -24,6 +24,7 @@ type CreateProductParams struct {
 	Slug        string      `json:"slug"`
 	Url         pgtype.Text `json:"url"`
 	Description pgtype.Text `json:"description"`
+	LogoUrl     pgtype.Text `json:"logo_url"`
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
@@ -33,6 +34,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		arg.Slug,
 		arg.Url,
 		arg.Description,
+		arg.LogoUrl,
 	)
 	var i Product
 	err := row.Scan(
@@ -46,6 +48,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.TargetAudience,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LogoUrl,
 	)
 	return i, err
 }
@@ -60,7 +63,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) error {
 }
 
 const getProductByID = `-- name: GetProductByID :one
-SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at FROM products WHERE id = $1
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url FROM products WHERE id = $1
 `
 
 func (q *Queries) GetProductByID(ctx context.Context, id uuid.UUID) (Product, error) {
@@ -77,12 +80,13 @@ func (q *Queries) GetProductByID(ctx context.Context, id uuid.UUID) (Product, er
 		&i.TargetAudience,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LogoUrl,
 	)
 	return i, err
 }
 
 const listProductsByUserID = `-- name: ListProductsByUserID :many
-SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at FROM products WHERE user_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url FROM products WHERE user_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([]Product, error) {
@@ -105,6 +109,7 @@ func (q *Queries) ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([
 			&i.TargetAudience,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LogoUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -118,9 +123,9 @@ func (q *Queries) ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([
 
 const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
-SET name = $2, url = $3, description = $4, description_long = $5, target_audience = $6, updated_at = now()
+SET name = $2, url = $3, description = $4, description_long = $5, target_audience = $6, logo_url = $7, updated_at = now()
 WHERE id = $1
-RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at
+RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url
 `
 
 type UpdateProductParams struct {
@@ -130,6 +135,7 @@ type UpdateProductParams struct {
 	Description     pgtype.Text `json:"description"`
 	DescriptionLong pgtype.Text `json:"description_long"`
 	TargetAudience  pgtype.Text `json:"target_audience"`
+	LogoUrl         pgtype.Text `json:"logo_url"`
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
@@ -140,6 +146,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		arg.Description,
 		arg.DescriptionLong,
 		arg.TargetAudience,
+		arg.LogoUrl,
 	)
 	var i Product
 	err := row.Scan(
@@ -153,6 +160,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.TargetAudience,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LogoUrl,
 	)
 	return i, err
 }

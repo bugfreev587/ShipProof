@@ -29,6 +29,7 @@ type createProductRequest struct {
 	Name        string `json:"name"`
 	URL         string `json:"url,omitempty"`
 	Description string `json:"description,omitempty"`
+	LogoURL     string `json:"logo_url,omitempty"`
 }
 
 type updateProductRequest struct {
@@ -37,6 +38,7 @@ type updateProductRequest struct {
 	Description     string `json:"description,omitempty"`
 	DescriptionLong string `json:"description_long,omitempty"`
 	TargetAudience  string `json:"target_audience,omitempty"`
+	LogoURL         string `json:"logo_url,omitempty"`
 }
 
 var slugRegex = regexp.MustCompile(`[^a-z0-9]+`)
@@ -106,6 +108,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Slug:        slug,
 		Url:         pgtype.Text{String: req.URL, Valid: req.URL != ""},
 		Description: pgtype.Text{String: req.Description, Valid: req.Description != ""},
+		LogoUrl:     pgtype.Text{String: req.LogoURL, Valid: req.LogoURL != ""},
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to create product"}`, http.StatusInternalServerError)
@@ -175,6 +178,7 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Description:     pgtype.Text{String: req.Description, Valid: req.Description != ""},
 		DescriptionLong: pgtype.Text{String: req.DescriptionLong, Valid: req.DescriptionLong != ""},
 		TargetAudience:  pgtype.Text{String: req.TargetAudience, Valid: req.TargetAudience != ""},
+		LogoUrl:         pgtype.Text{String: req.LogoURL, Valid: req.LogoURL != ""},
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update product"}`, http.StatusInternalServerError)

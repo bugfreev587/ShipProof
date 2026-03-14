@@ -1,8 +1,8 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
-import { updateProduct, type Product } from "@/lib/api";
+import { useState, useEffect, useRef } from "react";
+import { updateProduct, uploadAvatar, type Product } from "@/lib/api";
 
 interface Props {
   product: Product;
@@ -25,6 +25,11 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
   const [targetAudience, setTargetAudience] = useState(
     product.target_audience?.Valid ? product.target_audience.String : "",
   );
+  const [logoUrl, setLogoUrl] = useState(
+    product.logo_url?.Valid ? product.logo_url.String : "",
+  );
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Close on Escape key
   useEffect(() => {
@@ -34,6 +39,23 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const url = await uploadAvatar(file, token);
+      setLogoUrl(url);
+    } catch {
+      // ignore
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -49,6 +71,7 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
           description: description.trim() || undefined,
           description_long: descriptionLong.trim() || undefined,
           target_audience: targetAudience.trim() || undefined,
+          logo_url: logoUrl || undefined,
         },
         token,
       );
@@ -63,7 +86,7 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div
-        className="w-full max-w-lg rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 shadow-2xl"
+        className="w-full max-w-lg rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -84,6 +107,60 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
         </p>
 
         <div className="space-y-3">
+          {/* Logo Upload */}
+          <div>
+            <label className="mb-1 block text-sm text-[var(--text-secondary)]">Logo</label>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--bg-base)] overflow-hidden hover:border-[var(--border-hover)] transition-colors"
+              >
+                {uploading ? (
+                  <svg className="h-5 w-5 animate-spin text-[var(--text-tertiary)]" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                    <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                ) : logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-tertiary)]">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                )}
+              </button>
+              <div className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="text-sm text-[#6366F1] hover:text-[#818CF8] transition-colors disabled:opacity-50"
+                >
+                  {logoUrl ? "Change" : "Upload"}
+                </button>
+                {logoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setLogoUrl("")}
+                    className="text-sm text-[var(--text-tertiary)] hover:text-[#EF4444] transition-colors"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="mb-1 block text-sm text-[var(--text-secondary)]">
               Product Name *

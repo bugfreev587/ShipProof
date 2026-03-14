@@ -353,6 +353,7 @@ type Product struct {
 	TargetAudience  pgtype.Text `json:"target_audience"`
 	CreatedAt       time.Time   `json:"created_at"`
 	UpdatedAt       time.Time   `json:"updated_at"`
+	LogoUrl         pgtype.Text `json:"logo_url"`
 }
 
 type Proof struct {

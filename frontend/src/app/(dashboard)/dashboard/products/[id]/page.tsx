@@ -83,9 +83,13 @@ export default function ProductDetailPage() {
       {/* Product Header */}
       <div className="flex items-center justify-between px-10 py-6 border-b border-[var(--border)]">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#6366F1] text-white font-semibold text-lg">
-            {product.name.charAt(0).toUpperCase()}
-          </div>
+          {product.logo_url?.Valid ? (
+            <img src={product.logo_url.String} alt="" className="h-10 w-10 rounded-lg object-cover" />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#6366F1] text-white font-semibold text-lg">
+              {product.name.charAt(0).toUpperCase()}
+            </div>
+          )}
           <h1 className="text-2xl font-medium text-[var(--text-primary)]">{product.name}</h1>
         </div>
         <button

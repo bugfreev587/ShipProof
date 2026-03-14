@@ -89,7 +89,7 @@ func (q *Queries) DeleteProof(ctx context.Context, id uuid.UUID) error {
 }
 
 const getProductBySlug = `-- name: GetProductBySlug :one
-SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at FROM products WHERE slug = $1
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url FROM products WHERE slug = $1
 `
 
 func (q *Queries) GetProductBySlug(ctx context.Context, slug string) (Product, error) {
@@ -106,6 +106,7 @@ func (q *Queries) GetProductBySlug(ctx context.Context, slug string) (Product, e
 		&i.TargetAudience,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LogoUrl,
 	)
 	return i, err
 }
