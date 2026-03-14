@@ -191,8 +191,9 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 text-xs text-[#6B7280]">
-              Powered by ShipProof
+            <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-[#6B7280]">
+              <LogoIcon className="w-4 h-4" />
+              <span className="font-medium">ShipProof</span>
             </div>
           </div>
         </div>
