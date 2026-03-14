@@ -701,25 +701,34 @@ function SpaceCard({
               </div>
 
               <div>
-                <label className="block text-xs text-[var(--text-secondary)] mb-1">
-                  Background Color
-                </label>
-                <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer mb-2">
                   <input
-                    type="color"
-                    value={config.bg_color || "#000000"}
+                    type="checkbox"
+                    checked={!config.bg_color}
                     onChange={(e) =>
-                      handleConfigChange({ bg_color: e.target.value })
+                      handleConfigChange({
+                        bg_color: e.target.checked ? "" : "#1A1A1F",
+                      })
                     }
-                    className="w-9 h-9 rounded border border-[var(--border)] bg-transparent cursor-pointer"
+                    className="rounded border-[var(--border)]"
                   />
-                  <button
-                    onClick={() => handleConfigChange({ bg_color: "" })}
-                    className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-                  >
-                    {config.bg_color ? "Clear" : "Transparent"}
-                  </button>
-                </div>
+                  Transparent background
+                </label>
+                {config.bg_color && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={config.bg_color}
+                      onChange={(e) =>
+                        handleConfigChange({ bg_color: e.target.value })
+                      }
+                      className="w-9 h-9 rounded border border-[var(--border)] bg-transparent cursor-pointer"
+                    />
+                    <span className="text-xs text-[var(--text-tertiary)]">
+                      {config.bg_color}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -734,6 +743,7 @@ function SpaceCard({
                   onChange={(e) =>
                     handleConfigChange({ bg_opacity: Number(e.target.value) })
                   }
+                  disabled={!config.bg_color}
                   className="w-full"
                 />
               </div>
