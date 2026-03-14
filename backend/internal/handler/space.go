@@ -195,10 +195,20 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		BorderRadius     int32  `json:"border_radius"`
 		CardSpacing      int32  `json:"card_spacing"`
 		ShowBranding     bool   `json:"show_branding"`
+		VisibleCount     int32  `json:"visible_count"`
+		CardSize         string `json:"card_size"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
 		return
+	}
+
+	// Defaults
+	if req.VisibleCount < 1 || req.VisibleCount > 10 {
+		req.VisibleCount = 3
+	}
+	if req.CardSize != "small" && req.CardSize != "medium" && req.CardSize != "large" {
+		req.CardSize = "medium"
 	}
 
 	space, err := h.queries.UpdateSpaceConfig(r.Context(), db.UpdateSpaceConfigParams{
@@ -209,6 +219,8 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		BorderRadius:     req.BorderRadius,
 		CardSpacing:      req.CardSpacing,
 		ShowBranding:     req.ShowBranding,
+		VisibleCount:     req.VisibleCount,
+		CardSize:         req.CardSize,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update space config"}`, http.StatusInternalServerError)

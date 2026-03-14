@@ -429,6 +429,8 @@ function SpaceCard({
             border_radius: newConfig.border_radius,
             card_spacing: newConfig.card_spacing,
             show_branding: newConfig.show_branding,
+            visible_count: newConfig.visible_count,
+            card_size: newConfig.card_size,
           },
           token,
         );
@@ -582,6 +584,35 @@ function SpaceCard({
                   }
                   className="w-full"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  Visible Cards: {config.visible_count}
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  value={config.visible_count}
+                  onChange={(e) =>
+                    handleConfigChange({ visible_count: Number(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">Card Size</label>
+                <select
+                  value={config.card_size}
+                  onChange={(e) => handleConfigChange({ card_size: e.target.value })}
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
+                >
+                  <option value="small">Small</option>
+                  <option value="medium">Medium</option>
+                  <option value="large">Large</option>
+                </select>
               </div>
             </div>
 

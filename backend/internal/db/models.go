@@ -278,9 +278,9 @@ type WidgetTheme string
 
 const (
 	WidgetThemeDark  WidgetTheme = "dark"
+	WidgetThemeLight WidgetTheme = "light"
 	WidgetThemeDim   WidgetTheme = "dim"
 	WidgetThemeGray  WidgetTheme = "gray"
-	WidgetThemeLight WidgetTheme = "light"
 )
 
 func (e *WidgetTheme) Scan(src interface{}) error {
@@ -395,6 +395,8 @@ type Space struct {
 	ShowBranding     bool        `json:"show_branding"`
 	CreatedAt        time.Time   `json:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at"`
+	VisibleCount     int32       `json:"visible_count"`
+	CardSize         string      `json:"card_size"`
 }
 
 type SpaceProof struct {

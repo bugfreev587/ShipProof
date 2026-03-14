@@ -25,6 +25,8 @@ UPDATE spaces SET
     border_radius = $5,
     card_spacing = $6,
     show_branding = $7,
+    visible_count = $8,
+    card_size = $9,
     updated_at = now()
 WHERE id = $1
 RETURNING *;

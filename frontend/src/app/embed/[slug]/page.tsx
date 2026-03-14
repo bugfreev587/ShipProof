@@ -29,7 +29,15 @@ interface WidgetSettings {
   border_radius: number;
   card_spacing: number;
   show_branding: boolean;
+  visible_count?: number;
+  card_size?: string;
 }
+
+const CARD_SIZES: Record<string, { minWidth: number; maxWidth: number }> = {
+  small: { minWidth: 200, maxWidth: 240 },
+  medium: { minWidth: 280, maxWidth: 320 },
+  large: { minWidth: 360, maxWidth: 420 },
+};
 
 type PgText = { String: string; Valid: boolean } | string | null;
 
@@ -80,6 +88,10 @@ export default async function EmbedPage({
   const t = getThemeColors((widget.theme || "dark") as DashboardTheme);
   const radius = `${widget.border_radius}px`;
   const spacing = `${widget.card_spacing}px`;
+  const cardSizeKey = widget.card_size || "medium";
+  const cardDims = CARD_SIZES[cardSizeKey] || CARD_SIZES.medium;
+  const visibleCount = widget.visible_count || 3;
+  const containerMaxWidth = visibleCount * cardDims.maxWidth + (visibleCount - 1) * widget.card_spacing;
 
   return (
     <div
@@ -97,6 +109,7 @@ export default async function EmbedPage({
             gap: spacing,
             overflowX: "auto",
             paddingBottom: "8px",
+            maxWidth: `${containerMaxWidth}px`,
           }}
         >
           {proofs.map((proof) => {
@@ -108,8 +121,8 @@ export default async function EmbedPage({
             <div
               key={proof.id}
               style={{
-                minWidth: "280px",
-                maxWidth: "320px",
+                minWidth: `${cardDims.minWidth}px`,
+                maxWidth: `${cardDims.maxWidth}px`,
                 padding: "16px",
                 borderRadius: radius,
                 border: `1px solid ${t.border}`,
