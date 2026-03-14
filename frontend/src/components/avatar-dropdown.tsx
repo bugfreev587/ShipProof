@@ -52,7 +52,7 @@ export default function AvatarDropdown() {
             Dashboard
           </Link>
           <Link
-            href="/pricing"
+            href="/#pricing"
             onClick={() => setOpen(false)}
             className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
           >

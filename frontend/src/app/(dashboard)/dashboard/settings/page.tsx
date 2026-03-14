@@ -125,7 +125,7 @@ function SettingsContent() {
 
   const handleUpgrade = (plan: string) => {
     void plan;
-    window.location.href = "/pricing";
+    window.location.href = "/#pricing";
   };
 
   const handleManageBilling = async () => {

@@ -268,7 +268,7 @@ export default function HomePage() {
               <h4 className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-[#6B7280]">
                 <li><a href="#features" className="hover:text-[#F1F1F3] transition-colors">Features</a></li>
-                <li><a href="/pricing" className="hover:text-[#F1F1F3] transition-colors">Pricing</a></li>
+                <li><a href="/#pricing" className="hover:text-[#F1F1F3] transition-colors">Pricing</a></li>
                 <li><a href="#faq" className="hover:text-[#F1F1F3] transition-colors">FAQ</a></li>
               </ul>
             </div>
