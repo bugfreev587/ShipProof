@@ -113,7 +113,8 @@ function getTrack(){return document.getElementById("shipproof-track")}
 function getViewport(){return document.getElementById("shipproof-viewport")}
 function adjust(){
   var vp=getViewport();if(!vp)return;
-  var pw=vp.clientWidth;
+  var row=vp.parentElement;
+  var pw=row.parentElement.clientWidth-74;
   totalCards=${Math.min(proofs.length, maxItems)};
   perPage=Math.max(1,Math.floor((pw+sp)/(cw+sp)));
   var maxW=perPage*cw+(perPage-1)*sp;
@@ -171,8 +172,9 @@ window.addEventListener("resize",debouncedAdjust);
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "8px",
+          gap: "6px",
           justifyContent: "center",
+          margin: "0 auto",
         }}
       >
         {/* Left arrow */}
@@ -181,8 +183,8 @@ window.addEventListener("resize",debouncedAdjust);
           style={{
             flexShrink: 0,
             zIndex: 10,
-            width: "32px",
-            height: "32px",
+            width: "28px",
+            height: "28px",
             borderRadius: "50%",
             border: `1px solid ${t.border}`,
             background: t.bgSurface,
@@ -191,7 +193,7 @@ window.addEventListener("resize",debouncedAdjust);
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            fontSize: "18px",
+            fontSize: "16px",
             lineHeight: 1,
           }}
           dangerouslySetInnerHTML={{ __html: `<span onclick="__shipproof_prev()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u2039</span>` }}
@@ -202,7 +204,6 @@ window.addEventListener("resize",debouncedAdjust);
           id="shipproof-viewport"
           style={{
             overflow: "hidden",
-            margin: "0 auto",
           }}
         >
           <div
@@ -317,8 +318,8 @@ window.addEventListener("resize",debouncedAdjust);
           style={{
             flexShrink: 0,
             zIndex: 10,
-            width: "32px",
-            height: "32px",
+            width: "28px",
+            height: "28px",
             borderRadius: "50%",
             border: `1px solid ${t.border}`,
             background: t.bgSurface,
@@ -327,7 +328,7 @@ window.addEventListener("resize",debouncedAdjust);
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            fontSize: "18px",
+            fontSize: "16px",
             lineHeight: 1,
           }}
           dangerouslySetInnerHTML={{ __html: `<span onclick="__shipproof_next()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u203A</span>` }}
