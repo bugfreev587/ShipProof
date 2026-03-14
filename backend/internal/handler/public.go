@@ -108,7 +108,7 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 		CardSpacing      int32  `json:"card_spacing"`
 		ShowBranding     bool   `json:"show_branding"`
 		VisibleCount     int32  `json:"visible_count"`
-		CardSize         string `json:"card_size"`
+		CardSize         int32  `json:"card_size"`
 	}
 
 	type response struct {

@@ -365,7 +365,7 @@ export interface Space {
   card_spacing: number;
   show_branding: boolean;
   visible_count: number;
-  card_size: string;
+  card_size: number;
   created_at: string;
   updated_at: string;
 }
@@ -707,7 +707,7 @@ export function updateSpaceConfig(
     card_spacing: number;
     show_branding: boolean;
     visible_count: number;
-    card_size: string;
+    card_size: number;
   },
   token: string,
 ) {
@@ -779,7 +779,7 @@ export interface PublicSpaceResponse {
     card_spacing: number;
     show_branding: boolean;
     visible_count: number;
-    card_size: string;
+    card_size: number;
   };
   product: Product;
   proofs: (Proof & { space_display_order: number })[];

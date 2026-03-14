@@ -397,7 +397,7 @@ type Space struct {
 	CreatedAt        time.Time   `json:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at"`
 	VisibleCount     int32       `json:"visible_count"`
-	CardSize         string      `json:"card_size"`
+	CardSize         int32       `json:"card_size"`
 }
 
 type SpaceProof struct {

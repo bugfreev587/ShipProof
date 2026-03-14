@@ -30,14 +30,8 @@ interface WidgetSettings {
   card_spacing: number;
   show_branding: boolean;
   visible_count?: number;
-  card_size?: string;
+  card_size?: number;
 }
-
-const CARD_SIZES: Record<string, { minWidth: number; maxWidth: number }> = {
-  small: { minWidth: 200, maxWidth: 240 },
-  medium: { minWidth: 280, maxWidth: 320 },
-  large: { minWidth: 360, maxWidth: 420 },
-};
 
 type PgText = { String: string; Valid: boolean } | string | null;
 
@@ -88,10 +82,10 @@ export default async function EmbedPage({
   const t = getThemeColors((widget.theme || "dark") as DashboardTheme);
   const radius = `${widget.border_radius}px`;
   const spacing = `${widget.card_spacing}px`;
-  const cardSizeKey = widget.card_size || "medium";
-  const cardDims = CARD_SIZES[cardSizeKey] || CARD_SIZES.medium;
+  const cardWidth = widget.card_size || 280;
   const visibleCount = widget.visible_count || 3;
-  const containerMaxWidth = visibleCount * cardDims.maxWidth + (visibleCount - 1) * widget.card_spacing;
+  const displayCount = Math.min(visibleCount, proofs.length);
+  const containerMaxWidth = displayCount * cardWidth + (displayCount - 1) * widget.card_spacing;
 
   return (
     <div
@@ -107,12 +101,13 @@ export default async function EmbedPage({
           style={{
             display: "flex",
             gap: spacing,
-            overflowX: "auto",
+            overflow: "hidden",
             paddingBottom: "8px",
             maxWidth: `${containerMaxWidth}px`,
+            margin: "0 auto",
           }}
         >
-          {proofs.map((proof) => {
+          {proofs.slice(0, displayCount).map((proof) => {
             const authorTitle = pgStr(proof.author_title);
             const contentText = pgStr(proof.content_text);
             const contentImageUrl = pgStr(proof.content_image_url);
@@ -121,8 +116,8 @@ export default async function EmbedPage({
             <div
               key={proof.id}
               style={{
-                minWidth: `${cardDims.minWidth}px`,
-                maxWidth: `${cardDims.maxWidth}px`,
+                width: `${cardWidth}px`,
+                minWidth: `${cardWidth}px`,
                 padding: "16px",
                 borderRadius: radius,
                 border: `1px solid ${t.border}`,
