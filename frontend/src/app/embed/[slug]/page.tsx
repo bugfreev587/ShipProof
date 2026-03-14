@@ -105,6 +105,7 @@ export default async function EmbedPage({
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
+      <style dangerouslySetInnerHTML={{ __html: `.proof-card:hover { border-color: ${t.borderHover} !important; }` }} />
       <script
         dangerouslySetInnerHTML={{
           __html: `(function(){
@@ -227,12 +228,13 @@ window.addEventListener("resize",debouncedAdjust);
               return (
               <div
                 key={proof.id}
+                className="proof-card"
                 style={{
                   width: `${cardWidth}px`,
                   minWidth: `${cardWidth}px`,
                   height: `${cardHeight}px`,
                   overflow: "hidden",
-                  padding: "16px",
+                  padding: "20px",
                   borderRadius: radius,
                   border: `1px solid ${t.border}`,
                   background: t.bgSurface,
@@ -240,6 +242,8 @@ window.addEventListener("resize",debouncedAdjust);
                   position: "relative",
                   display: "flex",
                   flexDirection: "column",
+                  transition: "border-color 0.2s, box-shadow 0.2s",
+                  cursor: "pointer",
                 }}
               >
                 {companyLogoUrl && (

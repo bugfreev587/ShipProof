@@ -277,7 +277,7 @@ function SpaceProofCard({
 
   return (
     <div
-      className="flex-shrink-0 border p-3 flex flex-col relative transition-all duration-200 hover:brightness-125 hover:border-[#6366F1]/50"
+      className="flex-shrink-0 border p-5 flex flex-col relative transition-all duration-200 hover:brightness-125 hover:border-[#6366F1]/50"
       style={{
         width: `${cardWidth}px`,
         ...heightStyle,
