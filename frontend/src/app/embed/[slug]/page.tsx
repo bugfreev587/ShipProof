@@ -138,22 +138,53 @@ export default async function EmbedPage({
                 background: t.bgSurface,
                 flexShrink: 0,
                 position: "relative",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               {companyLogoUrl && (
                 <CompanyLogoImg url={companyLogoUrl} />
               )}
+
+              {contentText && (
+                <p
+                  style={{
+                    fontSize: `${textFontSize}px`,
+                    lineHeight: "1.6",
+                    color: t.textSecondary,
+                    margin: 0,
+                    fontFamily: textFont,
+                    fontWeight: textBold ? 700 : 400,
+                    flex: 1,
+                  }}
+                >
+                  {contentText}
+                </p>
+              )}
+
+              {contentImageUrl && (
+                <img
+                  src={contentImageUrl.replace(/^https?:\/\/https?:\/\//, "https://")}
+                  alt="Proof"
+                  style={{
+                    marginTop: "8px",
+                    maxWidth: "100%",
+                    borderRadius: `${Math.max(widget.border_radius - 4, 0)}px`,
+                  }}
+                />
+              )}
+
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  marginBottom: "8px",
+                  gap: "10px",
+                  marginTop: "12px",
                 }}
               >
                 {widget.show_platform_icon && (
                   <span
-                    className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+                    className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[11px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
                   >
                     {PLATFORM_LABELS[proof.source_platform] || "O"}
                   </span>
@@ -180,33 +211,6 @@ export default async function EmbedPage({
                   )}
                 </div>
               </div>
-
-              {contentText && (
-                <p
-                  style={{
-                    fontSize: `${textFontSize}px`,
-                    lineHeight: "1.5",
-                    color: t.textSecondary,
-                    margin: 0,
-                    fontFamily: textFont,
-                    fontWeight: textBold ? 700 : 400,
-                  }}
-                >
-                  {contentText}
-                </p>
-              )}
-
-              {contentImageUrl && (
-                <img
-                  src={contentImageUrl.replace(/^https?:\/\/https?:\/\//, "https://")}
-                  alt="Proof"
-                  style={{
-                    marginTop: "8px",
-                    maxWidth: "100%",
-                    borderRadius: `${Math.max(widget.border_radius - 4, 0)}px`,
-                  }}
-                />
-              )}
             </div>
             );
           })}

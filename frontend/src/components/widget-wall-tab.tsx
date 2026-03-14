@@ -294,37 +294,8 @@ function SpaceProofCard({
         const logoUrl = getCompanyLogoUrl(proof.author_title);
         return logoUrl ? <CompanyLogoImg url={logoUrl} top="8px" right="8px" /> : null;
       })()}
-      <div className="flex items-center gap-2 mb-1">
-        {proof.author_avatar_url ? (
-          <img
-            src={proof.author_avatar_url}
-            alt={proof.author_name}
-            className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-          />
-        ) : showPlatformIcon ? (
-          <span
-            className={`inline-flex items-center justify-center w-5 h-5 rounded text-[8px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
-          >
-            {PLATFORM_LABELS[proof.source_platform] || "O"}
-          </span>
-        ) : null}
-        <span
-          className="text-xs font-semibold truncate"
-          style={{ color: t.textPrimary }}
-        >
-          {proof.author_name}
-        </span>
-      </div>
-      {proof.author_title && (
-        <p
-          className="text-[10px] truncate mb-2"
-          style={{ color: t.textTertiary }}
-        >
-          {proof.author_title}
-        </p>
-      )}
       {proof.content_text && (
-        <div className="flex-1 min-h-0 overflow-hidden mt-1">
+        <div className="flex-1 min-h-0 overflow-hidden">
           <p
             className="leading-relaxed"
             style={{
@@ -348,6 +319,37 @@ function SpaceProofCard({
           )}
         </div>
       )}
+      <div className="flex items-center gap-2.5 mt-3">
+        {proof.author_avatar_url ? (
+          <img
+            src={proof.author_avatar_url}
+            alt={proof.author_name}
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+          />
+        ) : showPlatformIcon ? (
+          <span
+            className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+          >
+            {PLATFORM_LABELS[proof.source_platform] || "O"}
+          </span>
+        ) : null}
+        <div className="min-w-0">
+          <div
+            className="text-xs font-semibold truncate"
+            style={{ color: t.textPrimary }}
+          >
+            {proof.author_name}
+          </div>
+          {proof.author_title && (
+            <div
+              className="text-[10px] truncate"
+              style={{ color: t.textTertiary }}
+            >
+              {proof.author_title}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
