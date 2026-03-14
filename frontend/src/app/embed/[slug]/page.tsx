@@ -31,13 +31,21 @@ interface WidgetSettings {
   show_branding: boolean;
 }
 
+type PgText = { String: string; Valid: boolean } | string | null;
+
+function pgStr(v: PgText): string | null {
+  if (v == null) return null;
+  if (typeof v === "string") return v || null;
+  return v.Valid ? v.String : null;
+}
+
 interface ProofItem {
   id: string;
   source_platform: string;
   author_name: string;
-  author_title: string | null;
-  content_text: string | null;
-  content_image_url: string | null;
+  author_title: PgText;
+  content_text: PgText;
+  content_image_url: PgText;
 }
 
 export default async function EmbedPage({
@@ -93,7 +101,10 @@ export default async function EmbedPage({
           }}
         >
           {proofs.map((proof) => {
-            const companyLogoUrl = getCompanyLogoUrl(proof.author_title);
+            const authorTitle = pgStr(proof.author_title);
+            const contentText = pgStr(proof.content_text);
+            const contentImageUrl = pgStr(proof.content_image_url);
+            const companyLogoUrl = getCompanyLogoUrl(authorTitle);
             return (
             <div
               key={proof.id}
@@ -136,20 +147,20 @@ export default async function EmbedPage({
                   >
                     {proof.author_name}
                   </div>
-                  {proof.author_title && (
+                  {authorTitle && (
                     <div
                       style={{
                         fontSize: "11px",
                         color: t.textTertiary,
                       }}
                     >
-                      {proof.author_title}
+                      {authorTitle}
                     </div>
                   )}
                 </div>
               </div>
 
-              {proof.content_text && (
+              {contentText && (
                 <p
                   style={{
                     fontSize: "13px",
@@ -158,13 +169,13 @@ export default async function EmbedPage({
                     margin: 0,
                   }}
                 >
-                  {proof.content_text}
+                  {contentText}
                 </p>
               )}
 
-              {proof.content_image_url && (
+              {contentImageUrl && (
                 <img
-                  src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
+                  src={contentImageUrl.replace(/^https?:\/\/https?:\/\//, "https://")}
                   alt="Proof"
                   style={{
                     marginTop: "8px",
