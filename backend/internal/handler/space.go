@@ -201,6 +201,8 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		TextFontSize     int32  `json:"text_font_size"`
 		TextFont         string `json:"text_font"`
 		TextBold         bool   `json:"text_bold"`
+		BgColor          string `json:"bg_color"`
+		BgOpacity        int32  `json:"bg_opacity"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
@@ -224,6 +226,9 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	if !allowedFonts[req.TextFont] {
 		req.TextFont = "Inter"
 	}
+	if req.BgOpacity < 0 || req.BgOpacity > 100 {
+		req.BgOpacity = 100
+	}
 
 	space, err := h.queries.UpdateSpaceConfig(r.Context(), db.UpdateSpaceConfigParams{
 		ID:               spaceID,
@@ -239,6 +244,8 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		TextFontSize:     req.TextFontSize,
 		TextFont:         req.TextFont,
 		TextBold:         req.TextBold,
+		BgColor:          req.BgColor,
+		BgOpacity:        req.BgOpacity,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update space config"}`, http.StatusInternalServerError)

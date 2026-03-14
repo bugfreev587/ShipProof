@@ -31,6 +31,8 @@ UPDATE spaces SET
     text_font_size = $11,
     text_font = $12,
     text_bold = $13,
+    bg_color = $14,
+    bg_opacity = $15,
     updated_at = now()
 WHERE id = $1
 RETURNING *;

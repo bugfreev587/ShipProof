@@ -109,6 +109,8 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 		ShowBranding     bool   `json:"show_branding"`
 		VisibleCount     int32  `json:"visible_count"`
 		CardSize         int32  `json:"card_size"`
+		BgColor          string `json:"bg_color"`
+		BgOpacity        int32  `json:"bg_opacity"`
 	}
 
 	type response struct {
@@ -129,6 +131,8 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 			ShowBranding:     space.ShowBranding,
 			VisibleCount:     space.VisibleCount,
 			CardSize:         space.CardSize,
+			BgColor:          space.BgColor,
+			BgOpacity:        space.BgOpacity,
 		},
 		Product: product,
 		Proofs:  proofs,

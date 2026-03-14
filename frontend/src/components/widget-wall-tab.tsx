@@ -442,6 +442,8 @@ const SPACE_DEFAULTS: Partial<Space> = {
   text_font_size: 13,
   text_font: "Inter",
   text_bold: false,
+  bg_color: "",
+  bg_opacity: 100,
 };
 
 function SpaceCard({
@@ -545,6 +547,8 @@ function SpaceCard({
             text_font_size: newConfig.text_font_size,
             text_font: newConfig.text_font,
             text_bold: newConfig.text_bold,
+            bg_color: newConfig.bg_color,
+            bg_opacity: newConfig.bg_opacity,
           },
           token,
         );
@@ -696,6 +700,44 @@ function SpaceCard({
                 />
               </div>
 
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  Background Color
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={config.bg_color || "#000000"}
+                    onChange={(e) =>
+                      handleConfigChange({ bg_color: e.target.value })
+                    }
+                    className="w-9 h-9 rounded border border-[var(--border)] bg-transparent cursor-pointer"
+                  />
+                  <button
+                    onClick={() => handleConfigChange({ bg_color: "" })}
+                    className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+                  >
+                    {config.bg_color ? "Clear" : "Transparent"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  Background Opacity: {config.bg_opacity ?? 100}%
+                </label>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={config.bg_opacity ?? 100}
+                  onChange={(e) =>
+                    handleConfigChange({ bg_opacity: Number(e.target.value) })
+                  }
+                  disabled={!config.bg_color}
+                  className="w-full"
+                />
+              </div>
             </div>
 
             {/* Text Style */}

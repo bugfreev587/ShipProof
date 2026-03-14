@@ -402,6 +402,8 @@ type Space struct {
 	TextFontSize     int32       `json:"text_font_size"`
 	TextFont         string      `json:"text_font"`
 	TextBold         bool        `json:"text_bold"`
+	BgColor          string      `json:"bg_color"`
+	BgOpacity        int32       `json:"bg_opacity"`
 }
 
 type SpaceProof struct {

@@ -36,6 +36,8 @@ interface WidgetSettings {
   text_font_size?: number;
   text_font?: string;
   text_bold?: boolean;
+  bg_color?: string;
+  bg_opacity?: number;
 }
 
 type PgText = { String: string; Valid: boolean } | string | null;
@@ -94,18 +96,29 @@ export default async function EmbedPage({
   const textBold = widget.text_bold || false;
   const maxItems = widget.max_items || 6;
 
+  // Compute container background from bg_color + bg_opacity
+  let containerBg = "transparent";
+  if (widget.bg_color) {
+    const hex = widget.bg_color.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const a = (widget.bg_opacity ?? 100) / 100;
+    containerBg = `rgba(${r},${g},${b},${a})`;
+  }
+
   return (
     <div
       id="shipproof-embed"
       style={{
         margin: 0,
         padding: spacing,
-        background: "transparent",
+        background: containerBg,
         fontFamily:
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
-      <style dangerouslySetInnerHTML={{ __html: `.proof-card:hover { border-color: ${t.borderHover} !important; }` }} />
+      <style dangerouslySetInnerHTML={{ __html: `.proof-card:hover { border-color: ${t.borderHover} !important; box-shadow: 0 4px 20px ${t.borderHover}40 !important; transform: translateY(-2px); }` }} />
       <script
         dangerouslySetInnerHTML={{
           __html: `(function(){
@@ -242,7 +255,7 @@ window.addEventListener("resize",debouncedAdjust);
                   position: "relative",
                   display: "flex",
                   flexDirection: "column",
-                  transition: "border-color 0.2s, box-shadow 0.2s",
+                  transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
                   cursor: "pointer",
                 }}
               >

@@ -370,6 +370,8 @@ export interface Space {
   text_font_size: number;
   text_font: string;
   text_bold: boolean;
+  bg_color: string;
+  bg_opacity: number;
   created_at: string;
   updated_at: string;
 }
@@ -716,6 +718,8 @@ export function updateSpaceConfig(
     text_font_size: number;
     text_font: string;
     text_bold: boolean;
+    bg_color: string;
+    bg_opacity: number;
   },
   token: string,
 ) {
@@ -792,6 +796,8 @@ export interface PublicSpaceResponse {
     text_font_size: number;
     text_font: string;
     text_bold: boolean;
+    bg_color: string;
+    bg_opacity: number;
   };
   product: Product;
   proofs: (Proof & { space_display_order: number })[];
