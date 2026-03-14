@@ -165,7 +165,6 @@ window.__shipproof_prev=function(){page=(page-1+totalPages())%totalPages();showP
 window.__shipproof_next=function(){page=(page+1)%totalPages();showPage();updateDots();send()};
 if(document.readyState==="complete")adjust();else window.addEventListener("load",adjust);
 window.addEventListener("resize",adjust);
-new MutationObserver(adjust).observe(document.body,{childList:true,subtree:true});
 })();`,
         }}
       />
