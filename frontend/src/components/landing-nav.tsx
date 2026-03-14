@@ -2,6 +2,7 @@
 
 import { useAuth } from "@clerk/nextjs";
 import AvatarDropdown from "@/components/avatar-dropdown";
+import { LogoFull } from "@/components/Logo";
 
 export default function LandingNav() {
   const { isSignedIn } = useAuth();
@@ -9,8 +10,8 @@ export default function LandingNav() {
   return (
     <nav className="sticky top-0 z-40 border-b border-[#2A2A30]/50 bg-[#0F0F10]/80 backdrop-blur-lg">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <a href="/" className="text-lg font-bold text-[#F1F1F3]">
-          Ship<span className="text-[#6366F1]">Proof</span>
+        <a href="/">
+          <LogoFull size={28} />
         </a>
         <div className="hidden items-center gap-6 text-sm text-[#9CA3AF] md:flex">
           <a href="#features" className="hover:text-[#F1F1F3] transition-colors">

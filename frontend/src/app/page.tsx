@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import FlywheelAnimation from "@/components/flywheel-animation";
 import PricingCards from "@/components/pricing-cards";
 import LandingNav from "@/components/landing-nav";
+import { LogoIcon } from "@/components/Logo";
 
 export const metadata: Metadata = {
   title: "ShipProof — Turn every launch into lasting social proof",
@@ -81,6 +82,9 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-4 pt-20 pb-24 md:pt-32">
         <div className="grid items-center gap-12 md:grid-cols-2">
           <div>
+            <div className="mb-6">
+              <LogoIcon size={56} />
+            </div>
             <h1 className="mb-4 text-4xl font-bold leading-tight text-[#F1F1F3] md:text-5xl">
               Turn every launch into lasting{" "}
               <span className="text-[#6366F1]">social proof</span>

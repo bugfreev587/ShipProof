@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "ShipProof — Turn every launch into lasting social proof",
   description:
     "AI-powered launch content + community proof wall for indie hackers",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

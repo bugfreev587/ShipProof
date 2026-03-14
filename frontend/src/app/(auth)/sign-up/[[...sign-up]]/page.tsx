@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useSignUp } from "@clerk/nextjs/legacy";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LogoFull } from "@/components/Logo";
 
 export default function SignUpPage() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -99,7 +100,10 @@ export default function SignUpPage() {
   // ── Start step ─────────────────────────────────────────────────────────────
   if (step === "start") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0F0F10] px-4">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#0F0F10] px-4">
+        <div className="mb-8">
+          <LogoFull size={36} />
+        </div>
         <div className="w-full max-w-md rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8">
           <h1 className="mb-1 text-2xl font-bold text-[#F1F1F3]">
             Create your account
@@ -218,7 +222,10 @@ export default function SignUpPage() {
 
   // ── Verify step ────────────────────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0F0F10] px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0F0F10] px-4">
+      <div className="mb-8">
+        <LogoFull size={36} />
+      </div>
       <div className="w-full max-w-md rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8">
         <h1 className="mb-1 text-2xl font-bold text-[#F1F1F3]">
           Verify your email

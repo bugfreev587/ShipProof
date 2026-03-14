@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTheme } from "@/lib/theme";
 import AvatarDropdown from "@/components/avatar-dropdown";
+import { LogoFull } from "@/components/Logo";
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const { colors } = useTheme();
@@ -17,9 +18,8 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         }}
       >
         <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-10">
-          <Link href="/dashboard" className="text-xl font-bold" style={{ color: colors.textPrimary }}>
-            <span>Ship</span>
-            <span className="text-[#6366F1]">Proof</span>
+          <Link href="/dashboard">
+            <LogoFull size={28} />
           </Link>
           <AvatarDropdown />
         </div>

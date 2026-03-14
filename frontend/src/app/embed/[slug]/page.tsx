@@ -204,19 +204,34 @@ export default async function EmbedPage({
         {widget.show_branding && (
           <div
             style={{
-              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "4px",
               marginTop: "8px",
               fontSize: "11px",
               color: t.textTertiary,
             }}
           >
-            Powered by{" "}
+            Powered by
             <a
               href="https://shipproof.io"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#6366F1", textDecoration: "none" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: "#6366F1", textDecoration: "none" }}
             >
+              <svg width="16" height="16" viewBox="0 0 64 64">
+                <defs>
+                  <linearGradient id="sp-fav" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#6366F1"/>
+                    <stop offset="100%" stopColor="#8B5CF6"/>
+                  </linearGradient>
+                </defs>
+                <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#sp-fav)"/>
+                <rect x="15" y="13" width="34" height="25" rx="7" fill="white"/>
+                <path d="M24,38 L20,47 L31,38Z" fill="white"/>
+                <path d="M23,24 L29,31 L41,18" fill="none" stroke="#6366F1" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               ShipProof
             </a>
           </div>
