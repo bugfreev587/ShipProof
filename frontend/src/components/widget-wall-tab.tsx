@@ -726,6 +726,7 @@ function SpaceCard({
                 )}
               </div>
 
+              {config.bg_color && (
               <div>
                 <label className="block text-xs text-[var(--text-secondary)] mb-1">
                   Background Opacity: {config.bg_opacity ?? 100}%
@@ -738,10 +739,10 @@ function SpaceCard({
                   onChange={(e) =>
                     handleConfigChange({ bg_opacity: Number(e.target.value) })
                   }
-                  disabled={!config.bg_color}
                   className="w-full"
                 />
               </div>
+              )}
             </div>
 
             {/* Text Style */}
