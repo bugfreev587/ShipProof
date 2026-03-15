@@ -17,7 +17,10 @@ export default function EmbedLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" style={{ background: "transparent" }}>
+      <head>
+        <style>{`html, body { background: transparent !important; }`}</style>
+      </head>
       <body
         className={`${inter.variable} font-sans antialiased`}
         style={{ background: "transparent" }}
