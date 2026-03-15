@@ -2,6 +2,7 @@ import { fetchPublicProofs, fetchPublicSpaceProofs } from "@/lib/api";
 import { getThemeColors, type DashboardTheme } from "@/lib/theme-colors";
 import { getCompanyLogoUrl } from "@/lib/company-logo";
 import { CompanyLogoImg } from "@/components/company-logo";
+import { ViewTracker } from "@/components/view-tracker";
 
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
@@ -118,6 +119,7 @@ export default async function EmbedPage({
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
+      <ViewTracker entityType="space" slug={slug} />
       <style dangerouslySetInnerHTML={{ __html: `.proof-card:hover { border-color: ${t.borderHover} !important; box-shadow: 0 4px 20px ${t.borderHover}40 !important; transform: translateY(-2px); }` }} />
       <script
         dangerouslySetInnerHTML={{

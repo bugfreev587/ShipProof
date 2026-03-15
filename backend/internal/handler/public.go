@@ -2,9 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	db "github.com/xiaobo/shipproof/internal/db"
 )
@@ -114,9 +117,9 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type response struct {
-		Space   spaceConfig                    `json:"space"`
-		Product db.Product                     `json:"product"`
-		Proofs  []db.ListProofsBySpaceIDRow    `json:"proofs"`
+		Space   spaceConfig                 `json:"space"`
+		Product db.Product                  `json:"product"`
+		Proofs  []db.ListProofsBySpaceIDRow `json:"proofs"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -137,6 +140,64 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 		Product: product,
 		Proofs:  proofs,
 	})
+}
+
+func (h *PublicHandler) RecordView(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		EntityType string `json:"entity_type"`
+		Slug       string `json:"slug"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid request body"}`, http.StatusBadRequest)
+		return
+	}
+
+	if req.EntityType != "space" && req.EntityType != "wall" {
+		http.Error(w, `{"error":"entity_type must be space or wall"}`, http.StatusBadRequest)
+		return
+	}
+	if req.Slug == "" {
+		http.Error(w, `{"error":"slug is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	var entityID, productID uuid.UUID
+	switch req.EntityType {
+	case "space":
+		space, err := h.queries.GetSpaceBySlug(r.Context(), req.Slug)
+		if err != nil {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		entityID = space.ID
+		productID = space.ProductID
+	case "wall":
+		wall, err := h.queries.GetWallBySlug(r.Context(), req.Slug)
+		if err != nil {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		entityID = wall.ID
+		productID = wall.ProductID
+	}
+
+	referrer := r.Header.Get("Referer")
+	ref := pgtype.Text{}
+	if referrer != "" {
+		ref = pgtype.Text{String: referrer, Valid: true}
+	}
+
+	err := h.queries.RecordView(r.Context(), db.RecordViewParams{
+		EntityType: req.EntityType,
+		EntityID:   entityID,
+		ProductID:  productID,
+		Referrer:   ref,
+	})
+	if err != nil {
+		slog.Error("failed to record view", "error", err)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *PublicHandler) GetWallProofs(w http.ResponseWriter, r *http.Request) {

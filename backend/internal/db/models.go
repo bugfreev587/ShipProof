@@ -426,6 +426,15 @@ type User struct {
 	UpdatedAt            time.Time   `json:"updated_at"`
 }
 
+type ViewEvent struct {
+	ID         uuid.UUID   `json:"id"`
+	EntityType string      `json:"entity_type"`
+	EntityID   uuid.UUID   `json:"entity_id"`
+	ProductID  uuid.UUID   `json:"product_id"`
+	Referrer   pgtype.Text `json:"referrer"`
+	CreatedAt  time.Time   `json:"created_at"`
+}
+
 type Wall struct {
 	ID               uuid.UUID   `json:"id"`
 	ProductID        uuid.UUID   `json:"product_id"`

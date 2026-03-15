@@ -814,3 +814,24 @@ export function fetchPublicWallProofs(slug: string) {
     `/api/public/walls/${slug}/proofs`,
   );
 }
+
+// --- View Analytics ---
+
+export function recordView(entityType: "space" | "wall", slug: string) {
+  return fetch(`${API_URL}/api/public/views`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ entity_type: entityType, slug }),
+  }).catch(() => {});
+}
+
+export interface ViewAnalytics {
+  space_views: number;
+  wall_views: number;
+  space_breakdown: { entity_id: string; entity_name: string; view_count: number }[];
+  wall_breakdown: { entity_id: string; entity_name: string; view_count: number }[];
+}
+
+export function getAnalytics(token: string) {
+  return fetchApi<ViewAnalytics>("/api/analytics/views", {}, token);
+}

@@ -20,6 +20,9 @@ type Querier interface {
 	CountProofsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountSpacesByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountVersionsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
+	CountViewsByEntity(ctx context.Context, arg CountViewsByEntityParams) (int64, error)
+	CountViewsByProduct(ctx context.Context, productID uuid.UUID) ([]CountViewsByProductRow, error)
+	CountViewsByProductGrouped(ctx context.Context, productID uuid.UUID) ([]CountViewsByProductGroupedRow, error)
 	CountWallsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CreateDefaultWidgetConfig(ctx context.Context, productID uuid.UUID) (WidgetConfig, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
@@ -57,6 +60,7 @@ type Querier interface {
 	ListTagsByProofID(ctx context.Context, proofID uuid.UUID) ([]ProofTag, error)
 	ListVersionsByProductID(ctx context.Context, productID uuid.UUID) ([]ListVersionsByProductIDRow, error)
 	ListWallsByProductID(ctx context.Context, productID uuid.UUID) ([]Wall, error)
+	RecordView(ctx context.Context, arg RecordViewParams) error
 	RemoveProofFromSpace(ctx context.Context, arg RemoveProofFromSpaceParams) error
 	RemoveProofFromWall(ctx context.Context, arg RemoveProofFromWallParams) error
 	RemoveTagFromProof(ctx context.Context, arg RemoveTagFromProofParams) error

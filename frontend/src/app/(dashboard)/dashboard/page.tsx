@@ -4,7 +4,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRef } from "react";
-import { listProducts, listProofs, createProduct, uploadAvatar, getCurrentUser, ApiError, type Product, type User } from "@/lib/api";
+import { listProducts, listProofs, createProduct, uploadAvatar, getCurrentUser, getAnalytics, ApiError, type Product, type User, type ViewAnalytics } from "@/lib/api";
 import UpgradeNudgeModal from "@/components/upgrade-nudge-modal";
 
 const PLAN_LIMITS: Record<string, { products: number; proofs: string }> = {
@@ -18,6 +18,9 @@ export default function DashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [totalProofs, setTotalProofs] = useState(0);
+  const [analytics, setAnalytics] = useState<ViewAnalytics | null>(null);
+  const [showSpaceBreakdown, setShowSpaceBreakdown] = useState(false);
+  const [showWallBreakdown, setShowWallBreakdown] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [nudge, setNudge] = useState<{ open: boolean; message: string }>({
@@ -36,11 +39,15 @@ export default function DashboardPage() {
       setProducts(productsData);
       setUser(userData);
 
-      // Sum proofs across all products
-      const proofCounts = await Promise.all(
-        productsData.map((p) => listProofs(p.id, token).then((proofs) => proofs.length).catch(() => 0))
-      );
+      // Sum proofs across all products + fetch analytics
+      const [proofCounts, analyticsData] = await Promise.all([
+        Promise.all(
+          productsData.map((p) => listProofs(p.id, token).then((proofs) => proofs.length).catch(() => 0))
+        ),
+        getAnalytics(token).catch(() => null),
+      ]);
       setTotalProofs(proofCounts.reduce((a, b) => a + b, 0));
+      setAnalytics(analyticsData);
     } catch {
       // handle error silently for now
     } finally {
@@ -119,6 +126,84 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* PERFORMANCE */}
+      {analytics && (
+        <div className="mb-10">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
+            Performance
+          </h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* Space Views */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-[var(--text-secondary)]">Space Views</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-tertiary)]">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">
+                {analytics.space_views}
+              </div>
+              {analytics.space_breakdown.length > 0 && (
+                <div className="mt-3">
+                  <button
+                    onClick={() => setShowSpaceBreakdown(!showSpaceBreakdown)}
+                    className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+                  >
+                    {showSpaceBreakdown ? "Hide" : "Show"} breakdown ({analytics.space_breakdown.length})
+                  </button>
+                  {showSpaceBreakdown && (
+                    <div className="mt-2 space-y-1">
+                      {analytics.space_breakdown.map((s) => (
+                        <div key={s.entity_id} className="flex items-center justify-between text-sm">
+                          <span className="text-[var(--text-secondary)] truncate mr-2">{s.entity_name || "Unnamed"}</span>
+                          <span className="text-[var(--text-primary)] font-medium tabular-nums">{s.view_count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Wall Views */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-[var(--text-secondary)]">Wall Views</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-tertiary)]">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">
+                {analytics.wall_views}
+              </div>
+              {analytics.wall_breakdown.length > 0 && (
+                <div className="mt-3">
+                  <button
+                    onClick={() => setShowWallBreakdown(!showWallBreakdown)}
+                    className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+                  >
+                    {showWallBreakdown ? "Hide" : "Show"} breakdown ({analytics.wall_breakdown.length})
+                  </button>
+                  {showWallBreakdown && (
+                    <div className="mt-2 space-y-1">
+                      {analytics.wall_breakdown.map((w) => (
+                        <div key={w.entity_id} className="flex items-center justify-between text-sm">
+                          <span className="text-[var(--text-secondary)] truncate mr-2">{w.entity_name || "Unnamed"}</span>
+                          <span className="text-[var(--text-primary)] font-medium tabular-nums">{w.view_count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* PRODUCTS */}
       <div className="mb-8 flex items-center justify-between">

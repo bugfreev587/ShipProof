@@ -97,6 +97,7 @@ func main() {
 		wallHandler := handler.NewWallHandler(queries, userService, planService)
 		spaceHandler := handler.NewSpaceHandler(queries, userService, planService)
 		publicHandler := handler.NewPublicHandler(queries)
+		analyticsHandler := handler.NewAnalyticsHandler(queries, userService)
 		// Stripe config: prod + optional sandbox
 		prodConfig := handler.StripeConfig{
 			SecretKey:              os.Getenv("STRIPE_SECRET_KEY"),
@@ -130,6 +131,7 @@ func main() {
 		r.Get("/api/public/products/{slug}/proofs", publicHandler.GetProductProofs)
 		r.Get("/api/public/walls/{slug}/proofs", publicHandler.GetWallProofs)
 		r.Get("/api/public/spaces/{slug}/proofs", publicHandler.GetSpaceProofs)
+		r.Post("/api/public/views", publicHandler.RecordView)
 
 		// Authenticated routes
 		r.Group(func(r chi.Router) {
@@ -189,6 +191,9 @@ func main() {
 			r.Post("/api/walls/{wid}/proofs", wallHandler.AddProof)
 			r.Delete("/api/walls/{wid}/proofs/{pid}", wallHandler.RemoveProof)
 			r.Put("/api/walls/{wid}/proofs/order", wallHandler.UpdateProofOrder)
+
+			// Analytics
+			r.Get("/api/analytics/views", analyticsHandler.GetViews)
 
 			// Spaces
 			r.Get("/api/products/{id}/spaces", spaceHandler.List)

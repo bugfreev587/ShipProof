@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { fetchPublicWallProofs } from "@/lib/api";
 import { getCompanyLogoUrl } from "@/lib/company-logo";
 import { CompanyLogoImg } from "@/components/company-logo";
+import { ViewTracker } from "@/components/view-tracker";
 
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
@@ -90,6 +91,7 @@ export default async function WallPage({
 
   return (
     <div className="min-h-screen" style={{ background: t.bgBase }}>
+      <ViewTracker entityType="wall" slug={slug} />
       {/* Header */}
       <div className="max-w-6xl mx-auto px-4 py-12 text-center">
         <h1 className="text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>{wall.name}</h1>
