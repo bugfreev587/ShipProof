@@ -449,6 +449,7 @@ type Wall struct {
 	ShowBranding     bool        `json:"show_branding"`
 	BgColor          string      `json:"bg_color"`
 	TransparentBg    bool        `json:"transparent_bg"`
+	HeaderTextColor  string      `json:"header_text_color"`
 }
 
 type WallProof struct {

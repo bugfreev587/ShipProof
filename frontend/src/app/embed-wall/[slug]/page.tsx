@@ -70,6 +70,8 @@ export default async function EmbedWallPage({
   const t = getThemeColors(wall.theme);
   const radius = `${wall.border_radius}px`;
   const spacing = `${wall.card_spacing}px`;
+  const headerColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color : t.textPrimary;
+  const headerSubColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color + "99" : t.textSecondary;
 
   return (
     <div
@@ -118,12 +120,12 @@ setInterval(function(){send(true)},1000);
 
       {/* Header */}
       <div style={{ textAlign: "center", padding: "24px 16px 32px" }}>
-        <h1 style={{ fontSize: "24px", fontWeight: 700, color: t.textPrimary, marginBottom: "8px" }}>
+        <h1 style={{ fontSize: "24px", fontWeight: 700, color: headerColor, marginBottom: "8px" }}>
           {wall.name}
         </h1>
-        <p style={{ fontSize: "14px", color: t.textSecondary, margin: 0 }}>
+        <p style={{ fontSize: "14px", color: headerSubColor, margin: 0 }}>
           What people are saying about{" "}
-          <span style={{ fontWeight: 500, color: t.textPrimary }}>{product.name}</span>
+          <span style={{ fontWeight: 500, color: headerColor }}>{product.name}</span>
         </p>
       </div>
 

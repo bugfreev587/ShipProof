@@ -1,0 +1,1 @@
+ALTER TABLE walls ADD COLUMN header_text_color TEXT NOT NULL DEFAULT '';

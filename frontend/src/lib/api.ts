@@ -344,6 +344,7 @@ export interface Wall {
   show_branding: boolean;
   bg_color: string;
   transparent_bg: boolean;
+  header_text_color: string;
   created_at: string;
   updated_at: string;
 }
@@ -627,6 +628,7 @@ export function updateWallConfig(
     show_branding: boolean;
     bg_color: string;
     transparent_bg: boolean;
+    header_text_color: string;
   },
   token: string,
 ) {

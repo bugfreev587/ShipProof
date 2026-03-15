@@ -91,16 +91,18 @@ export default async function WallPage({
   const bgStyle = wall.transparent_bg
     ? "transparent"
     : wall.bg_color || t.bgBase;
+  const headerColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color : t.textPrimary;
+  const headerSubColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color + "99" : t.textSecondary;
 
   return (
     <div className="min-h-screen" style={{ background: bgStyle }}>
       <ViewTracker entityType="wall" slug={slug} />
       {/* Header */}
       <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>{wall.name}</h1>
-        <p style={{ color: t.textSecondary }}>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: headerColor }}>{wall.name}</h1>
+        <p style={{ color: headerSubColor }}>
           What people are saying about{" "}
-          <span className="font-medium" style={{ color: t.textPrimary }}>{product.name}</span>
+          <span className="font-medium" style={{ color: headerColor }}>{product.name}</span>
         </p>
       </div>
 

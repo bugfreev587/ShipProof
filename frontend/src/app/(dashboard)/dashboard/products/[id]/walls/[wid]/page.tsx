@@ -125,6 +125,7 @@ export default function WallEditPage() {
             show_branding: newWall.show_branding,
             bg_color: newWall.bg_color,
             transparent_bg: newWall.transparent_bg,
+            header_text_color: newWall.header_text_color,
           },
           token,
         );
@@ -316,6 +317,33 @@ export default function WallEditPage() {
                 </div>
               </div>
             )}
+
+            {/* Header Text Color */}
+            {wall.transparent_bg && (
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  Header Text Color
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={wall.header_text_color || "#111827"}
+                    onChange={(e) => handleConfigChange({ header_text_color: e.target.value })}
+                    className="h-8 w-8 rounded border border-[var(--border)] bg-transparent cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={wall.header_text_color || ""}
+                    placeholder="#111827"
+                    onChange={(e) => handleConfigChange({ header_text_color: e.target.value })}
+                    className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
+                  />
+                </div>
+                <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
+                  Set to contrast with your website&apos;s background
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Proofs list */}
@@ -389,17 +417,19 @@ function WallPreview({
   const bgStyle = wall.transparent_bg
     ? "transparent"
     : wall.bg_color || t.bgBase;
+  const headerColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color : t.textPrimary;
+  const headerSubColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color + "99" : t.textSecondary;
 
   return (
     <div className="overflow-y-auto" style={{ background: bgStyle, maxHeight: "calc(100vh - 260px)" }}>
       {/* Header */}
       <div className="max-w-5xl mx-auto px-4 py-10 text-center">
-        <h1 className="text-2xl font-bold mb-2" style={{ color: t.textPrimary }}>
+        <h1 className="text-2xl font-bold mb-2" style={{ color: headerColor }}>
           {wall.name}
         </h1>
-        <p style={{ color: t.textSecondary }}>
+        <p style={{ color: headerSubColor }}>
           What people are saying about{" "}
-          <span className="font-medium" style={{ color: t.textPrimary }}>
+          <span className="font-medium" style={{ color: headerColor }}>
             {product.name}
           </span>
         </p>
