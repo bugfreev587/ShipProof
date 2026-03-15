@@ -224,6 +224,7 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
           id="shipproof-viewport"
           style={{
             overflow: "hidden",
+            padding: "4px 0",
           }}
         >
           <div
