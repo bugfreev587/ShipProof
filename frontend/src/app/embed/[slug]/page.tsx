@@ -182,6 +182,7 @@ function vcenter(){
 function debouncedAdjust(){clearTimeout(resizeTimer);resizeTimer=setTimeout(adjust,100)}
 if(document.readyState==="complete"){adjust();vcenter()}else window.addEventListener("load",function(){adjust();vcenter()});
 window.addEventListener("resize",debouncedAdjust);
+var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=10)clearInterval(retryId)},500);
 })();`,
         }}
       />
