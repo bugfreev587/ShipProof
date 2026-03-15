@@ -137,7 +137,7 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="text-sm text-[#6366F1] hover:text-[#818CF8] transition-colors disabled:opacity-50"
+                  className="rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 disabled:opacity-50 transition-all"
                 >
                   {logoUrl ? "Change" : "Upload"}
                 </button>
@@ -145,7 +145,7 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
                   <button
                     type="button"
                     onClick={() => setLogoUrl("")}
-                    className="text-sm text-[var(--text-tertiary)] hover:text-[#EF4444] transition-colors"
+                    className="rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
                   >
                     Remove
                   </button>

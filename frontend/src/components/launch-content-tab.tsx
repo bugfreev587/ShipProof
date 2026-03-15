@@ -936,7 +936,7 @@ function ContentEditor({
       <button
         onClick={() => handleRegenerate(field, onResult, opts)}
         disabled={regeneratingKey !== null}
-        className="shrink-0 rounded px-2 py-1 text-xs text-[#6366F1] hover:bg-[#6366F1]/10 disabled:opacity-50 transition-colors"
+        className="shrink-0 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 disabled:opacity-50 transition-all"
       >
         {isRegenerating ? "Regenerating..." : "Regenerate"}
       </button>
@@ -951,7 +951,7 @@ function ContentEditor({
   const discardButton = (field: string) => (
     <button
       onClick={() => discardField(field)}
-      className="shrink-0 rounded px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+      className="shrink-0 rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
     >
       Discard
     </button>
@@ -1055,7 +1055,7 @@ function ContentEditor({
                     onChange({ ...content, reddit: updated });
                   }
                 }}
-                className="shrink-0 rounded px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                className="shrink-0 rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
               >
                 Discard
               </button>
@@ -1117,7 +1117,7 @@ function ContentEditor({
                       onChange({ ...content, twitter: { thread: updated } });
                     }
                   }}
-                  className="shrink-0 rounded px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                  className="shrink-0 rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
                 >
                   Discard
                 </button>
@@ -1376,7 +1376,7 @@ function CopyButton({
   return (
     <button
       onClick={handleCopy}
-      className="shrink-0 rounded px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
+      className="shrink-0 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
     >
       {copied ? "Copied!" : "Copy"}
     </button>

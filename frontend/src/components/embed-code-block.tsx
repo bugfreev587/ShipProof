@@ -24,7 +24,7 @@ export default function EmbedCodeBlock() {
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-lg border border-[#2A2A30] px-3 py-1.5 text-xs text-[#9CA3AF] hover:text-[#F1F1F3] hover:border-[#3F3F46] transition-colors"
+          className="flex items-center gap-1.5 rounded-lg bg-[#1A1A1F] border border-[#2A2A30] px-3 py-1.5 text-xs font-medium text-[#F1F1F3] hover:opacity-80 transition-all"
         >
           {copied ? (
             <>

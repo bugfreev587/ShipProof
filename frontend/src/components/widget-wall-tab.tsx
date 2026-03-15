@@ -591,7 +591,7 @@ function SpaceCard({
         <h4 className="text-sm font-medium text-[var(--text-primary)]">{space.name}</h4>
         <button
           onClick={handleDelete}
-          className="text-xs text-[var(--text-secondary)] hover:text-red-400 transition-colors"
+          className="rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
         >
           Delete
         </button>
@@ -834,7 +834,7 @@ function SpaceCard({
 
             <button
               onClick={() => handleConfigChange(SPACE_DEFAULTS)}
-              className="mt-2 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)] transition-colors"
+              className="mt-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
             >
               Reset to Defaults
             </button>
@@ -886,7 +886,7 @@ function SpaceCard({
                 <p className="text-xs text-[var(--text-tertiary)]">Copy and paste into your website</p>
                 <button
                   onClick={handleCopy}
-                  className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
+                  className="rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
                 >
                   {copied ? "Copied!" : "Copy"}
                 </button>
@@ -1064,13 +1064,13 @@ function WallCard({
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push(`/dashboard/products/${product.id}/walls/${wall.id}`)}
-            className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
+            className="rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
           >
             Edit
           </button>
           <button
             onClick={handleDelete}
-            className="text-xs text-[var(--text-secondary)] hover:text-red-400 transition-colors"
+            className="rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
           >
             Delete
           </button>
@@ -1087,7 +1087,7 @@ function WallCard({
         </a>
         <button
           onClick={handleCopy}
-          className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
+          className="rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all flex-shrink-0"
         >
           {copied ? "Copied!" : "Copy"}
         </button>
