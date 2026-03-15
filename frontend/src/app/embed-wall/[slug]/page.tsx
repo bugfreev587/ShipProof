@@ -86,6 +86,7 @@ export default async function EmbedWallPage({
       <script
         dangerouslySetInnerHTML={{
           __html: `(function(){
+if(window.parent===window)return;
 var lastH=0;
 function getHeight(){
   var el=document.getElementById("shipproof-embed");
@@ -94,24 +95,23 @@ function getHeight(){
   var h3=document.body.scrollHeight;
   return Math.max(h1,h2,h3);
 }
-function send(){
-  if(window.parent===window)return;
+function send(force){
   var h=getHeight();
-  if(h>0&&h!==lastH){lastH=h;window.parent.postMessage({type:"shipproof-resize",height:h},"*")}
+  if(h>0&&(force||h!==lastH)){lastH=h;window.parent.postMessage({type:"shipproof-resize",height:h},"*")}
 }
 if(typeof ResizeObserver!=="undefined"){
   document.addEventListener("DOMContentLoaded",function(){
     new ResizeObserver(function(){send()}).observe(document.body);
   });
 }
-if(document.readyState==="complete")send();
-else window.addEventListener("load",send);
+if(document.readyState==="complete")send(true);
+else window.addEventListener("load",function(){send(true)});
 window.addEventListener("resize",function(){send()});
 document.addEventListener("DOMContentLoaded",function(){
   var imgs=document.querySelectorAll("img");
-  for(var i=0;i<imgs.length;i++)imgs[i].addEventListener("load",send);
+  for(var i=0;i<imgs.length;i++)imgs[i].addEventListener("load",function(){send()});
 });
-var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=30)clearInterval(retryId)},500);
+setInterval(function(){send(true)},1000);
 })();`,
         }}
       />
