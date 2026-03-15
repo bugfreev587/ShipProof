@@ -15,6 +15,7 @@ import {
   createWall,
   deleteWall,
   listProofs,
+  listWallProofs,
   getCurrentUser,
   type Space,
   type Wall,
@@ -36,6 +37,7 @@ export default function WidgetWallTab({ product, onPlanLimit, activeSection = "s
   const { getToken } = useAuth();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [walls, setWalls] = useState<Wall[]>([]);
+  const [wallProofCounts, setWallProofCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userPlan, setUserPlan] = useState<"free" | "pro" | "business">("free");
@@ -52,6 +54,20 @@ export default function WidgetWallTab({ product, onPlanLimit, activeSection = "s
       setSpaces(s);
       setWalls(w);
       setUserPlan(user.plan);
+
+      // Fetch proof counts for each wall
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        w.map(async (wall) => {
+          try {
+            const proofs = await listWallProofs(wall.id, token);
+            counts[wall.id] = proofs.length;
+          } catch {
+            counts[wall.id] = 0;
+          }
+        }),
+      );
+      setWallProofCounts(counts);
     } catch {
       // ignore
     } finally {
@@ -88,6 +104,7 @@ export default function WidgetWallTab({ product, onPlanLimit, activeSection = "s
         <WallsSection
           product={product}
           walls={walls}
+          wallProofCounts={wallProofCounts}
           onUpdated={fetchData}
           setError={setError}
           onPlanLimit={onPlanLimit}
@@ -907,12 +924,14 @@ function SpaceCard({
 function WallsSection({
   product,
   walls,
+  wallProofCounts,
   onUpdated,
   setError,
   onPlanLimit,
 }: {
   product: Product;
   walls: Wall[];
+  wallProofCounts: Record<string, number>;
   onUpdated: () => void;
   setError: (e: string) => void;
   onPlanLimit?: (message: string) => void;
@@ -940,6 +959,7 @@ function WallsSection({
               key={wall.id}
               wall={wall}
               product={product}
+              proofCount={wallProofCounts[wall.id] ?? 0}
               onUpdated={onUpdated}
             />
           ))}
@@ -1029,10 +1049,12 @@ function CreateWallButton({
 function WallCard({
   wall,
   product,
+  proofCount,
   onUpdated,
 }: {
   wall: Wall;
   product: Product;
+  proofCount: number;
   onUpdated: () => void;
 }) {
   const { getToken } = useAuth();
@@ -1043,11 +1065,23 @@ function WallCard({
       ? `${window.location.origin}/w/${wall.slug}`
       : `/w/${wall.slug}`;
 
+  const embedCode =
+    typeof window !== "undefined"
+      ? `<script type="text/javascript" src="${window.location.origin}/js/embed.js"></script>\n<iframe id="shipproof-wall-${wall.slug}" src="${window.location.origin}/embed-wall/${wall.slug}" frameborder="0" scrolling="no" width="100%"></iframe>`
+      : "";
+
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
     navigator.clipboard.writeText(wallUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const [embedCopied, setEmbedCopied] = useState(false);
+  const handleCopyEmbed = () => {
+    navigator.clipboard.writeText(embedCode);
+    setEmbedCopied(true);
+    setTimeout(() => setEmbedCopied(false), 2000);
   };
 
   const handleDelete = async () => {
@@ -1058,8 +1092,9 @@ function WallCard({
   };
 
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
-      <div className="flex items-center justify-between mb-1">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-4">
+      {/* Header: name + actions */}
+      <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium text-[var(--text-primary)]">{wall.name}</h4>
         <div className="flex items-center gap-3">
           <button
@@ -1076,6 +1111,18 @@ function WallCard({
           </button>
         </div>
       </div>
+
+      {/* Stats row */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+          {proofCount}
+        </div>
+      </div>
+
+      {/* Wall URL */}
       <div className="flex items-center gap-2">
         <a
           href={wallUrl}
@@ -1091,6 +1138,25 @@ function WallCard({
         >
           {copied ? "Copied!" : "Copy"}
         </button>
+      </div>
+
+      {/* Embed Code */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-[var(--text-primary)]">Embed Code</p>
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-base)] p-3">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs text-[var(--text-tertiary)]">Copy and paste into your website</p>
+            <button
+              onClick={handleCopyEmbed}
+              className="rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
+            >
+              {embedCopied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <pre className="text-xs text-[var(--text-secondary)] overflow-x-auto font-mono">
+            {embedCode}
+          </pre>
+        </div>
       </div>
     </div>
   );
