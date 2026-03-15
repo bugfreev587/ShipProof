@@ -112,7 +112,7 @@ export default async function EmbedPage({
       id="shipproof-embed"
       style={{
         margin: 0,
-        padding: `32px ${spacing} ${spacing}`,
+        padding: spacing,
         background: containerBg,
         fontFamily:
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
