@@ -290,15 +290,15 @@ export default function WallEditPage() {
                   onChange={(e) => handleConfigChange({ transparent_bg: e.target.checked, bg_color: "" })}
                   className="rounded border-[var(--border)]"
                 />
-                Transparent background
+                Transparent background (embed only)
               </label>
             </div>
 
-            {/* Background Color */}
+            {/* Background Color — embed only */}
             {!wall.transparent_bg && (
               <div>
                 <label className="block text-xs text-[var(--text-secondary)] mb-1">
-                  Background Color
+                  Background Color (embed only)
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -322,7 +322,7 @@ export default function WallEditPage() {
             {wall.transparent_bg && (
               <div>
                 <label className="block text-xs text-[var(--text-secondary)] mb-1">
-                  Header Text Color
+                  Header Text Color (embed only)
                 </label>
                 <div className="flex items-center gap-2">
                   <input
