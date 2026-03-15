@@ -116,6 +116,17 @@ setInterval(function(){send(true)},1000);
         }}
       />
 
+      {/* Header */}
+      <div style={{ textAlign: "center", padding: "24px 16px 32px" }}>
+        <h1 style={{ fontSize: "24px", fontWeight: 700, color: t.textPrimary, marginBottom: "8px" }}>
+          {wall.name}
+        </h1>
+        <p style={{ fontSize: "14px", color: t.textSecondary, margin: 0 }}>
+          What people are saying about{" "}
+          <span style={{ fontWeight: 500, color: t.textPrimary }}>{product.name}</span>
+        </p>
+      </div>
+
       {proofs.length === 0 ? (
         <div className="text-center py-12" style={{ color: t.textTertiary }}>
           No proofs yet.
