@@ -94,10 +94,18 @@ function send(){
     if(h!==lastH){lastH=h;window.parent.postMessage({type:"shipproof-resize",height:h},"*")}
   }
 }
+if(typeof ResizeObserver!=="undefined"){
+  var ro=new ResizeObserver(function(){send()});
+  var el=document.getElementById("shipproof-embed");
+  if(el)ro.observe(el);
+  else document.addEventListener("DOMContentLoaded",function(){var el=document.getElementById("shipproof-embed");if(el)ro.observe(el)});
+}
 if(document.readyState==="complete")send();
 else window.addEventListener("load",send);
 window.addEventListener("resize",function(){send()});
-var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=10)clearInterval(retryId)},500);
+var imgs=document.querySelectorAll("#shipproof-embed img");
+for(var i=0;i<imgs.length;i++)imgs[i].addEventListener("load",send);
+var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=20)clearInterval(retryId)},500);
 })();`,
         }}
       />
