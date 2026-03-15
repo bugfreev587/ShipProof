@@ -467,13 +467,8 @@ function SpaceCard({
   const [loadingAllProofs, setLoadingAllProofs] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const embedUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/embed/${space.slug}`
-      : `/embed/${space.slug}`;
-
-  const embedCode = `<iframe src="${embedUrl}" width="100%" frameborder="0" style="border:none;overflow:hidden;" scrolling="no"></iframe>
-<script>window.addEventListener("message",function(e){if(e.data&&e.data.type==="shipproof-resize"){document.querySelector('iframe[src*="${space.slug}"]').style.height=e.data.height+"px"}})</script>`;
+  const embedCode = `<script type="text/javascript" src="https://shipproof.io/js/embed.js"></script>
+<iframe id="shipproof-${space.slug}" src="https://shipproof.io/embed/${space.slug}" frameborder="0" scrolling="no" width="100%"></iframe>`;
 
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
