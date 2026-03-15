@@ -88,9 +88,12 @@ export default async function WallPage({
   const t = getThemeColors(wall.theme);
   const radius = `${wall.border_radius}px`;
   const spacing = `${wall.card_spacing}px`;
+  const bgStyle = wall.transparent_bg
+    ? "transparent"
+    : wall.bg_color || t.bgBase;
 
   return (
-    <div className="min-h-screen" style={{ background: t.bgBase }}>
+    <div className="min-h-screen" style={{ background: bgStyle }}>
       <ViewTracker entityType="wall" slug={slug} />
       {/* Header */}
       <div className="max-w-6xl mx-auto px-4 py-12 text-center">

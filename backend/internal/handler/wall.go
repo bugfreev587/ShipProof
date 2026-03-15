@@ -211,6 +211,8 @@ func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		CardSpacing      int32  `json:"card_spacing"`
 		ShowPlatformIcon bool   `json:"show_platform_icon"`
 		ShowBranding     bool   `json:"show_branding"`
+		BgColor          string `json:"bg_color"`
+		TransparentBg    bool   `json:"transparent_bg"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
@@ -224,6 +226,8 @@ func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		CardSpacing:      req.CardSpacing,
 		ShowPlatformIcon: req.ShowPlatformIcon,
 		ShowBranding:     req.ShowBranding,
+		BgColor:          req.BgColor,
+		TransparentBg:    req.TransparentBg,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update wall config"}`, http.StatusInternalServerError)

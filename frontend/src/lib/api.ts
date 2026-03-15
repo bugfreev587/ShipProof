@@ -342,6 +342,8 @@ export interface Wall {
   card_spacing: number;
   show_platform_icon: boolean;
   show_branding: boolean;
+  bg_color: string;
+  transparent_bg: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -623,6 +625,8 @@ export function updateWallConfig(
     card_spacing: number;
     show_platform_icon: boolean;
     show_branding: boolean;
+    bg_color: string;
+    transparent_bg: boolean;
   },
   token: string,
 ) {

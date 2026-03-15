@@ -447,6 +447,8 @@ type Wall struct {
 	CardSpacing      int32       `json:"card_spacing"`
 	ShowPlatformIcon bool        `json:"show_platform_icon"`
 	ShowBranding     bool        `json:"show_branding"`
+	BgColor          string      `json:"bg_color"`
+	TransparentBg    bool        `json:"transparent_bg"`
 }
 
 type WallProof struct {

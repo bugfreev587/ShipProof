@@ -123,6 +123,8 @@ export default function WallEditPage() {
             card_spacing: newWall.card_spacing,
             show_platform_icon: newWall.show_platform_icon,
             show_branding: newWall.show_branding,
+            bg_color: newWall.bg_color,
+            transparent_bg: newWall.transparent_bg,
           },
           token,
         );
@@ -279,7 +281,41 @@ export default function WallEditPage() {
                   </p>
                 )}
               </div>
+
+              <label className="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={wall.transparent_bg}
+                  onChange={(e) => handleConfigChange({ transparent_bg: e.target.checked, bg_color: "" })}
+                  className="rounded border-[var(--border)]"
+                />
+                Transparent background
+              </label>
             </div>
+
+            {/* Background Color */}
+            {!wall.transparent_bg && (
+              <div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  Background Color
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={wall.bg_color || "#0F0F10"}
+                    onChange={(e) => handleConfigChange({ bg_color: e.target.value })}
+                    className="h-8 w-8 rounded border border-[var(--border)] bg-transparent cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={wall.bg_color || ""}
+                    placeholder="Default (theme)"
+                    onChange={(e) => handleConfigChange({ bg_color: e.target.value })}
+                    className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Proofs list */}
@@ -350,8 +386,12 @@ function WallPreview({
   const radius = `${wall.border_radius}px`;
   const spacing = `${wall.card_spacing}px`;
 
+  const bgStyle = wall.transparent_bg
+    ? "transparent"
+    : wall.bg_color || t.bgBase;
+
   return (
-    <div className="overflow-y-auto" style={{ background: t.bgBase, maxHeight: "calc(100vh - 260px)" }}>
+    <div className="overflow-y-auto" style={{ background: bgStyle, maxHeight: "calc(100vh - 260px)" }}>
       {/* Header */}
       <div className="max-w-5xl mx-auto px-4 py-10 text-center">
         <h1 className="text-2xl font-bold mb-2" style={{ color: t.textPrimary }}>

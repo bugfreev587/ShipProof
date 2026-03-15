@@ -24,6 +24,8 @@ UPDATE walls SET
     card_spacing = $4,
     show_platform_icon = $5,
     show_branding = $6,
+    bg_color = $7,
+    transparent_bg = $8,
     updated_at = now()
 WHERE id = $1
 RETURNING *;
