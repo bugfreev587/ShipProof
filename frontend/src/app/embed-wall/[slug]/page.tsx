@@ -87,25 +87,31 @@ export default async function EmbedWallPage({
         dangerouslySetInnerHTML={{
           __html: `(function(){
 var lastH=0;
-function send(){
+function getHeight(){
   var el=document.getElementById("shipproof-embed");
-  if(el&&window.parent!==window){
-    var h=el.scrollHeight;
-    if(h!==lastH){lastH=h;window.parent.postMessage({type:"shipproof-resize",height:h},"*")}
-  }
+  var h1=el?el.scrollHeight:0;
+  var h2=document.documentElement.scrollHeight;
+  var h3=document.body.scrollHeight;
+  return Math.max(h1,h2,h3);
+}
+function send(){
+  if(window.parent===window)return;
+  var h=getHeight();
+  if(h>0&&h!==lastH){lastH=h;window.parent.postMessage({type:"shipproof-resize",height:h},"*")}
 }
 if(typeof ResizeObserver!=="undefined"){
-  var ro=new ResizeObserver(function(){send()});
-  var el=document.getElementById("shipproof-embed");
-  if(el)ro.observe(el);
-  else document.addEventListener("DOMContentLoaded",function(){var el=document.getElementById("shipproof-embed");if(el)ro.observe(el)});
+  document.addEventListener("DOMContentLoaded",function(){
+    new ResizeObserver(function(){send()}).observe(document.body);
+  });
 }
 if(document.readyState==="complete")send();
 else window.addEventListener("load",send);
 window.addEventListener("resize",function(){send()});
-var imgs=document.querySelectorAll("#shipproof-embed img");
-for(var i=0;i<imgs.length;i++)imgs[i].addEventListener("load",send);
-var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=20)clearInterval(retryId)},500);
+document.addEventListener("DOMContentLoaded",function(){
+  var imgs=document.querySelectorAll("img");
+  for(var i=0;i<imgs.length;i++)imgs[i].addEventListener("load",send);
+});
+var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=30)clearInterval(retryId)},500);
 })();`,
         }}
       />

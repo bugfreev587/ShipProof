@@ -1,4 +1,11 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "../globals.css";
+
+const inter = Inter({
+  variable: "--font-sans",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "ShipProof Wall Embed",
@@ -10,9 +17,16 @@ export default function EmbedWallLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      <style>{`html, body { background: transparent !important; }`}</style>
-      {children}
-    </>
+    <html lang="en" className="dark" style={{ background: "transparent" }}>
+      <head>
+        <style>{`html, body { background: transparent !important; }`}</style>
+      </head>
+      <body
+        className={`${inter.variable} font-sans antialiased`}
+        style={{ background: "transparent" }}
+      >
+        {children}
+      </body>
+    </html>
   );
 }
