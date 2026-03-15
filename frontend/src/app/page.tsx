@@ -3,6 +3,7 @@ import FlywheelAnimation from "@/components/flywheel-animation";
 import PricingCards from "@/components/pricing-cards";
 import LandingNav from "@/components/landing-nav";
 import { LogoIcon } from "@/components/Logo";
+import EmbedCodeBlock from "@/components/embed-code-block";
 
 export const metadata: Metadata = {
   title: "ShipProof — Turn every launch into lasting social proof",
@@ -196,6 +197,44 @@ export default function HomePage() {
               <span className="font-medium">ShipProof</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Embed Integration */}
+      <section className="border-t border-[#2A2A30] py-20">
+        <div className="mx-auto max-w-4xl px-4">
+          <h2 className="mb-4 text-center text-3xl font-bold text-[#F1F1F3]">
+            Add to your website in seconds
+          </h2>
+          <p className="mb-12 text-center text-[#9CA3AF]">
+            Two lines of code. No build tools. Works everywhere.
+          </p>
+
+          <div className="grid gap-8 md:grid-cols-3 mb-10">
+            <div className="text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#6366F1]/10">
+                <span className="text-lg font-bold text-[#6366F1]">1</span>
+              </div>
+              <h3 className="mb-1 text-sm font-semibold text-[#F1F1F3]">Copy the snippet</h3>
+              <p className="text-xs text-[#9CA3AF]">Grab the embed code from your space settings</p>
+            </div>
+            <div className="text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#10B981]/10">
+                <span className="text-lg font-bold text-[#10B981]">2</span>
+              </div>
+              <h3 className="mb-1 text-sm font-semibold text-[#F1F1F3]">Paste into your site</h3>
+              <p className="text-xs text-[#9CA3AF]">HTML, WordPress, Webflow, Framer — anywhere</p>
+            </div>
+            <div className="text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#F59E0B]/10">
+                <span className="text-lg font-bold text-[#F59E0B]">3</span>
+              </div>
+              <h3 className="mb-1 text-sm font-semibold text-[#F1F1F3]">Done</h3>
+              <p className="text-xs text-[#9CA3AF]">Auto-resizing widget, no extra setup needed</p>
+            </div>
+          </div>
+
+          <EmbedCodeBlock />
         </div>
       </section>
 
