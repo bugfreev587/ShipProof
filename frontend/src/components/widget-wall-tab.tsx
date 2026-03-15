@@ -432,18 +432,18 @@ function AutoFitPreview({
 }
 
 const SPACE_DEFAULTS: Partial<Space> = {
-  theme: "dark",
+  theme: "light",
   border_radius: 12,
   card_spacing: 16,
-  card_size: 340,
+  card_size: 300,
   max_items: 6,
   show_platform_icon: true,
   show_branding: true,
-  text_font_size: 13,
+  text_font_size: 15,
   text_font: "Inter",
   text_bold: false,
   bg_color: "",
-  bg_opacity: 100,
+  bg_opacity: 35,
 };
 
 function SpaceCard({
