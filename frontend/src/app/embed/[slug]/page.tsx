@@ -182,7 +182,7 @@ function vcenter(){
 function debouncedAdjust(){clearTimeout(resizeTimer);resizeTimer=setTimeout(adjust,100)}
 if(document.readyState==="complete"){adjust();vcenter()}else window.addEventListener("load",function(){adjust();vcenter()});
 window.addEventListener("resize",debouncedAdjust);
-var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=10)clearInterval(retryId)},500);
+var retryCount=0;var retryId=setInterval(function(){var el=document.getElementById("shipproof-embed");if(el&&window.parent!==window){window.parent.postMessage({type:"shipproof-resize",height:el.scrollHeight},"*")}retryCount++;if(retryCount>=10)clearInterval(retryId)},500);
 })();`,
         }}
       />
