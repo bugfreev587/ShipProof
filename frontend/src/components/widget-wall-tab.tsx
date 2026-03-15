@@ -450,7 +450,7 @@ function AutoFitPreview({
 
 const SPACE_DEFAULTS: Partial<Space> = {
   theme: "light",
-  border_radius: 12,
+  border_radius: 3,
   card_spacing: 16,
   card_size: 300,
   max_items: 6,
