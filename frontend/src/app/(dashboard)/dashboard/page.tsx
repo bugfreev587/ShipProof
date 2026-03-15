@@ -146,26 +146,26 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold text-[var(--text-primary)]">
                 {analytics.space_views}
               </div>
-              {analytics.space_breakdown.length > 0 && (
-                <div className="mt-3">
-                  <button
-                    onClick={() => setShowSpaceBreakdown(!showSpaceBreakdown)}
-                    className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-                  >
-                    {showSpaceBreakdown ? "Hide" : "Show"} breakdown ({analytics.space_breakdown.length})
-                  </button>
-                  {showSpaceBreakdown && (
-                    <div className="mt-2 space-y-1">
-                      {analytics.space_breakdown.map((s) => (
-                        <div key={s.entity_id} className="flex items-center justify-between text-sm">
-                          <span className="text-[var(--text-secondary)] truncate mr-2">{s.entity_name || "Unnamed"}</span>
-                          <span className="text-[var(--text-primary)] font-medium tabular-nums">{s.view_count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="mt-3">
+                <button
+                  onClick={() => setShowSpaceBreakdown(!showSpaceBreakdown)}
+                  className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+                >
+                  {showSpaceBreakdown ? "Hide" : "Show"} breakdown
+                </button>
+                {showSpaceBreakdown && (
+                  <div className="mt-2 space-y-1">
+                    {analytics.space_breakdown.length > 0 ? analytics.space_breakdown.map((s) => (
+                      <div key={s.entity_id} className="flex items-center justify-between text-sm">
+                        <span className="text-[var(--text-secondary)] truncate mr-2">{s.entity_name || "Unnamed"}</span>
+                        <span className="text-[var(--text-primary)] font-medium tabular-nums">{s.view_count}</span>
+                      </div>
+                    )) : (
+                      <div className="text-xs text-[var(--text-tertiary)]">No views yet</div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Wall Views */}
@@ -180,26 +180,26 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold text-[var(--text-primary)]">
                 {analytics.wall_views}
               </div>
-              {analytics.wall_breakdown.length > 0 && (
-                <div className="mt-3">
-                  <button
-                    onClick={() => setShowWallBreakdown(!showWallBreakdown)}
-                    className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-                  >
-                    {showWallBreakdown ? "Hide" : "Show"} breakdown ({analytics.wall_breakdown.length})
-                  </button>
-                  {showWallBreakdown && (
-                    <div className="mt-2 space-y-1">
-                      {analytics.wall_breakdown.map((w) => (
-                        <div key={w.entity_id} className="flex items-center justify-between text-sm">
-                          <span className="text-[var(--text-secondary)] truncate mr-2">{w.entity_name || "Unnamed"}</span>
-                          <span className="text-[var(--text-primary)] font-medium tabular-nums">{w.view_count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="mt-3">
+                <button
+                  onClick={() => setShowWallBreakdown(!showWallBreakdown)}
+                  className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+                >
+                  {showWallBreakdown ? "Hide" : "Show"} breakdown
+                </button>
+                {showWallBreakdown && (
+                  <div className="mt-2 space-y-1">
+                    {analytics.wall_breakdown.length > 0 ? analytics.wall_breakdown.map((w) => (
+                      <div key={w.entity_id} className="flex items-center justify-between text-sm">
+                        <span className="text-[var(--text-secondary)] truncate mr-2">{w.entity_name || "Unnamed"}</span>
+                        <span className="text-[var(--text-primary)] font-medium tabular-nums">{w.view_count}</span>
+                      </div>
+                    )) : (
+                      <div className="text-xs text-[var(--text-tertiary)]">No views yet</div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
