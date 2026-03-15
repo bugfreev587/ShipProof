@@ -91,7 +91,7 @@ export default async function EmbedPage({
   const spacing = `${widget.card_spacing}px`;
   const cardWidth = widget.card_size || 340;
   const cardHeight = 240;
-  const textFontSize = widget.text_font_size || 13;
+  const textFontSize = widget.text_font_size || 14;
   const textFont = widget.text_font || "Inter";
   const textBold = widget.text_bold || false;
   const maxItems = widget.max_items || 6;
@@ -268,13 +268,13 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "10px",
-                    marginBottom: "14px",
+                    gap: "12px",
+                    marginBottom: "16px",
                   }}
                 >
                   {widget.show_platform_icon && (
                     <span
-                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[11px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+                      className={`inline-flex items-center justify-center w-9 h-9 rounded-full text-[12px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
                     >
                       {PLATFORM_LABELS[proof.source_platform] || "O"}
                     </span>
@@ -282,8 +282,8 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
                   <div>
                     <div
                       style={{
-                        fontSize: "13px",
-                        fontWeight: 600,
+                        fontSize: "15px",
+                        fontWeight: 700,
                         color: t.textPrimary,
                       }}
                     >
@@ -292,9 +292,9 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
                     {authorTitle && (
                       <div
                         style={{
-                          fontSize: "11px",
+                          fontSize: "13px",
                           color: t.textTertiary,
-                          marginTop: "2px",
+                          marginTop: "3px",
                         }}
                       >
                         {authorTitle}
@@ -307,7 +307,7 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
                   <p
                     style={{
                       fontSize: `${textFontSize}px`,
-                      lineHeight: "1.65",
+                      lineHeight: "1.6",
                       color: t.textSecondary,
                       margin: 0,
                       fontFamily: textFont,
