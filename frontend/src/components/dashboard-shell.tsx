@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTheme } from "@/lib/theme";
 import AvatarDropdown from "@/components/avatar-dropdown";
 import { LogoFull } from "@/components/Logo";
+import { Footer } from "@/components/footer";
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const { colors } = useTheme();
@@ -25,6 +26,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         </div>
       </nav>
       <main className="mx-auto max-w-[1400px] px-10 py-8">{children}</main>
+      <Footer />
     </div>
   );
 }
