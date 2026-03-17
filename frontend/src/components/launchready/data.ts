@@ -49,7 +49,7 @@ export const checklistData: Record<Phase, ChecklistItem[]> = {
       id: "before-copy",
       text: "Write your launch copy for each platform",
       hint: "Writing 5 different posts is painful.",
-      cta: { text: "Generate all with ShipProof \u2192", href: "/sign-up" },
+      cta: { text: "Generate all with ShipProof \u2192", href: "/" },
     },
     {
       id: "before-notify",
@@ -285,13 +285,13 @@ export const checklistData: Record<Phase, ChecklistItem[]> = {
       id: "after-collect",
       text: "Collect positive feedback as social proof",
       hint: "Don't let great comments disappear.",
-      cta: { text: "Collect proof with ShipProof \u2192", href: "/sign-up" },
+      cta: { text: "Collect proof with ShipProof \u2192", href: "/" },
     },
     {
       id: "after-display",
       text: "Display social proof on your landing page",
       hint: "Embed a proof widget or create a Wall of Proof.",
-      cta: { text: "Try ShipProof \u2192", href: "/sign-up" },
+      cta: { text: "Try ShipProof \u2192", href: "/" },
     },
     {
       id: "after-update",

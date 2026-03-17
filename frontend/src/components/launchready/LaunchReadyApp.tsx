@@ -469,7 +469,9 @@ export function LaunchReadyApp() {
       {/* Header */}
       <header className="pt-20 pb-12 text-center px-4">
         <div className="flex items-center justify-center gap-2.5 mb-4">
-          <LogoIcon size={24} />
+          <Link href="/" className="flex items-center gap-2.5">
+            <LogoIcon size={24} />
+          </Link>
           <h1 className="text-[28px] font-semibold tracking-[-0.5px]">
             LaunchReady
           </h1>
@@ -561,12 +563,20 @@ export function LaunchReadyApp() {
                 <br />
                 Embed social proof on your landing page.
               </p>
-              <Link
-                href="/sign-up"
-                className="inline-block bg-[#6366F1] hover:bg-[#818CF8] text-white font-medium text-sm rounded-full px-8 py-3 transition-colors duration-150"
-              >
-                Try ShipProof &mdash; Free &rarr;
-              </Link>
+              <div className="flex items-center justify-center gap-3">
+                <Link
+                  href="/"
+                  className="inline-block border border-[#2A2A32] hover:border-[#55555C] text-[#8B8B92] hover:text-[#EDEDEF] font-medium text-sm rounded-full px-8 py-3 transition-all duration-150"
+                >
+                  Learn More &rarr;
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="inline-block bg-[#6366F1] hover:bg-[#818CF8] text-white font-medium text-sm rounded-full px-8 py-3 transition-colors duration-150"
+                >
+                  Get Started Free &rarr;
+                </Link>
+              </div>
             </section>
           </section>
         )}
@@ -574,7 +584,11 @@ export function LaunchReadyApp() {
 
       {/* Footer */}
       <footer className="text-center py-8 text-xs text-[#55555C]">
-        Built by ShipProof &middot; &copy; {new Date().getFullYear()}
+        Built by{" "}
+        <Link href="/" className="hover:text-[#8B8B92] transition-colors">
+          ShipProof
+        </Link>
+        {" "}&middot; &copy; {new Date().getFullYear()}
       </footer>
 
       <StartOverDialog
