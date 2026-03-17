@@ -23,6 +23,10 @@ export default function LandingNav() {
           <a href="#faq" className="hover:text-[#F1F1F3] transition-colors">
             FAQ
           </a>
+          <a href="/launchready" className="hover:text-[#F1F1F3] transition-colors flex items-center">
+            LaunchReady
+            <span className="text-[10px] bg-[#22C55E]/10 text-[#22C55E] rounded-full px-1.5 py-0.5 ml-1">Free</span>
+          </a>
         </div>
         {isSignedIn ? (
           <AvatarDropdown />
