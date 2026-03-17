@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import { LogoIcon } from "@/components/Logo";
 import {
@@ -50,12 +50,71 @@ function PlatformSelector({
   );
 }
 
+function StartOverDialog({
+  open,
+  onClose,
+  onConfirm,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const backdropRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      ref={backdropRef}
+      onClick={(e) => {
+        if (e.target === backdropRef.current) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm motion-safe:animate-[fadeIn_150ms_ease]"
+    >
+      <div className="bg-[#141418] border border-[#1E1E24] rounded-xl p-6 max-w-sm mx-4 w-full motion-safe:animate-[fadeSlideIn_150ms_ease]">
+        <h3 className="text-base font-medium text-[#EDEDEF] mb-2">
+          Start a new launch?
+        </h3>
+        <p className="text-sm text-[#8B8B92] leading-relaxed mb-6">
+          This will clear all checkmarks and platform selections so you can plan
+          your next launch from scratch.
+        </p>
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-[#8B8B92] hover:text-[#EDEDEF] transition-colors duration-150 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm text-red-400 hover:text-red-300 transition-colors duration-150 cursor-pointer"
+          >
+            Start Over
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProgressBar({
   checked,
   total,
+  onStartOver,
 }: {
   checked: number;
   total: number;
+  onStartOver: () => void;
 }) {
   const pct = total === 0 ? 0 : Math.round((checked / total) * 100);
   const done = pct === 100 && total > 0;
@@ -65,10 +124,21 @@ function ProgressBar({
       <div className="flex items-baseline justify-between mb-2 text-sm">
         <span className="text-[#8B8B92]">
           {checked} of {total} completed
+          {done && (
+            <span className="text-[#22C55E] ml-2">
+              {"\ud83c\udf89"} Ready to launch!
+            </span>
+          )}
+          {!done && (
+            <span className="text-[#8B8B92] ml-2">{pct}%</span>
+          )}
         </span>
-        <span className={done ? "text-[#22C55E]" : "text-[#8B8B92]"}>
-          {done ? "\ud83c\udf89 Ready to launch!" : `${pct}%`}
-        </span>
+        <button
+          onClick={onStartOver}
+          className="text-xs text-[#55555C] hover:text-[#8B8B92] transition-colors duration-150 cursor-pointer"
+        >
+          Start Over
+        </button>
       </div>
       <div className="h-1 rounded-full bg-[#1E1E24] overflow-hidden">
         <div
@@ -284,6 +354,8 @@ export function LaunchReadyApp() {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<Phase>("before");
   const [hydrated, setHydrated] = useState(false);
+  const [showStartOver, setShowStartOver] = useState(false);
+  const step1Ref = useRef<HTMLElement>(null);
 
   // Hydrate from localStorage
   useEffect(() => {
@@ -330,6 +402,19 @@ export function LaunchReadyApp() {
       else next.add(id);
       return next;
     });
+  }, []);
+
+  const handleStartOver = useCallback(() => {
+    setCheckedItems(new Set());
+    setSelectedPlatforms(new Set());
+    setActiveTab("before");
+    setShowStartOver(false);
+    localStorage.removeItem(LS_KEY_CHECKED);
+    localStorage.removeItem(LS_KEY_PLATFORMS);
+    // Smooth scroll back to platform selector
+    setTimeout(() => {
+      step1Ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
   }, []);
 
   // Filter items for current tab & selected platforms
@@ -398,7 +483,7 @@ export function LaunchReadyApp() {
 
       <main className="max-w-2xl mx-auto px-4 pb-24">
         {/* Step 1: Platform selector */}
-        <section className="mb-12">
+        <section ref={step1Ref} className="mb-12">
           <h2 className="text-lg font-medium tracking-[-0.5px] mb-1 text-center">
             Where are you launching?
           </h2>
@@ -415,7 +500,11 @@ export function LaunchReadyApp() {
         {/* Step 2: Checklist */}
         {hasPlatforms && (
           <section className="motion-safe:animate-[fadeIn_300ms_ease]">
-            <ProgressBar checked={totalChecked} total={allVisible.length} />
+            <ProgressBar
+              checked={totalChecked}
+              total={allVisible.length}
+              onStartOver={() => setShowStartOver(true)}
+            />
 
             {/* Tabs */}
             <div className="flex gap-6 border-b border-[#1E1E24] mb-6">
@@ -487,6 +576,12 @@ export function LaunchReadyApp() {
       <footer className="text-center py-8 text-xs text-[#55555C]">
         Built by ShipProof &middot; &copy; {new Date().getFullYear()}
       </footer>
+
+      <StartOverDialog
+        open={showStartOver}
+        onClose={() => setShowStartOver(false)}
+        onConfirm={handleStartOver}
+      />
 
       <style
         dangerouslySetInnerHTML={{
