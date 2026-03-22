@@ -248,7 +248,8 @@ type claudeResponse struct {
 	Content []struct {
 		Text string `json:"text"`
 	} `json:"content"`
-	Usage struct {
+	StopReason string `json:"stop_reason"`
+	Usage      struct {
 		InputTokens  int `json:"input_tokens"`
 		OutputTokens int `json:"output_tokens"`
 	} `json:"usage"`
@@ -260,7 +261,7 @@ func (s *LaunchService) callClaudeAPI(ctx context.Context, req GenerateRequest, 
 
 	body := claudeRequest{
 		Model:     "claude-sonnet-4-20250514",
-		MaxTokens: 4096,
+		MaxTokens: 16384,
 		System:    systemPrompt,
 		Messages: []claudeMessage{
 			{Role: "user", Content: userPrompt},
@@ -312,6 +313,13 @@ func (s *LaunchService) callClaudeAPI(ctx context.Context, req GenerateRequest, 
 
 	if len(claudeResp.Content) == 0 {
 		return nil, fmt.Errorf("empty response from Claude")
+	}
+
+	if claudeResp.StopReason == "max_tokens" {
+		slog.Warn("Claude response truncated",
+			"output_tokens", claudeResp.Usage.OutputTokens,
+		)
+		return nil, fmt.Errorf("Claude response was truncated (used %d tokens), please try again with fewer platforms", claudeResp.Usage.OutputTokens)
 	}
 
 	text := claudeResp.Content[0].Text
