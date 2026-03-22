@@ -200,6 +200,13 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
       setEditedContent({});
       setShowConfirmModal(false);
       setVersionTitle("");
+      setLaunchType("initial");
+      setSelectedPlatforms([]);
+      setSelectedSubreddits(["r/SaaS"]);
+      setCustomSubreddit("");
+      setLaunchNotes("");
+      setActivePlatform("");
+      setDraftPreview(false);
       fetchData();
     } catch (err) {
       if (err instanceof ApiError && err.status === 402 && onPlanLimit) {
