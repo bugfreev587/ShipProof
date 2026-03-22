@@ -330,6 +330,19 @@ func (s *LaunchService) callClaudeAPI(ctx context.Context, req GenerateRequest, 
 	// Validate it's valid JSON
 	var check json.RawMessage
 	if err := json.Unmarshal([]byte(jsonContent), &check); err != nil {
+		// Log a snippet for debugging
+		snippet := jsonContent
+		if len(snippet) > 500 {
+			snippet = snippet[:200] + "\n...\n" + snippet[len(snippet)-200:]
+		}
+		slog.Error("Claude returned invalid JSON",
+			"error", err,
+			"stop_reason", claudeResp.StopReason,
+			"output_tokens", claudeResp.Usage.OutputTokens,
+			"raw_length", len(text),
+			"extracted_length", len(jsonContent),
+			"snippet", snippet,
+		)
 		return nil, fmt.Errorf("Claude returned invalid JSON: %w", err)
 	}
 
@@ -337,38 +350,26 @@ func (s *LaunchService) callClaudeAPI(ctx context.Context, req GenerateRequest, 
 }
 
 func extractJSON(text string) string {
-	// Try to find JSON block in markdown code fence
-	start := 0
-	if idx := indexOf(text, "```json"); idx >= 0 {
-		start = idx + 7
-		if end := indexOf(text[start:], "```"); end >= 0 {
-			return text[start : start+end]
+	// Find the first '{' and last '}' to extract the JSON object,
+	// regardless of code fences or surrounding text.
+	first := -1
+	for i := 0; i < len(text); i++ {
+		if text[i] == '{' {
+			first = i
+			break
 		}
 	}
-	if idx := indexOf(text, "```"); idx >= 0 {
-		start = idx + 3
-		// Skip optional newline
-		if start < len(text) && text[start] == '\n' {
-			start++
-		}
-		if end := indexOf(text[start:], "```"); end >= 0 {
-			return text[start : start+end]
+	last := -1
+	for i := len(text) - 1; i >= 0; i-- {
+		if text[i] == '}' {
+			last = i
+			break
 		}
 	}
-	// Try raw JSON
-	if idx := indexOf(text, "{"); idx >= 0 {
-		return text[idx:]
+	if first >= 0 && last > first {
+		return text[first : last+1]
 	}
 	return text
-}
-
-func indexOf(s, substr string) int {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return i
-		}
-	}
-	return -1
 }
 
 func buildSystemPrompt(platforms []string, subreddits []string) string {
