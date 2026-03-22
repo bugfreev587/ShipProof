@@ -139,7 +139,7 @@ export default function ProductDetailPage() {
           </button>
 
           {/* Embed Widgets — collapsible parent */}
-          <div className="mt-2">
+          <div>
             <button
               onClick={() => setEmbedExpanded(!embedExpanded)}
               className={`flex items-center justify-between w-full rounded-lg px-3 py-2 text-sm transition-colors ${

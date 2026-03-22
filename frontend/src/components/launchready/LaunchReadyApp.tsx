@@ -11,9 +11,13 @@ import {
   type Phase,
   type ChecklistItem,
 } from "./data";
+import LaunchWeekPlanner, { type LaunchDay } from "./LaunchWeekPlanner";
 
 const LS_KEY_CHECKED = "launchready-progress";
 const LS_KEY_PLATFORMS = "launchready-platforms";
+const LS_KEY_LAUNCH_DAY = "launchready-launch-day";
+
+type ActiveTool = "checklist" | "week";
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -85,8 +89,8 @@ function StartOverDialog({
           Start a new launch?
         </h3>
         <p className="text-sm text-[#8B8B92] leading-relaxed mb-6">
-          This will clear all checkmarks and platform selections so you can plan
-          your next launch from scratch.
+          This will clear all progress, platform selections, and launch week
+          settings so you can plan your next launch from scratch.
         </p>
         <div className="flex justify-end gap-3">
           <button
@@ -353,6 +357,8 @@ export function LaunchReadyApp() {
   );
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<Phase>("before");
+  const [activeTool, setActiveTool] = useState<ActiveTool>("checklist");
+  const [launchDay, setLaunchDay] = useState<LaunchDay>("tue");
   const [hydrated, setHydrated] = useState(false);
   const [showStartOver, setShowStartOver] = useState(false);
   const step1Ref = useRef<HTMLElement>(null);
@@ -365,6 +371,8 @@ export function LaunchReadyApp() {
       const savedPlatforms = localStorage.getItem(LS_KEY_PLATFORMS);
       if (savedPlatforms)
         setSelectedPlatforms(new Set(JSON.parse(savedPlatforms)));
+      const savedDay = localStorage.getItem(LS_KEY_LAUNCH_DAY);
+      if (savedDay) setLaunchDay(savedDay as LaunchDay);
     } catch {
       // ignore
     }
@@ -385,6 +393,12 @@ export function LaunchReadyApp() {
       JSON.stringify([...selectedPlatforms])
     );
   }, [selectedPlatforms, hydrated]);
+
+  // Persist launch day
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(LS_KEY_LAUNCH_DAY, launchDay);
+  }, [launchDay, hydrated]);
 
   const togglePlatform = useCallback((p: Platform) => {
     setSelectedPlatforms((prev) => {
@@ -408,9 +422,12 @@ export function LaunchReadyApp() {
     setCheckedItems(new Set());
     setSelectedPlatforms(new Set());
     setActiveTab("before");
+    setActiveTool("checklist");
+    setLaunchDay("tue");
     setShowStartOver(false);
     localStorage.removeItem(LS_KEY_CHECKED);
     localStorage.removeItem(LS_KEY_PLATFORMS);
+    localStorage.removeItem(LS_KEY_LAUNCH_DAY);
     // Smooth scroll back to platform selector
     setTimeout(() => {
       step1Ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -499,50 +516,89 @@ export function LaunchReadyApp() {
           />
         </section>
 
-        {/* Step 2: Checklist */}
+        {/* Step 2: Tool toggle + content */}
         {hasPlatforms && (
           <section className="motion-safe:animate-[fadeIn_300ms_ease]">
-            <ProgressBar
-              checked={totalChecked}
-              total={allVisible.length}
-              onStartOver={() => setShowStartOver(true)}
-            />
-
-            {/* Tabs */}
-            <div className="flex gap-6 border-b border-[#1E1E24] mb-6">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`pb-3 text-sm font-medium transition-colors duration-150 relative cursor-pointer
-                    ${
-                      activeTab === tab.id
-                        ? "text-[#EDEDEF]"
-                        : "text-[#55555C] hover:text-[#8B8B92]"
-                    }`}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6366F1] rounded-full" />
-                  )}
-                </button>
-              ))}
+            {/* Tool toggle */}
+            <div className="flex justify-center mb-8">
+              <div className="inline-flex rounded-full bg-[#141418] border border-[#1E1E24] p-1">
+                {(
+                  [
+                    { id: "checklist" as ActiveTool, label: "Checklist" },
+                    { id: "week" as ActiveTool, label: "Launch Week" },
+                  ] as const
+                ).map((tool) => (
+                  <button
+                    key={tool.id}
+                    onClick={() => setActiveTool(tool.id)}
+                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-150 cursor-pointer
+                      ${
+                        activeTool === tool.id
+                          ? "bg-[#1E1E24] text-[#EDEDEF]"
+                          : "text-[#55555C] hover:text-[#8B8B92]"
+                      }`}
+                  >
+                    {tool.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Items */}
-            <div className="motion-safe:animate-[fadeSlideIn_200ms_ease]">
-              {visibleItems.map((item) => (
-                <ChecklistItemRow
-                  key={item.id}
-                  item={item}
-                  checked={checkedItems.has(item.id)}
-                  onToggle={() => toggleItem(item.id)}
+            {/* Checklist tool */}
+            {activeTool === "checklist" && (
+              <>
+                <ProgressBar
+                  checked={totalChecked}
+                  total={allVisible.length}
+                  onStartOver={() => setShowStartOver(true)}
                 />
-              ))}
-            </div>
 
-            {/* Cheat sheets */}
-            <CheatSheetAccordion selectedPlatforms={selectedPlatforms} />
+                {/* Tabs */}
+                <div className="flex gap-6 border-b border-[#1E1E24] mb-6">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`pb-3 text-sm font-medium transition-colors duration-150 relative cursor-pointer
+                        ${
+                          activeTab === tab.id
+                            ? "text-[#EDEDEF]"
+                            : "text-[#55555C] hover:text-[#8B8B92]"
+                        }`}
+                    >
+                      {tab.label}
+                      {activeTab === tab.id && (
+                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6366F1] rounded-full" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Items */}
+                <div className="motion-safe:animate-[fadeSlideIn_200ms_ease]">
+                  {visibleItems.map((item) => (
+                    <ChecklistItemRow
+                      key={item.id}
+                      item={item}
+                      checked={checkedItems.has(item.id)}
+                      onToggle={() => toggleItem(item.id)}
+                    />
+                  ))}
+                </div>
+
+                {/* Cheat sheets */}
+                <CheatSheetAccordion selectedPlatforms={selectedPlatforms} />
+              </>
+            )}
+
+            {/* Launch Week tool */}
+            {activeTool === "week" && (
+              <LaunchWeekPlanner
+                selectedPlatforms={selectedPlatforms}
+                launchDay={launchDay}
+                onLaunchDayChange={setLaunchDay}
+              />
+            )}
 
             {/* CTA section */}
             <section className="mt-20 text-center">
