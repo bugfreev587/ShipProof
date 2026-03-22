@@ -128,8 +128,10 @@ export function createBillingPortalSession(token: string) {
 
 export interface SubscriptionStatus {
   has_subscription: boolean;
+  status?: string;
   cancel_at_period_end: boolean;
   current_period_end: number | null;
+  trial_end?: number | null;
 }
 
 export function getSubscriptionStatus(token: string) {

@@ -112,6 +112,10 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 		params.CustomerEmail = stripe.String(user.Email)
 	}
 
+	params.SubscriptionData = &stripe.CheckoutSessionCreateSubscriptionDataParams{
+		TrialPeriodDays: stripe.Int64(7),
+	}
+
 	sess, err := sc.V1CheckoutSessions.Create(r.Context(), params)
 	if err != nil {
 		slog.Error("failed to create checkout session", "error", err)
@@ -195,11 +199,18 @@ func (h *StripeHandler) GetSubscriptionStatus(w http.ResponseWriter, r *http.Req
 		periodEnd = sub.Items.Data[0].CurrentPeriodEnd
 	}
 
+	var trialEnd *int64
+	if sub.TrialEnd > 0 {
+		trialEnd = &sub.TrialEnd
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"has_subscription":     true,
+		"status":               string(sub.Status),
 		"cancel_at_period_end": sub.CancelAtPeriodEnd,
 		"current_period_end":   periodEnd,
+		"trial_end":            trialEnd,
 	})
 }
 
@@ -325,7 +336,7 @@ func (h *StripeHandler) handleSubscriptionUpdated(event stripe.Event, cfg Stripe
 		return
 	}
 
-	if sub.Status != stripe.SubscriptionStatusActive {
+	if sub.Status != stripe.SubscriptionStatusActive && sub.Status != stripe.SubscriptionStatusTrialing {
 		return
 	}
 

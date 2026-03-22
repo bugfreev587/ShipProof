@@ -86,6 +86,7 @@ function SettingsContent() {
   const [loading, setLoading] = useState(true);
   const [yearly, setYearly] = useState(false);
   const [reactivating, setReactivating] = useState(false);
+  const isTrialing = subStatus?.status === "trialing";
 
   const tabParam = searchParams.get("tab");
   const activeTab: TabKey =
@@ -301,6 +302,8 @@ function SettingsContent() {
               setYearly={setYearly}
               onUpgrade={handleUpgrade}
               onManageBilling={handleManageBilling}
+              isTrialing={isTrialing}
+              trialEnd={subStatus?.trial_end}
             />
           )}
         </div>
@@ -465,6 +468,8 @@ function BillingTab({
   setYearly,
   onUpgrade,
   onManageBilling,
+  isTrialing,
+  trialEnd,
 }: {
   plan: string;
   limits: { products: string; proofs: string; generations: string; versions: string };
@@ -472,6 +477,8 @@ function BillingTab({
   setYearly: (v: boolean) => void;
   onUpgrade: (plan: string) => void;
   onManageBilling: () => void;
+  isTrialing?: boolean;
+  trialEnd?: number | null;
 }) {
   const { colors } = useTheme();
 
@@ -491,6 +498,13 @@ function BillingTab({
             {plan}
           </span>
         </div>
+
+        {isTrialing && trialEnd && (
+          <div className="mb-4 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/20 px-4 py-3 text-sm text-[#22C55E]">
+            You&apos;re on a 7-day free trial of <span className="font-medium capitalize">{plan}</span>. Your trial ends on{" "}
+            {new Date(trialEnd * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
+          </div>
+        )}
 
         {/* Limits grid */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -544,13 +558,13 @@ function BillingTab({
                     onClick={() => onUpgrade("pro")}
                     className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
                   >
-                    Upgrade to Pro ({yearly ? "$9" : "$12"}/mo)
+                    Start Free Trial — Pro ({yearly ? "$9" : "$12"}/mo)
                   </button>
                   <button
                     onClick={() => onUpgrade("business")}
                     className="rounded-lg bg-[#F59E0B] px-4 py-2 text-sm font-medium text-white hover:bg-[#FBBF24] transition-colors"
                   >
-                    Upgrade to Business ({yearly ? "$24" : "$29"}/mo)
+                    Start Free Trial — Business ({yearly ? "$24" : "$29"}/mo)
                   </button>
                 </>
               )}
@@ -559,7 +573,7 @@ function BillingTab({
                   onClick={() => onUpgrade("business")}
                   className="rounded-lg bg-[#F59E0B] px-4 py-2 text-sm font-medium text-white hover:bg-[#FBBF24] transition-colors"
                 >
-                  Upgrade to Business ({yearly ? "$24" : "$29"}/mo)
+                  Start Free Trial — Business ({yearly ? "$24" : "$29"}/mo)
                 </button>
               )}
             </>

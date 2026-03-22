@@ -42,7 +42,7 @@ const plans = [
       { text: "Wall of Love pages", included: true },
       { text: "Remove branding", included: false },
     ],
-    ctaText: "Start Pro",
+    ctaText: "Start Free Trial",
     plan: "pro",
   },
   {
@@ -62,7 +62,7 @@ const plans = [
       { text: "Wall of Love pages", included: true },
       { text: "Remove branding", included: true },
     ],
-    ctaText: "Start Business",
+    ctaText: "Start Free Trial",
     plan: "business",
   },
 ];
@@ -265,8 +265,8 @@ export default function PricingCards() {
                   >
                     {loading === plan.plan ? "Redirecting..." : plan.ctaText}
                   </button>
-                  <p className="mt-2 text-center text-xs text-[#9CA3AF]">
-                    7-day free trial included
+                  <p className="mt-2 text-center text-xs text-[#22C55E]">
+                    7-day free trial
                   </p>
                 </>
               )}
