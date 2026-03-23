@@ -309,7 +309,7 @@ function NewProductModal({
       const uploadedUrl = await uploadAvatar(file, token);
       setLogoUrl(uploadedUrl);
     } catch {
-      // ignore
+      setError("Failed to upload logo. Please try again.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -452,7 +452,7 @@ function NewProductModal({
             </button>
             <button
               type="submit"
-              disabled={submitting || !name.trim()}
+              disabled={submitting || uploading || !name.trim()}
               className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
             >
               {submitting ? "Creating..." : "Create Product"}
