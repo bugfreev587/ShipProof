@@ -599,7 +599,7 @@ function TimelineCard({
                     key={ii}
                     className="flex items-start gap-2 text-sm text-[#EDEDEF] leading-relaxed"
                   >
-                    <span className="text-[#55555C] mt-1.5 shrink-0">
+                    <span className="text-[#55555C] mt-[0.35em] shrink-0 text-[8px] leading-none">
                       {"\u2022"}
                     </span>
                     <span>{item}</span>
