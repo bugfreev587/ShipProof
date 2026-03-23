@@ -35,7 +35,7 @@ export const checklistData: Record<Phase, ChecklistItem[]> = {
     {
       id: "before-visuals",
       text: "Prepare visual assets (screenshots, GIF walkthrough, or demo video)",
-      hint: "5 images for PH gallery, Twitter-friendly aspect ratio for X",
+      hint: "Up to 10 images for PH gallery, Twitter-friendly aspect ratio for X",
     },
     {
       id: "before-analytics",
@@ -54,6 +54,16 @@ export const checklistData: Record<Phase, ChecklistItem[]> = {
     {
       id: "before-notify",
       text: "Notify your early users, friends, and network about the upcoming launch",
+    },
+    {
+      id: "before-payment",
+      text: "Test your payment flow end-to-end (signup, checkout, confirmation)",
+      hint: "Nothing kills launch momentum like a broken checkout",
+    },
+    {
+      id: "before-faq",
+      text: "Prepare answers to common objections and questions",
+      hint: "You\u2019ll get the same 5 questions across all platforms \u2014 have answers ready",
     },
     {
       id: "before-calendar",
@@ -85,7 +95,7 @@ export const checklistData: Record<Phase, ChecklistItem[]> = {
     },
     {
       id: "before-ph-gallery",
-      text: "Prepare 5 gallery images (1200\u00d7900px) or a GIF/video",
+      text: "Prepare up to 10 gallery images (1270\u00d7760px) or a GIF/video",
       platforms: ["ph"],
     },
     {
@@ -138,7 +148,7 @@ export const checklistData: Record<Phase, ChecklistItem[]> = {
     },
     {
       id: "before-twitter-premium",
-      text: "If you have X Premium, your replies get priority \u2014 worth $8/mo for launch week",
+      text: "If you have X Premium+, your replies get priority \u2014 worth considering for launch week",
       platforms: ["twitter"],
     },
     {
@@ -169,6 +179,7 @@ export const checklistData: Record<Phase, ChecklistItem[]> = {
     {
       id: "day-breathe",
       text: "Take a deep breath. You've prepared well. Let's go. \ud83d\ude80",
+      hint: "Tip: consider staggering platforms over several days \u2014 see the Launch Week planner for a day-by-day schedule",
     },
     // PH
     {
@@ -298,9 +309,21 @@ export const checklistData: Record<Phase, ChecklistItem[]> = {
       text: "Update your product based on feedback received",
     },
     {
+      id: "after-reddit-followup",
+      text: "Check if any Reddit posts were removed and message mods if needed",
+      hint: "Some subs have delayed moderation \u2014 check back the next day",
+      platforms: ["reddit"],
+    },
+    {
+      id: "after-hn-followup",
+      text: "Monitor HN for second-wave traffic (posts can resurface days later)",
+      platforms: ["hn"],
+    },
+    {
       id: "after-retro",
-      text: "Write a launch retrospective post (great for IH and Twitter)",
+      text: "Write a launch retrospective post",
       hint: "Share your numbers honestly \u2014 the community respects transparency",
+      platforms: ["ih", "twitter"],
     },
     {
       id: "after-followup",
@@ -337,10 +360,10 @@ export const cheatSheets: CheatSheet[] = [
     platform: "ph",
     label: "Product Hunt",
     rows: [
-      { key: "Best time to post", value: "12:01 AM PST (start of new PH day)" },
+      { key: "Best time to post", value: "12:01 AM PT (start of new PH day)" },
       { key: "Best days", value: "Tuesday \u2013 Thursday" },
       { key: "Tagline limit", value: "60 characters" },
-      { key: "Gallery", value: "5 images (1200\u00d7900px) or video" },
+      { key: "Gallery", value: "Up to 10 images (1270\u00d7760px) or video" },
       { key: "Must have", value: "Tagline + Gallery + Description + Maker Comment" },
       { key: "Avoid", value: "Vote manipulation, new-account upvote campaigns" },
       { key: "Pro tip", value: "Maker accounts with prior activity rank better" },
@@ -378,7 +401,7 @@ export const cheatSheets: CheatSheet[] = [
       { key: "Character limit", value: "280 per tweet (Premium: 25,000)" },
       { key: "Best time", value: "9\u201311 AM in your audience\u2019s timezone" },
       { key: "Link placement", value: "Last tweet or first reply (algorithm penalizes link tweets)" },
-      { key: "Premium boost", value: "~10x median reach vs free accounts" },
+      { key: "Premium boost", value: "Significantly higher reach vs free accounts" },
       { key: "Pro tip", value: "Pin your launch thread. Engage with every reply." },
     ],
   },

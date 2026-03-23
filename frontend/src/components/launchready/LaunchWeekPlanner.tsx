@@ -126,7 +126,9 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
             "Generate launch copy for all platforms with AI",
             "Review and edit all generated content",
             "Prepare visual assets (screenshots, GIF, demo video)",
-            "Draft your PH Maker\u2019s Comment (personal story version)",
+            ...(has("ph")
+              ? ["Draft your PH Maker\u2019s Comment (personal story version)"]
+              : []),
           ],
           cta: { text: "Generate with ShipProof \u2192", href: "/" },
         },
@@ -148,7 +150,9 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
           "Test your website: landing page loads fast, signup works, payment works",
           "Test Widget embed and Wall page",
           "Notify friends and early supporters about launch date",
-          "Early bedtime if PH launch is tomorrow (midnight launch!)",
+          ...(has("ph")
+            ? ["Early bedtime if PH launch is tomorrow (midnight launch!)"]
+            : []),
         ],
       },
     ],
@@ -163,10 +167,14 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
         time: "9:00 AM PT",
         title: "TWITTER",
         items: [
-          "Post a pre-launch thread: your story, what the product does, \u201cLaunching on Product Hunt tomorrow\u201d",
+          has("ph")
+            ? "Post a pre-launch thread: your story, what the product does, \u201cLaunching on Product Hunt tomorrow\u201d"
+            : "Post a pre-launch thread: your story, what the product does, \u201cLaunching tomorrow\u201d",
           "No product link in main thread (save for replies)",
           "Pin thread to profile",
-          "DM 10\u201320 builder friends: \u201cHey, launching on PH tomorrow, would love your support\u201d",
+          has("ph")
+            ? "DM 10\u201320 builder friends: \u201cHey, launching on PH tomorrow, would love your support\u201d"
+            : "DM 10\u201320 builder friends: \u201cHey, launching tomorrow, would love your support\u201d",
         ],
       });
     }
@@ -209,8 +217,12 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
         time: "7:00 AM PT",
         title: "TWITTER",
         items: [
-          'Post: "We\u2019re live on Product Hunt! \ud83d\ude80 {link}"',
-          'Share milestone updates throughout the day: "Top 10!" "XX upvotes!" "Amazing feedback"',
+          has("ph")
+            ? 'Post: "We\u2019re live on Product Hunt! \ud83d\ude80 {link}"'
+            : 'Post: "We just launched! \ud83d\ude80 {link}"',
+          ...(has("ph")
+            ? ['Share milestone updates throughout the day: "Top 10!" "XX upvotes!" "Amazing feedback"']
+            : ['Share milestone updates throughout the day']),
         ],
       });
     }
@@ -218,16 +230,21 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
       platform: "all",
       title: "ALL DAY",
       items: [
-        "Check PH every 15\u201330 min, reply to all new comments",
+        ...(has("ph")
+          ? ["Check PH every 15\u201330 min, reply to all new comments"]
+          : []),
         "Share in Slack/Discord communities (one message, don\u2019t spam)",
         "Track: upvotes, comments, website visits, signups",
+        "Reply to all comments across your launch platforms",
       ],
     });
     sections.push({
       platform: "evening",
       title: "EVENING",
       items: [
-        'Thank-you tweet: "Day 1 done. XX upvotes, XX comments."',
+        ...(has("twitter")
+          ? ['Post a thank-you tweet: "Day 1 done. XX upvotes, XX comments."']
+          : ["Post a thank-you update on your launch platforms"]),
         "Record all metrics",
       ],
     });
@@ -261,18 +278,24 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
         time: "10:30 AM PT",
         title: "INDIEHACKERS",
         items: [
-          "Build-in-public post: story + PH data + ask for feedback",
+          has("ph")
+            ? "Build-in-public post: story + PH launch data + ask for feedback"
+            : "Build-in-public post: story + launch results + ask for feedback",
         ],
       });
     }
-    sections.push({
-      platform: "all",
-      title: "ALL DAY",
-      items: [
-        "Reply to every Reddit and IH comment",
-        "Continue replying to PH comments (they keep coming)",
-      ],
-    });
+    {
+      const allDayItems: string[] = [];
+      if (has("reddit")) allDayItems.push("Reply to every Reddit comment");
+      if (has("ih")) allDayItems.push("Reply to every IndieHackers comment");
+      if (has("ph")) allDayItems.push("Continue replying to PH comments (they keep coming)");
+      if (allDayItems.length === 0) allDayItems.push("Reply to all comments across your launch platforms");
+      sections.push({
+        platform: "all",
+        title: "ALL DAY",
+        items: allDayItems,
+      });
+    }
     entries.push({
       dayOffset: 1,
       label: "Post-launch momentum",
@@ -297,14 +320,18 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
         ],
       });
     }
-    sections.push({
-      platform: "all",
-      title: "ALL DAY",
-      items: [
-        "Reply to HN comments (expect deep technical questions)",
-        "Continue monitoring Reddit and IH threads",
-      ],
-    });
+    {
+      const allDayItems: string[] = [];
+      if (has("hn")) allDayItems.push("Reply to HN comments (expect deep technical questions)");
+      if (has("reddit")) allDayItems.push("Continue monitoring Reddit threads");
+      if (has("ih")) allDayItems.push("Continue monitoring IndieHackers threads");
+      if (allDayItems.length === 0) allDayItems.push("Continue engaging across your launch platforms");
+      sections.push({
+        platform: "all",
+        title: "ALL DAY",
+        items: allDayItems,
+      });
+    }
     entries.push({
       dayOffset: 2,
       label: "Technical communities",
@@ -314,6 +341,18 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
   }
 
   // Day +3 to +4: Collect & Display
+  {
+    const selectedNames = [
+      has("ph") ? "Product Hunt" : "",
+      has("twitter") ? "Twitter" : "",
+      has("reddit") ? "Reddit" : "",
+      has("hn") ? "Hacker News" : "",
+      has("ih") ? "IndieHackers" : "",
+    ].filter(Boolean);
+    const platformList = selectedNames.length > 0
+      ? `Go to ${selectedNames.join(", ")}`
+      : "Go to your launch platforms";
+
   entries.push({
     dayOffset: 3,
     label: "Collect & reflect",
@@ -323,25 +362,37 @@ function buildTimeline(selectedPlatforms: Set<Platform>): TimelineEntryDef[] {
         platform: "all",
         title: "COLLECT & DISPLAY",
         items: [
-          "Go to PH, Twitter, Reddit, HN, IH",
+          platformList,
           "Collect positive comments as social proof",
-          "Create a Wall of Proof page",
-          "Embed Widget on your landing page",
         ],
         cta: { text: "Collect with ShipProof \u2192", href: "/" },
       },
       {
         platform: "all",
+        title: "DISPLAY",
+        items: [
+          "Create a Wall of Proof page",
+          "Embed Widget on your landing page",
+        ],
+        cta: { text: "Display with ShipProof \u2192", href: "/" },
+      },
+      {
+        platform: "all",
         title: "RETROSPECTIVE",
         items: [
-          "Write a launch recap thread on Twitter (share real numbers)",
-          "Post a retrospective on IndieHackers",
+          ...(has("twitter")
+            ? ["Write a launch recap thread on Twitter (share real numbers)"]
+            : []),
+          ...(has("ih")
+            ? ["Post a retrospective on IndieHackers"]
+            : []),
           "Send personal thank-you DMs to people who gave detailed feedback",
           "Analyze: what worked, what didn\u2019t, what to do differently next time",
         ],
       },
     ],
   });
+  }
 
   return entries;
 }
