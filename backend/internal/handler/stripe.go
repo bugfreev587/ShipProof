@@ -92,6 +92,19 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 	cfg := h.configForUser(user.Email)
 	sc := newStripeClient(cfg)
 
+	// If user already has a subscription, cancel it immediately to prevent stacking
+	hadPriorSubscription := false
+	if user.StripeSubscriptionID.Valid && user.StripeSubscriptionID.String != "" {
+		hadPriorSubscription = true
+		_, err := sc.V1Subscriptions.Cancel(r.Context(), user.StripeSubscriptionID.String, &stripe.SubscriptionCancelParams{})
+		if err != nil {
+			slog.Warn("failed to cancel existing subscription during upgrade", "error", err, "subscription_id", user.StripeSubscriptionID.String)
+			// Continue anyway — the old sub may already be cancelled
+		} else {
+			slog.Info("cancelled existing subscription for plan change", "subscription_id", user.StripeSubscriptionID.String, "new_plan", req.Plan)
+		}
+	}
+
 	params := &stripe.CheckoutSessionCreateParams{
 		Mode: stripe.String(string(stripe.CheckoutSessionModeSubscription)),
 		LineItems: []*stripe.CheckoutSessionCreateLineItemParams{
@@ -112,8 +125,11 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 		params.CustomerEmail = stripe.String(user.Email)
 	}
 
-	params.SubscriptionData = &stripe.CheckoutSessionCreateSubscriptionDataParams{
-		TrialPeriodDays: stripe.Int64(7),
+	// Only offer free trial if user has never had a subscription (prevent trial abuse)
+	if !hadPriorSubscription {
+		params.SubscriptionData = &stripe.CheckoutSessionCreateSubscriptionDataParams{
+			TrialPeriodDays: stripe.Int64(7),
+		}
 	}
 
 	sess, err := sc.V1CheckoutSessions.Create(r.Context(), params)
@@ -333,6 +349,19 @@ func (h *StripeHandler) handleSubscriptionUpdated(event stripe.Event, cfg Stripe
 	var sub stripe.Subscription
 	if err := json.Unmarshal(event.Data.Raw, &sub); err != nil {
 		slog.Error("failed to parse subscription", "error", err)
+		return
+	}
+
+	// If user cancels during a free trial, cancel immediately instead of waiting
+	// until trial end — they haven't paid anything, no period to honor.
+	if sub.Status == stripe.SubscriptionStatusTrialing && sub.CancelAtPeriodEnd {
+		slog.Info("trial subscription cancelled by user, cancelling immediately", "subscription_id", sub.ID)
+		sc := newStripeClient(cfg)
+		_, err := sc.V1Subscriptions.Cancel(r_context(), sub.ID, &stripe.SubscriptionCancelParams{})
+		if err != nil {
+			slog.Error("failed to immediately cancel trial subscription", "error", err, "subscription_id", sub.ID)
+		}
+		// The cancel will trigger a subscription.deleted event which downgrades the user
 		return
 	}
 
