@@ -92,15 +92,10 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 	cfg := h.configForUser(user.Email)
 	sc := newStripeClient(cfg)
 
-	// If user already has a subscription, cancel it immediately to prevent stacking
-	if user.StripeSubscriptionID.Valid && user.StripeSubscriptionID.String != "" {
-		_, err := sc.V1Subscriptions.Cancel(r.Context(), user.StripeSubscriptionID.String, &stripe.SubscriptionCancelParams{})
-		if err != nil {
-			slog.Warn("failed to cancel existing subscription during upgrade", "error", err, "subscription_id", user.StripeSubscriptionID.String)
-			// Continue anyway — the old sub may already be cancelled
-		} else {
-			slog.Info("cancelled existing subscription for plan change", "subscription_id", user.StripeSubscriptionID.String, "new_plan", req.Plan)
-		}
+	// Store the old subscription ID in metadata so we can cancel it after checkout completes
+	oldSubscriptionID := ""
+	if user.StripeSubscriptionID.Valid {
+		oldSubscriptionID = user.StripeSubscriptionID.String
 	}
 
 	params := &stripe.CheckoutSessionCreateParams{
@@ -116,6 +111,9 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 	}
 	params.AddMetadata("user_id", user.ID.String())
 	params.AddMetadata("plan", req.Plan)
+	if oldSubscriptionID != "" {
+		params.AddMetadata("old_subscription_id", oldSubscriptionID)
+	}
 
 	if user.StripeCustomerID.Valid && user.StripeCustomerID.String != "" {
 		params.Customer = stripe.String(user.StripeCustomerID.String)
@@ -288,7 +286,7 @@ func (h *StripeHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	switch event.Type {
 	case "checkout.session.completed":
-		h.handleCheckoutCompleted(event)
+		h.handleCheckoutCompleted(event, usedConfig)
 	case "customer.subscription.updated":
 		h.handleSubscriptionUpdated(event, usedConfig)
 	case "customer.subscription.deleted":
@@ -301,7 +299,7 @@ func (h *StripeHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"received":true}`))
 }
 
-func (h *StripeHandler) handleCheckoutCompleted(event stripe.Event) {
+func (h *StripeHandler) handleCheckoutCompleted(event stripe.Event, cfg StripeConfig) {
 	var sess stripe.CheckoutSession
 	if err := json.Unmarshal(event.Data.Raw, &sess); err != nil {
 		slog.Error("failed to parse checkout session", "error", err)
@@ -339,6 +337,17 @@ func (h *StripeHandler) handleCheckoutCompleted(event stripe.Event) {
 	if err != nil {
 		slog.Error("failed to update user plan", "error", err, "user_id", userIDStr)
 		return
+	}
+
+	// Cancel the old subscription to prevent stacking (only after new one is confirmed)
+	if oldSubID := sess.Metadata["old_subscription_id"]; oldSubID != "" {
+		sc := newStripeClient(cfg)
+		_, err := sc.V1Subscriptions.Cancel(r_context(), oldSubID, &stripe.SubscriptionCancelParams{})
+		if err != nil {
+			slog.Warn("failed to cancel old subscription after upgrade", "error", err, "old_subscription_id", oldSubID)
+		} else {
+			slog.Info("cancelled old subscription after upgrade", "old_subscription_id", oldSubID, "new_plan", plan)
+		}
 	}
 
 	// Mark trial as used for this plan (so they can't get another free trial for it)
