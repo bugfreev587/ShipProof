@@ -60,6 +60,7 @@ type Querier interface {
 	ListTagsByProofID(ctx context.Context, proofID uuid.UUID) ([]ProofTag, error)
 	ListVersionsByProductID(ctx context.Context, productID uuid.UUID) ([]ListVersionsByProductIDRow, error)
 	ListWallsByProductID(ctx context.Context, productID uuid.UUID) ([]Wall, error)
+	MarkTrialUsed(ctx context.Context, arg MarkTrialUsedParams) error
 	RecordView(ctx context.Context, arg RecordViewParams) error
 	RemoveProofFromSpace(ctx context.Context, arg RemoveProofFromSpaceParams) error
 	RemoveProofFromWall(ctx context.Context, arg RemoveProofFromWallParams) error

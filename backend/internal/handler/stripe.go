@@ -93,9 +93,7 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 	sc := newStripeClient(cfg)
 
 	// If user already has a subscription, cancel it immediately to prevent stacking
-	hadPriorSubscription := false
 	if user.StripeSubscriptionID.Valid && user.StripeSubscriptionID.String != "" {
-		hadPriorSubscription = true
 		_, err := sc.V1Subscriptions.Cancel(r.Context(), user.StripeSubscriptionID.String, &stripe.SubscriptionCancelParams{})
 		if err != nil {
 			slog.Warn("failed to cancel existing subscription during upgrade", "error", err, "subscription_id", user.StripeSubscriptionID.String)
@@ -125,8 +123,9 @@ func (h *StripeHandler) CreateCheckout(w http.ResponseWriter, r *http.Request) {
 		params.CustomerEmail = stripe.String(user.Email)
 	}
 
-	// Only offer free trial if user has never had a subscription (prevent trial abuse)
-	if !hadPriorSubscription {
+	// Only offer free trial if user hasn't used trial for this specific plan
+	trialUsed := (req.Plan == "pro" && user.ProTrialUsed) || (req.Plan == "business" && user.BusinessTrialUsed)
+	if !trialUsed {
 		params.SubscriptionData = &stripe.CheckoutSessionCreateSubscriptionDataParams{
 			TrialPeriodDays: stripe.Int64(7),
 		}
@@ -340,6 +339,14 @@ func (h *StripeHandler) handleCheckoutCompleted(event stripe.Event) {
 	if err != nil {
 		slog.Error("failed to update user plan", "error", err, "user_id", userIDStr)
 		return
+	}
+
+	// Mark trial as used for this plan (so they can't get another free trial for it)
+	if err := h.queries.MarkTrialUsed(r_context(), db.MarkTrialUsedParams{
+		ID:      userID,
+		Column2: plan,
+	}); err != nil {
+		slog.Error("failed to mark trial used", "error", err, "user_id", userIDStr, "plan", plan)
 	}
 
 	slog.Info("user plan updated via checkout", "user_id", userIDStr, "plan", plan)

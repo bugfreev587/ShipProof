@@ -40,6 +40,8 @@ type userMeResponse struct {
 	Plan                 string       `json:"plan"`
 	StripeCustomerID     *string      `json:"stripe_customer_id"`
 	StripeSubscriptionID *string      `json:"stripe_subscription_id"`
+	ProTrialUsed         bool         `json:"pro_trial_used"`
+	BusinessTrialUsed    bool         `json:"business_trial_used"`
 	CreatedAt            string       `json:"created_at"`
 	UpdatedAt            string       `json:"updated_at"`
 	StripePrices         stripePrices `json:"stripe_prices"`
@@ -81,6 +83,8 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 		Plan:                 string(user.Plan),
 		StripeCustomerID:     customerID,
 		StripeSubscriptionID: subID,
+		ProTrialUsed:         user.ProTrialUsed,
+		BusinessTrialUsed:    user.BusinessTrialUsed,
 		CreatedAt:            user.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt:            user.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 		StripePrices: stripePrices{

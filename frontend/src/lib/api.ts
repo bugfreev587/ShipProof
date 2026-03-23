@@ -93,6 +93,8 @@ export interface User {
   plan: "free" | "pro" | "business";
   stripe_customer_id: PgText;
   stripe_subscription_id: PgText;
+  pro_trial_used: boolean;
+  business_trial_used: boolean;
   created_at: string;
   updated_at: string;
   stripe_prices?: {

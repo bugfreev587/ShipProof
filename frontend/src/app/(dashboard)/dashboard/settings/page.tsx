@@ -304,6 +304,8 @@ function SettingsContent() {
               onManageBilling={handleManageBilling}
               isTrialing={isTrialing}
               trialEnd={subStatus?.trial_end}
+              proTrialUsed={user?.pro_trial_used}
+              businessTrialUsed={user?.business_trial_used}
             />
           )}
         </div>
@@ -470,6 +472,8 @@ function BillingTab({
   onManageBilling,
   isTrialing,
   trialEnd,
+  proTrialUsed,
+  businessTrialUsed,
 }: {
   plan: string;
   limits: { products: string; proofs: string; generations: string; versions: string };
@@ -479,6 +483,8 @@ function BillingTab({
   onManageBilling: () => void;
   isTrialing?: boolean;
   trialEnd?: number | null;
+  proTrialUsed?: boolean;
+  businessTrialUsed?: boolean;
 }) {
   const { colors } = useTheme();
 
@@ -558,13 +564,17 @@ function BillingTab({
                     onClick={() => onUpgrade("pro")}
                     className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
                   >
-                    Start Free Trial — Pro ({yearly ? "$9" : "$12"}/mo)
+                    {proTrialUsed
+                      ? `Upgrade to Pro (${yearly ? "$9" : "$12"}/mo)`
+                      : `Start Free Trial — Pro (${yearly ? "$9" : "$12"}/mo)`}
                   </button>
                   <button
                     onClick={() => onUpgrade("business")}
                     className="rounded-lg bg-[#F59E0B] px-4 py-2 text-sm font-medium text-white hover:bg-[#FBBF24] transition-colors"
                   >
-                    Start Free Trial — Business ({yearly ? "$24" : "$29"}/mo)
+                    {businessTrialUsed
+                      ? `Upgrade to Business (${yearly ? "$24" : "$29"}/mo)`
+                      : `Start Free Trial — Business (${yearly ? "$24" : "$29"}/mo)`}
                   </button>
                 </>
               )}
@@ -573,7 +583,9 @@ function BillingTab({
                   onClick={() => onUpgrade("business")}
                   className="rounded-lg bg-[#F59E0B] px-4 py-2 text-sm font-medium text-white hover:bg-[#FBBF24] transition-colors"
                 >
-                  Start Free Trial — Business ({yearly ? "$24" : "$29"}/mo)
+                  {businessTrialUsed
+                    ? `Upgrade to Business (${yearly ? "$24" : "$29"}/mo)`
+                    : `Start Free Trial — Business (${yearly ? "$24" : "$29"}/mo)`}
                 </button>
               )}
             </>

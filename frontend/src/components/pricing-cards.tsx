@@ -84,6 +84,7 @@ export default function PricingCards() {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [priceIds, setPriceIds] = useState(fallbackPriceIds);
+  const [trialsUsed, setTrialsUsed] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -98,6 +99,12 @@ export default function PricingCards() {
           setPriceIds({
             pro: { monthly: sp.pro_monthly, yearly: sp.pro_yearly },
             business: { monthly: sp.business_monthly, yearly: sp.business_yearly },
+          });
+        }
+        if (!cancelled) {
+          setTrialsUsed({
+            pro: user.pro_trial_used,
+            business: user.business_trial_used,
           });
         }
       } catch {
@@ -263,11 +270,17 @@ export default function PricingCards() {
                         : "bg-[#F59E0B] hover:bg-[#FBBF24]"
                     }`}
                   >
-                    {loading === plan.plan ? "Redirecting..." : plan.ctaText}
+                    {loading === plan.plan
+                      ? "Redirecting..."
+                      : trialsUsed[plan.plan]
+                        ? `Upgrade to ${plan.name}`
+                        : plan.ctaText}
                   </button>
-                  <p className="mt-2 text-center text-xs text-[#22C55E]">
-                    7-day free trial
-                  </p>
+                  {!trialsUsed[plan.plan] && (
+                    <p className="mt-2 text-center text-xs text-[#22C55E]">
+                      7-day free trial
+                    </p>
+                  )}
                 </>
               )}
             </div>

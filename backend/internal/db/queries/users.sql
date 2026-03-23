@@ -31,5 +31,12 @@ RETURNING *;
 -- name: GetUserByStripeCustomerID :one
 SELECT * FROM users WHERE stripe_customer_id = $1;
 
+-- name: MarkTrialUsed :exec
+UPDATE users
+SET pro_trial_used = CASE WHEN $2 = 'pro' THEN true ELSE pro_trial_used END,
+    business_trial_used = CASE WHEN $2 = 'business' THEN true ELSE business_trial_used END,
+    updated_at = now()
+WHERE id = $1;
+
 -- name: CountProductsByUserID :one
 SELECT COUNT(*) FROM products WHERE user_id = $1;

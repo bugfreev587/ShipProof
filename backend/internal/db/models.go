@@ -424,6 +424,8 @@ type User struct {
 	StripeSubscriptionID pgtype.Text `json:"stripe_subscription_id"`
 	CreatedAt            time.Time   `json:"created_at"`
 	UpdatedAt            time.Time   `json:"updated_at"`
+	ProTrialUsed         bool        `json:"pro_trial_used"`
+	BusinessTrialUsed    bool        `json:"business_trial_used"`
 }
 
 type ViewEvent struct {

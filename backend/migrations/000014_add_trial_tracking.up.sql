@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN pro_trial_used BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE users ADD COLUMN business_trial_used BOOLEAN NOT NULL DEFAULT false;
