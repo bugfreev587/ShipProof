@@ -53,10 +53,7 @@ func (h *PublicHandler) GetProductProofs(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// Limit proofs to max_items
-	if int(config.MaxItems) < len(proofs) {
-		proofs = proofs[:config.MaxItems]
-	}
+	// max_items is passed to frontend for client-side slicing in embeds.
 
 	type response struct {
 		Product db.Product      `json:"product"`
@@ -98,10 +95,8 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Limit proofs to max_items
-	if int(space.MaxItems) < len(proofs) {
-		proofs = proofs[:space.MaxItems]
-	}
+	// Note: max_items is passed to the frontend for client-side slicing in embeds.
+	// We return all proofs here so the dashboard and full page views work correctly.
 
 	type spaceConfig struct {
 		Theme            string `json:"theme"`
