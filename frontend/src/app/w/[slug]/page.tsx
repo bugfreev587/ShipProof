@@ -135,13 +135,13 @@ export default async function WallPage({
                       alt={proof.author_name}
                       className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                     />
-                  ) : wall.show_platform_icon ? (
+                  ) : (
                     <span
-                      className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
                     >
-                      {PLATFORM_LABELS[proof.source_platform] || "O"}
+                      {proof.author_name.charAt(0).toUpperCase()}
                     </span>
-                  ) : null}
+                  )}
                   <div>
                     <div className="text-sm font-medium" style={{ color: t.textPrimary }}>
                       {proof.author_name}
