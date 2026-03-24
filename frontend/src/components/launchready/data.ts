@@ -14,409 +14,480 @@ export const platforms: PlatformInfo[] = [
   { id: "ih", label: "IndieHackers", icon: "IH" },
 ];
 
-export type Phase = "before" | "day" | "after";
+export type LaunchDay = "mon" | "tue" | "wed" | "thu" | "fri";
 
-export interface ChecklistItem {
+export type PhaseId = "prep" | "prelaunch" | "launch" | "postlaunch";
+export type Variant = "prep" | "warning" | "launch" | "post";
+
+export interface PlannerItem {
   id: string;
   text: string;
   hint?: string;
-  platforms?: Platform[]; // undefined = universal
-  cta?: { text: string; href: string }; // ShipProof導流
+  time?: string;
+  platforms?: Platform[];
+  cta?: { text: string; href: string };
+  subgroup?: string;
 }
 
-export const checklistData: Record<Phase, ChecklistItem[]> = {
-  before: [
-    // ── Universal (ordered by impact) ──
-    {
-      id: "before-landing",
-      text: "Finalize your landing page with clear value proposition",
-      hint: "Make sure it loads fast and looks good on mobile",
-    },
-    {
-      id: "before-payment",
-      text: "Test your payment flow end-to-end (signup, checkout, confirmation)",
-      hint: "Nothing kills launch momentum like a broken checkout",
-    },
-    {
-      id: "before-visuals",
-      text: "Prepare visual assets (screenshots, GIF walkthrough, or demo video)",
-      hint: "Up to 10 images for PH gallery, Twitter-friendly aspect ratio for X",
-    },
-    {
-      id: "before-copy",
-      text: "Write your launch copy for each platform",
-      hint: "Writing 5 different posts is painful.",
-      cta: { text: "Generate all with ShipProof \u2192", href: "/" },
-    },
-    {
-      id: "before-notify",
-      text: "Notify your early users, friends, and network about the upcoming launch",
-    },
-    {
-      id: "before-faq",
-      text: "Prepare answers to common objections and questions",
-      hint: "You\u2019ll get the same 5 questions across all platforms \u2014 have answers ready",
-    },
-    {
-      id: "before-analytics",
-      text: "Set up analytics tracking (UTM params for each platform)",
-    },
-    {
-      id: "before-discount",
-      text: "Prepare a launch day discount or exclusive offer (optional but effective)",
-    },
-    {
-      id: "before-calendar",
-      text: "Clear your calendar for launch day \u2014 you'll need the full day",
-    },
-    // ── PH (prerequisite → long-lead → content) ──
-    {
-      id: "before-ph-profile",
-      text: "Complete your Maker profile (photo, bio, social links, maker byline)",
-      platforms: ["ph"],
-    },
-    {
-      id: "before-ph-engage",
-      text: "Engage on Product Hunt for 1\u20132 weeks before launch (comment, upvote, discuss)",
-      hint: "New accounts with no activity get less algorithmic weight",
-      platforms: ["ph"],
-    },
-    {
-      id: "before-ph-teaser",
-      text: 'Create a "Coming Soon" teaser page on Product Hunt',
-      hint: "People can click \u201cNotify me\u201d \u2014 they'll get pinged on launch day",
-      platforms: ["ph"],
-    },
-    {
-      id: "before-ph-tagline",
-      text: "Write your tagline (<60 chars) and description (2\u20133 sentences)",
-      platforms: ["ph"],
-    },
-    {
-      id: "before-ph-gallery",
-      text: "Prepare up to 10 gallery images (1270\u00d7760px) or a GIF/video",
-      platforms: ["ph"],
-    },
-    {
-      id: "before-ph-comment",
-      text: "Prepare your Maker's Comment (first comment on your product)",
-      hint: "Personal story + why you built this + ask for feedback. Be genuine.",
-      platforms: ["ph"],
-    },
-    // ── Reddit (long-lead → content) ──
-    {
-      id: "before-reddit-participate",
-      text: "Participate in target subreddits for 1\u20132 weeks before posting",
-      hint: "Reddit communities can smell a drive-by post from a mile away",
-      platforms: ["reddit"],
-    },
-    {
-      id: "before-reddit-subs",
-      text: "Identify target subreddits and read their posting rules",
-      hint: "r/SaaS, r/startups, r/sideproject, r/webdev \u2014 each has different rules",
-      platforms: ["reddit"],
-    },
-    {
-      id: "before-reddit-posts",
-      text: "Prepare separate posts for each subreddit, matching their tone",
-      hint: "r/SaaS: product intro OK. r/startups: share your journey. r/sideproject: show + ask feedback",
-      platforms: ["reddit"],
-    },
-    // ── HN (long-lead → content) ──
-    {
-      id: "before-hn-karma",
-      text: "Build up some karma by commenting on relevant HN posts",
-      platforms: ["hn"],
-    },
-    {
-      id: "before-hn-title",
-      text: 'Prepare your Show HN title: "Show HN: [Name] \u2013 [one-line description]"',
-      hint: "Keep it technical and understated. No marketing speak.",
-      platforms: ["hn"],
-    },
-    {
-      id: "before-hn-comment",
-      text: "Prepare a first comment explaining your tech decisions and motivation",
-      platforms: ["hn"],
-    },
-    // ── Twitter (content → setup → optional) ──
-    {
-      id: "before-twitter-thread",
-      text: "Draft a launch thread (5\u20138 tweets)",
-      hint: "Hook first, features/story in the middle, CTA+link at the end only",
-      platforms: ["twitter"],
-    },
-    {
-      id: "before-twitter-accounts",
-      text: "Identify 10\u201320 accounts to tag or DM when you launch",
-      platforms: ["twitter"],
-    },
-    {
-      id: "before-twitter-pinned",
-      text: "Prepare a pinned tweet for launch day",
-      platforms: ["twitter"],
-    },
-    {
-      id: "before-twitter-premium",
-      text: "If you have X Premium+, your replies get priority \u2014 worth considering for launch week",
-      platforms: ["twitter"],
-    },
-    // ── IH (long-lead → content) ──
-    {
-      id: "before-ih-active",
-      text: "Be active in IH discussions in the weeks before launch",
-      platforms: ["ih"],
-    },
-    {
-      id: "before-ih-post",
-      text: "Draft a build-in-public style post (journey + what you built + ask for feedback)",
-      platforms: ["ih"],
-    },
-  ],
-
-  day: [
-    // ── Universal (top) ──
-    {
-      id: "day-breathe",
-      text: "Take a deep breath. You've prepared well. Let's go. \ud83d\ude80",
-      hint: "Tip: consider staggering platforms over several days \u2014 see the Launch Week planner for a day-by-day schedule",
-    },
-    // ── PH (time-critical first) ──
-    {
-      id: "day-ph-publish",
-      text: "Publish at 12:01 AM Pacific Time (start of a new PH day)",
-      platforms: ["ph"],
-    },
-    {
-      id: "day-ph-comment",
-      text: "Post your Maker's Comment immediately after publishing",
-      platforms: ["ph"],
-    },
-    {
-      id: "day-ph-respond",
-      text: "Respond to EVERY comment in the first 4 hours \u2014 this is critical",
-      hint: "Speed and warmth matter more than perfect answers",
-      platforms: ["ph"],
-    },
-    {
-      id: "day-ph-share",
-      text: "Share your PH link across all your channels",
-      platforms: ["ph"],
-    },
-    // ── Twitter ──
-    {
-      id: "day-twitter-post",
-      text: "Post your thread at 9\u201311 AM in your audience's timezone",
-      platforms: ["twitter"],
-    },
-    {
-      id: "day-twitter-pin",
-      text: "Pin the thread to your profile",
-      platforms: ["twitter"],
-    },
-    {
-      id: "day-twitter-reply",
-      text: "Reply to your own thread with the product link (keeps it off the first tweet)",
-      platforms: ["twitter"],
-    },
-    {
-      id: "day-twitter-engage",
-      text: "Engage with every reply and quote tweet",
-      platforms: ["twitter"],
-    },
-    // ── Reddit ──
-    {
-      id: "day-reddit-post",
-      text: "Post to target subreddits during their peak hours",
-      hint: "r/SaaS and r/startups peak: weekday mornings US time",
-      platforms: ["reddit"],
-    },
-    {
-      id: "day-reddit-customize",
-      text: "Don't cross-post the exact same text \u2014 customize per sub",
-      platforms: ["reddit"],
-    },
-    {
-      id: "day-reddit-respond",
-      text: "Respond to every comment. Be helpful, not salesy.",
-      platforms: ["reddit"],
-    },
-    // ── HN ──
-    {
-      id: "day-hn-submit",
-      text: "Submit during US business hours (10 AM \u2013 12 PM ET works well)",
-      platforms: ["hn"],
-    },
-    {
-      id: "day-hn-comment",
-      text: "Post your explanatory first comment within minutes",
-      platforms: ["hn"],
-    },
-    {
-      id: "day-hn-noupvotes",
-      text: "Don't ask for upvotes \u2014 HN will penalize you",
-      platforms: ["hn"],
-    },
-    // ── IH ──
-    {
-      id: "day-ih-post",
-      text: "Post during weekday hours when the community is most active",
-      platforms: ["ih"],
-    },
-    {
-      id: "day-ih-genuine",
-      text: "Be genuine \u2014 IH readers can tell when you're marketing vs. sharing",
-      platforms: ["ih"],
-    },
-    // ── Universal (bottom — high reach actions first) ──
-    {
-      id: "day-email",
-      text: "Send an email blast to your waitlist / newsletter",
-    },
-    {
-      id: "day-monitor",
-      text: "Monitor all platforms throughout the day \u2014 set up notifications",
-    },
-    {
-      id: "day-communities",
-      text: "Post in relevant Slack / Discord communities (don't spam \u2014 add value)",
-    },
-  ],
-
-  after: [
-    // ── Time-sensitive actions first ──
-    {
-      id: "after-respond",
-      text: "Respond to any remaining comments across all platforms",
-    },
-    {
-      id: "after-followup",
-      text: "Follow up with warm leads (people who asked questions or showed interest)",
-    },
-    {
-      id: "after-thankyou",
-      text: "Send personal thank-you messages to people who commented or shared",
-    },
-    // ── Platform-specific follow-ups ──
-    {
-      id: "after-reddit-followup",
-      text: "Check if any Reddit posts were removed and message mods if needed",
-      hint: "Some subs have delayed moderation \u2014 check back the next day",
-      platforms: ["reddit"],
-    },
-    {
-      id: "after-hn-followup",
-      text: "Monitor HN for second-wave traffic (posts can resurface days later)",
-      platforms: ["hn"],
-    },
-    // ── Capture & display (ShipProof CTA) ──
-    {
-      id: "after-collect",
-      text: "Collect positive feedback as social proof",
-      hint: "Don't let great comments disappear.",
-      cta: { text: "Collect proof with ShipProof \u2192", href: "/" },
-    },
-    {
-      id: "after-display",
-      text: "Display social proof on your landing page",
-      hint: "Embed a proof widget or create a Wall of Proof.",
-      cta: { text: "Try ShipProof \u2192", href: "/" },
-    },
-    // ── Reflect & improve ──
-    {
-      id: "after-retro",
-      text: "Write a launch retrospective post",
-      hint: "Share your numbers honestly \u2014 the community respects transparency",
-      platforms: ["ih", "twitter"],
-    },
-    {
-      id: "after-update",
-      text: "Update your product based on feedback received",
-    },
-    {
-      id: "after-analyze",
-      text: "Analyze traffic sources and conversion data",
-    },
-    {
-      id: "after-iterate",
-      text: "Plan your next iteration based on what you learned",
-    },
-    {
-      id: "after-celebrate",
-      text: "Celebrate. You shipped. That's more than most people do. \ud83c\udf89",
-    },
-  ],
-};
-
-export interface CheatSheetRow {
-  key: string;
-  value: string;
-}
-
-export interface CheatSheet {
-  platform: Platform;
+export interface PlannerPhase {
+  id: PhaseId;
   label: string;
-  rows: CheatSheetRow[];
+  subtitle: string;
+  variant: Variant;
+  items: PlannerItem[];
 }
 
-export const cheatSheets: CheatSheet[] = [
+// ---------------------------------------------------------------------------
+// Planner content — all items, filtered by platform at render time
+// ---------------------------------------------------------------------------
+
+export const plannerPhases: PlannerPhase[] = [
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PREP WEEK (Day -7 to Day -2)
+  // ═══════════════════════════════════════════════════════════════════════════
   {
-    platform: "ph",
-    label: "Product Hunt",
-    rows: [
-      { key: "Best time to post", value: "12:01 AM PT (start of new PH day)" },
-      { key: "Best days", value: "Tuesday \u2013 Thursday" },
-      { key: "Tagline limit", value: "60 characters" },
-      { key: "Gallery", value: "Up to 10 images (1270\u00d7760px) or video" },
-      { key: "Must have", value: "Tagline + Gallery + Description + Maker Comment" },
-      { key: "Avoid", value: "Vote manipulation, new-account upvote campaigns" },
-      { key: "Pro tip", value: "Maker accounts with prior activity rank better" },
+    id: "prep",
+    label: "Prep week",
+    subtitle: "7 days before launch",
+    variant: "prep",
+    items: [
+      // ── Product & Assets ──
+      {
+        id: "prep-landing",
+        text: "Finalize your landing page with clear value proposition",
+        hint: "Make sure it loads fast and looks good on mobile",
+        subgroup: "Product & Assets",
+      },
+      {
+        id: "prep-payment",
+        text: "Test your payment flow end-to-end (signup, checkout, confirmation)",
+        hint: "Nothing kills launch momentum like a broken checkout",
+        subgroup: "Product & Assets",
+      },
+      {
+        id: "prep-visuals",
+        text: "Prepare visual assets: screenshots, GIF walkthrough, or demo video",
+        hint: "PH needs up to 10 images (1270\u00d7760px). Twitter needs landscape aspect ratio.",
+        subgroup: "Product & Assets",
+      },
+      {
+        id: "prep-analytics",
+        text: "Set up analytics tracking with UTM params for each platform",
+        subgroup: "Product & Assets",
+      },
+      {
+        id: "prep-discount",
+        text: "Prepare a launch day discount or exclusive offer (optional but effective)",
+        subgroup: "Product & Assets",
+      },
+      {
+        id: "prep-copy",
+        text: "Write your launch copy for each platform",
+        hint: "Each platform has different rules. Don\u2019t copy-paste the same post everywhere.",
+        cta: { text: "Generate with ShipProof \u2192", href: "/" },
+        subgroup: "Product & Assets",
+      },
+      {
+        id: "prep-faq",
+        text: "Prepare answers to common objections and questions",
+        hint: "You\u2019ll get the same 5 questions across all platforms \u2014 have answers ready",
+        subgroup: "Product & Assets",
+      },
+
+      // ── PH Prep ──
+      {
+        id: "prep-ph-profile",
+        text: "Complete your Maker profile \u2014 photo, bio, social links, maker byline",
+        platforms: ["ph"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-ph-teaser",
+        text: "Create a Coming Soon teaser page on Product Hunt",
+        hint: "People can click \u201cNotify me\u201d \u2014 they\u2019ll get pinged on launch day",
+        platforms: ["ph"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-ph-engage",
+        text: "Start engaging on PH \u2014 comment on 3\u20135 products daily, upvote genuinely",
+        hint: "PH algorithm weighs account age and activity. New accounts with no history get less visibility.",
+        platforms: ["ph"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-ph-comment",
+        text: "Prepare your Maker\u2019s Comment draft",
+        hint: "Personal story + why you built this + ask for specific feedback. Not a feature list.",
+        platforms: ["ph"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-ph-gallery",
+        text: "Prepare up to 10 gallery images (1270\u00d7760px) or a GIF/video",
+        platforms: ["ph"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-ph-tagline",
+        text: "Write your tagline (under 60 chars) and description",
+        platforms: ["ph"],
+        subgroup: "Platform Prep",
+      },
+
+      // ── Reddit Prep ──
+      {
+        id: "prep-reddit-subs",
+        text: "Identify target subreddits and read their posting rules carefully",
+        hint: "r/SaaS: product intros OK if valuable. r/startups: journey focus. r/sideproject: show + ask feedback.",
+        platforms: ["reddit"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-reddit-participate",
+        text: "Start participating in target subreddits \u2014 comment helpfully on 2\u20133 posts daily",
+        hint: "Reddit communities can smell a drive-by promotion. Build history first.",
+        platforms: ["reddit"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-reddit-posts",
+        text: "Prepare separate posts for each subreddit, matching their tone",
+        hint: "Story-first, product-second. Never put your product URL in the post body.",
+        platforms: ["reddit"],
+        subgroup: "Platform Prep",
+      },
+
+      // ── HN Prep ──
+      {
+        id: "prep-hn-karma",
+        text: "Build karma by commenting on relevant HN posts",
+        platforms: ["hn"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-hn-title",
+        text: "Prepare Show HN title: \u201cShow HN: [Name] \u2013 [one-line description]\u201d",
+        hint: "Technical, understated. No superlatives, no emoji, no marketing language.",
+        platforms: ["hn"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-hn-comment",
+        text: "Prepare first comment: tech decisions, motivation, what you want feedback on",
+        platforms: ["hn"],
+        subgroup: "Platform Prep",
+      },
+
+      // ── Twitter Prep ──
+      {
+        id: "prep-twitter-thread",
+        text: "Draft a launch thread (5\u20138 tweets)",
+        hint: "Hook first, story in the middle, CTA + link at the end only. No URL in first tweet.",
+        platforms: ["twitter"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-twitter-premium",
+        text: "Consider X Premium+ \u2014 replies get algorithm priority, significantly higher reach",
+        platforms: ["twitter"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-twitter-bip",
+        text: "Start posting build-in-public content to build audience before launch",
+        platforms: ["twitter"],
+        subgroup: "Platform Prep",
+      },
+
+      // ── IH Prep ──
+      {
+        id: "prep-ih-draft",
+        text: "Draft a build-in-public style post (journey + honest numbers + ask feedback)",
+        platforms: ["ih"],
+        subgroup: "Platform Prep",
+      },
+      {
+        id: "prep-ih-engage",
+        text: "Start commenting on other IH posts \u2014 3\u20135 thoughtful comments daily",
+        platforms: ["ih"],
+        subgroup: "Platform Prep",
+      },
+
+      // ── Notify Network ──
+      {
+        id: "prep-notify-list",
+        text: "Identify 10\u201320 people to notify on launch day (friends, supporters, fellow builders)",
+        subgroup: "Notify Your Network",
+      },
+      {
+        id: "prep-notify-dm",
+        text: "DM them personally \u2014 not a template blast. Mention a previous interaction.",
+        subgroup: "Notify Your Network",
+      },
+      {
+        id: "prep-notify-email",
+        text: "Prepare an email for your waitlist/newsletter (if you have one)",
+        subgroup: "Notify Your Network",
+      },
+      {
+        id: "prep-calendar",
+        text: "Clear your calendar for launch day \u2014 you\u2019ll need the whole day",
+        subgroup: "Notify Your Network",
+      },
     ],
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRE-LAUNCH (Day -1)
+  // ═══════════════════════════════════════════════════════════════════════════
   {
-    platform: "reddit",
-    label: "Reddit",
-    rows: [
-      { key: "r/SaaS", value: "Direct product intros OK. Focus on the problem you solve." },
-      { key: "r/startups", value: "Share your journey and lessons, not just the product." },
-      { key: "r/sideproject", value: "Show what you built + ask for honest feedback." },
-      { key: "r/webdev", value: "Technical angle. Share interesting tech decisions." },
-      { key: "Avoid", value: "External links in titles, pure self-promotion." },
-      { key: "Pro tip", value: "If your post gets removed, don\u2019t repost \u2014 message the mods." },
+    id: "prelaunch",
+    label: "Pre-launch day",
+    subtitle: "1 day before launch",
+    variant: "warning",
+    items: [
+      {
+        id: "pre-twitter-thread",
+        text: "Post a pre-launch thread on Twitter",
+        hint: "Share your story, what you\u2019re launching tomorrow. No product link in main tweets.",
+        time: "9:00 AM PT",
+        platforms: ["twitter"],
+      },
+      {
+        id: "pre-twitter-pin",
+        text: "Pin the thread to your profile",
+        platforms: ["twitter"],
+      },
+      {
+        id: "pre-twitter-dm",
+        text: "DM your 10\u201320 supporters: \u201cLaunching tomorrow, would love your support\u201d",
+        platforms: ["twitter"],
+      },
+      {
+        id: "pre-ph-check",
+        text: "Final check: Coming Soon page, gallery images, description, tagline all correct",
+        platforms: ["ph"],
+      },
+      {
+        id: "pre-ph-comment-ready",
+        text: "Maker\u2019s Comment finalized and ready to paste",
+        platforms: ["ph"],
+      },
+      {
+        id: "pre-test",
+        text: "Test your website one more time \u2014 signup flow, payment, core features",
+      },
+      {
+        id: "pre-alarm",
+        text: "Set alarm for 11:50 PM PT if launching at midnight",
+        platforms: ["ph"],
+      },
+      {
+        id: "pre-rest",
+        text: "Get some rest. Tomorrow is a big day.",
+      },
     ],
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LAUNCH DAY (Day 0)
+  // ═══════════════════════════════════════════════════════════════════════════
   {
-    platform: "hn",
-    label: "Hacker News",
-    rows: [
-      { key: "Format", value: '"Show HN: [Name] \u2013 [one-line description]"' },
-      { key: "Best time", value: "Weekdays, 10 AM \u2013 12 PM ET" },
-      { key: "Body text", value: "None (HN Show posts are title + URL only)" },
-      { key: "First comment", value: "Explain tech decisions and motivation" },
-      { key: "Avoid", value: "Marketing language, asking for upvotes" },
-      { key: "Pro tip", value: "HN values technical novelty and honest discussion." },
+    id: "launch",
+    label: "Launch day",
+    subtitle: "LAUNCH DAY",
+    variant: "launch",
+    items: [
+      // ── PH ──
+      {
+        id: "launch-ph-publish",
+        text: "Publish on Product Hunt",
+        hint: "Start of new PH day for maximum 24hr window",
+        time: "12:01 AM PT",
+        platforms: ["ph"],
+      },
+      {
+        id: "launch-ph-comment",
+        text: "Post your Maker\u2019s Comment immediately",
+        platforms: ["ph"],
+      },
+      {
+        id: "launch-ph-respond",
+        text: "First 4 hours: respond to EVERY comment",
+        hint: "Speed and warmth matter more than perfect answers",
+        platforms: ["ph"],
+      },
+      {
+        id: "launch-ph-share",
+        text: "Share PH link on all your social channels",
+        platforms: ["ph"],
+      },
+
+      // ── Twitter ──
+      {
+        id: "launch-twitter-post",
+        text: "Tweet: \u201cWe\u2019re live on Product Hunt! \ud83d\ude80\u201d with PH link",
+        hint: "This is the one tweet where a link is OK \u2014 it\u2019s a call to action",
+        time: "9:00 AM PT",
+        platforms: ["twitter"],
+      },
+      {
+        id: "launch-twitter-updates",
+        text: "Share milestone updates throughout the day (\u201cTop 10!\u201d, \u201cXX upvotes!\u201d)",
+        platforms: ["twitter"],
+      },
+      {
+        id: "launch-twitter-engage",
+        text: "Engage with every reply and quote tweet",
+        platforms: ["twitter"],
+      },
+
+      // ── Reddit ──
+      {
+        id: "launch-reddit-post",
+        text: "Post during peak hours in your target subreddits",
+        hint: "r/SaaS, r/startups peak: weekday mornings US time. Story-first. Product URL in a comment, not the post body.",
+        platforms: ["reddit"],
+      },
+      {
+        id: "launch-reddit-respond",
+        text: "Respond to every comment \u2014 be helpful, not salesy",
+        platforms: ["reddit"],
+      },
+      {
+        id: "launch-reddit-removed",
+        text: "If a post gets removed, don\u2019t repost. Message mods politely.",
+        platforms: ["reddit"],
+      },
+
+      // ── HN ──
+      {
+        id: "launch-hn-submit",
+        text: "Submit Show HN",
+        time: "7:00 AM PT",
+        platforms: ["hn"],
+      },
+      {
+        id: "launch-hn-comment",
+        text: "Post explanatory first comment within minutes",
+        platforms: ["hn"],
+      },
+      {
+        id: "launch-hn-noupvotes",
+        text: "Never ask for upvotes \u2014 HN will penalize you",
+        platforms: ["hn"],
+      },
+
+      // ── IH ──
+      {
+        id: "launch-ih-post",
+        text: "Post during weekday hours \u2014 build-in-public style with real numbers",
+        platforms: ["ih"],
+      },
+
+      // ── General ──
+      {
+        id: "launch-email",
+        text: "Send email blast to your waitlist/newsletter",
+      },
+      {
+        id: "launch-communities",
+        text: "Post in relevant Slack/Discord communities (one message, don\u2019t spam)",
+      },
+      {
+        id: "launch-monitor",
+        text: "Monitor all platforms throughout the day",
+      },
+      {
+        id: "launch-evening",
+        text: "Evening \u2014 Thank-you tweet: \u201cDay 1 done. XX upvotes, XX comments. Thank you.\u201d",
+      },
+      {
+        id: "launch-metrics",
+        text: "Record all metrics: upvotes, comments, website visits, signups",
+      },
     ],
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // POST-LAUNCH (Day +1 to Day +4)
+  // ═══════════════════════════════════════════════════════════════════════════
   {
-    platform: "twitter",
-    label: "Twitter / X",
-    rows: [
-      { key: "Thread length", value: "5\u20138 tweets" },
-      { key: "Character limit", value: "280 per tweet (Premium: 25,000)" },
-      { key: "Best time", value: "9\u201311 AM in your audience\u2019s timezone" },
-      { key: "Link placement", value: "Last tweet or first reply (algorithm penalizes link tweets)" },
-      { key: "Premium boost", value: "Significantly higher reach vs free accounts" },
-      { key: "Pro tip", value: "Pin your launch thread. Engage with every reply." },
-    ],
-  },
-  {
-    platform: "ih",
-    label: "IndieHackers",
-    rows: [
-      { key: "Style", value: "Build-in-public, honest, sharing your process" },
-      { key: "Best content", value: "Journey posts, transparent metrics, lessons learned" },
-      { key: "Avoid", value: "Pure advertising posts" },
-      { key: "Pro tip", value: "Ask genuine questions. The community loves helping." },
+    id: "postlaunch",
+    label: "Post-launch",
+    subtitle: "The work isn\u2019t over",
+    variant: "post",
+    items: [
+      {
+        id: "post-respond",
+        text: "Respond to any remaining comments across all platforms",
+        subgroup: "Day +1",
+      },
+      {
+        id: "post-thankyou",
+        text: "Send personal thank-you messages to people who commented or shared",
+        subgroup: "Day +1",
+      },
+      {
+        id: "post-followup",
+        text: "Follow up with warm leads (people who asked questions or showed interest)",
+        subgroup: "Day +2",
+      },
+      {
+        id: "post-update",
+        text: "Update your product based on feedback received",
+        subgroup: "Day +2",
+      },
+      {
+        id: "post-reddit-check",
+        text: "Check if any Reddit posts were removed and message mods if needed",
+        hint: "Some subs have delayed moderation \u2014 check back the next day",
+        platforms: ["reddit"],
+        subgroup: "Day +2",
+      },
+      {
+        id: "post-hn-monitor",
+        text: "Monitor HN for second-wave traffic (posts can resurface days later)",
+        platforms: ["hn"],
+        subgroup: "Day +2",
+      },
+      {
+        id: "post-collect",
+        text: "Collect positive feedback as social proof",
+        hint: "Don\u2019t let great comments disappear into threads.",
+        cta: { text: "Collect with ShipProof \u2192", href: "/" },
+        subgroup: "Day +3\u20134",
+      },
+      {
+        id: "post-display",
+        text: "Display social proof on your landing page",
+        hint: "Embed a widget or create a Wall of Proof page.",
+        cta: { text: "Display with ShipProof \u2192", href: "/" },
+        subgroup: "Day +3\u20134",
+      },
+      {
+        id: "post-retro",
+        text: "Write a launch retrospective (great for Twitter thread and IH post)",
+        hint: "Share real numbers \u2014 the community respects transparency",
+        platforms: ["ih", "twitter"],
+        subgroup: "Day +3\u20134",
+      },
+      {
+        id: "post-analyze",
+        text: "Analyze traffic sources and conversion data",
+        subgroup: "Day +3\u20134",
+      },
+      {
+        id: "post-iterate",
+        text: "Plan your next iteration based on what you learned",
+        subgroup: "Day +3\u20134",
+      },
+      {
+        id: "post-celebrate",
+        text: "Celebrate. You shipped. That\u2019s more than most people do. \ud83c\udf89",
+        subgroup: "Day +3\u20134",
+      },
     ],
   },
 ];

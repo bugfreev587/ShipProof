@@ -5,19 +5,15 @@ import Link from "next/link";
 import { LogoIcon } from "@/components/Logo";
 import {
   platforms,
-  checklistData,
-  cheatSheets,
+  plannerPhases,
   type Platform,
-  type Phase,
-  type ChecklistItem,
+  type LaunchDay,
 } from "./data";
-import LaunchWeekPlanner, { type LaunchDay } from "./LaunchWeekPlanner";
+import LaunchPlanner from "./LaunchPlanner";
 
 const LS_KEY_CHECKED = "launchready-progress";
 const LS_KEY_PLATFORMS = "launchready-platforms";
 const LS_KEY_LAUNCH_DAY = "launchready-launch-day";
-
-type ActiveTool = "checklist" | "week";
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -89,7 +85,7 @@ function StartOverDialog({
           Start a new launch?
         </h3>
         <p className="text-sm text-[#8B8B92] leading-relaxed mb-6">
-          This will clear all progress, platform selections, and launch week
+          This will clear all progress, platform selections, and launch day
           settings so you can plan your next launch from scratch.
         </p>
         <div className="flex justify-end gap-3">
@@ -130,7 +126,7 @@ function ProgressBar({
           {checked} of {total} completed
           {done && (
             <span className="text-[#22C55E] ml-2">
-              {"\ud83c\udf89"} Ready to launch!
+              {"\ud83c\udf89"} You&apos;re ready to launch!
             </span>
           )}
           {!done && (
@@ -157,207 +153,13 @@ function ProgressBar({
   );
 }
 
-function ChecklistItemRow({
-  item,
-  checked,
-  onToggle,
-}: {
-  item: ChecklistItem;
-  checked: boolean;
-  onToggle: () => void;
-}) {
-  const platformLabels: Record<Platform, string> = {
-    ph: "PH",
-    reddit: "Reddit",
-    hn: "HN",
-    twitter: "X",
-    ih: "IH",
-  };
-
-  return (
-    <div className="flex items-start gap-3 py-3 border-b border-[#1E1E24] last:border-b-0 group">
-      {/* Custom checkbox */}
-      <button
-        onClick={onToggle}
-        aria-checked={checked}
-        role="checkbox"
-        className="mt-0.5 shrink-0 cursor-pointer"
-      >
-        <div
-          className={`w-[18px] h-[18px] rounded flex items-center justify-center transition-all duration-150
-            ${
-              checked
-                ? "bg-[#6366F1] border-[#6366F1]"
-                : "border-[1.5px] border-[#2A2A32] group-hover:border-[#55555C]"
-            }`}
-          style={{
-            transform: checked ? "scale(1)" : undefined,
-          }}
-        >
-          {checked && (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              className="motion-safe:animate-[checkPop_150ms_ease]"
-            >
-              <path
-                d="M2.5 6L5 8.5L9.5 4"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-        </div>
-      </button>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p
-          className={`text-sm leading-relaxed transition-all duration-150 ${
-            checked ? "text-[#55555C] line-through" : "text-[#EDEDEF]"
-          }`}
-        >
-          {item.text}
-        </p>
-        {item.hint && (
-          <p className="text-xs text-[#55555C] mt-0.5 leading-relaxed">
-            {item.hint}
-            {item.cta && (
-              <>
-                {" "}
-                <Link
-                  href={item.cta.href}
-                  className="text-[#818CF8] hover:text-[#6366F1] transition-colors duration-150"
-                >
-                  {item.cta.text}
-                </Link>
-              </>
-            )}
-          </p>
-        )}
-        {!item.hint && item.cta && (
-          <p className="text-xs mt-0.5">
-            <Link
-              href={item.cta.href}
-              className="text-[#818CF8] hover:text-[#6366F1] transition-colors duration-150"
-            >
-              {item.cta.text}
-            </Link>
-          </p>
-        )}
-      </div>
-
-      {/* Platform badges */}
-      {item.platforms && (
-        <div className="flex gap-1.5 shrink-0 mt-0.5">
-          {item.platforms.map((pid) => (
-            <span
-              key={pid}
-              className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#1E1E24] text-[#8B8B92]"
-            >
-              {platformLabels[pid]}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CheatSheetAccordion({
-  selectedPlatforms,
-}: {
-  selectedPlatforms: Set<Platform>;
-}) {
-  const [openId, setOpenId] = useState<Platform | null>(null);
-  const visible = cheatSheets.filter((cs) => selectedPlatforms.has(cs.platform));
-
-  if (visible.length === 0) return null;
-
-  return (
-    <section className="mt-16">
-      <h2 className="text-xl font-medium text-[#EDEDEF] tracking-[-0.5px] mb-1">
-        Platform cheat sheets
-      </h2>
-      <p className="text-sm text-[#8B8B92] mb-6">
-        Quick reference for each platform&apos;s rules and best practices.
-      </p>
-      <div className="space-y-2">
-        {visible.map((cs) => {
-          const open = openId === cs.platform;
-          return (
-            <div
-              key={cs.platform}
-              className="rounded-xl border border-[#1E1E24] bg-[#141418] overflow-hidden"
-            >
-              <button
-                onClick={() => setOpenId(open ? null : cs.platform)}
-                className="w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-[#EDEDEF] hover:bg-[#1E1E24]/40 transition-colors duration-150 cursor-pointer"
-              >
-                {cs.label}
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className={`text-[#55555C] transition-transform duration-200 ${
-                    open ? "rotate-180" : ""
-                  }`}
-                >
-                  <path
-                    d="M4 6L8 10L12 6"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-              <div
-                className={`transition-all duration-200 ease-out overflow-hidden ${
-                  open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                <div className="px-5 pb-4">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {cs.rows.map((row) => (
-                        <tr key={row.key} className="border-t border-[#1E1E24]">
-                          <td className="py-2 pr-6 text-[#8B8B92] whitespace-nowrap font-mono text-xs align-top">
-                            {row.key}
-                          </td>
-                          <td className="py-2 text-[#EDEDEF] text-xs leading-relaxed">
-                            {row.value}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Main App
 // ---------------------------------------------------------------------------
 
 export function LaunchReadyApp() {
-  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<Platform>>(
-    new Set()
-  );
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<Platform>>(new Set());
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<Phase>("before");
-  const [activeTool, setActiveTool] = useState<ActiveTool>("checklist");
   const [launchDay, setLaunchDay] = useState<LaunchDay>("tue");
   const [hydrated, setHydrated] = useState(false);
   const [showStartOver, setShowStartOver] = useState(false);
@@ -369,8 +171,7 @@ export function LaunchReadyApp() {
       const savedChecked = localStorage.getItem(LS_KEY_CHECKED);
       if (savedChecked) setCheckedItems(new Set(JSON.parse(savedChecked)));
       const savedPlatforms = localStorage.getItem(LS_KEY_PLATFORMS);
-      if (savedPlatforms)
-        setSelectedPlatforms(new Set(JSON.parse(savedPlatforms)));
+      if (savedPlatforms) setSelectedPlatforms(new Set(JSON.parse(savedPlatforms)));
       const savedDay = localStorage.getItem(LS_KEY_LAUNCH_DAY);
       if (savedDay) setLaunchDay(savedDay as LaunchDay);
     } catch {
@@ -379,22 +180,17 @@ export function LaunchReadyApp() {
     setHydrated(true);
   }, []);
 
-  // Persist checked items
+  // Persist
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(LS_KEY_CHECKED, JSON.stringify([...checkedItems]));
   }, [checkedItems, hydrated]);
 
-  // Persist platform selection
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(
-      LS_KEY_PLATFORMS,
-      JSON.stringify([...selectedPlatforms])
-    );
+    localStorage.setItem(LS_KEY_PLATFORMS, JSON.stringify([...selectedPlatforms]));
   }, [selectedPlatforms, hydrated]);
 
-  // Persist launch day
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(LS_KEY_LAUNCH_DAY, launchDay);
@@ -421,37 +217,21 @@ export function LaunchReadyApp() {
   const handleStartOver = useCallback(() => {
     setCheckedItems(new Set());
     setSelectedPlatforms(new Set());
-    setActiveTab("before");
-    setActiveTool("checklist");
     setLaunchDay("tue");
     setShowStartOver(false);
     localStorage.removeItem(LS_KEY_CHECKED);
     localStorage.removeItem(LS_KEY_PLATFORMS);
     localStorage.removeItem(LS_KEY_LAUNCH_DAY);
-    // Smooth scroll back to platform selector
     setTimeout(() => {
       step1Ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 50);
   }, []);
 
-  // Filter items for current tab & selected platforms
-  const visibleItems = useMemo(() => {
-    const items = checklistData[activeTab];
-    return items.filter(
-      (item) =>
-        !item.platforms ||
-        item.platforms.some((p) => selectedPlatforms.has(p))
-    );
-  }, [activeTab, selectedPlatforms]);
-
-  // Total across all phases for progress
+  // Compute visible items for progress
   const allVisible = useMemo(() => {
-    const phases: Phase[] = ["before", "day", "after"];
-    return phases.flatMap((phase) =>
-      checklistData[phase].filter(
-        (item) =>
-          !item.platforms ||
-          item.platforms.some((p) => selectedPlatforms.has(p))
+    return plannerPhases.flatMap((phase) =>
+      phase.items.filter(
+        (item) => !item.platforms || item.platforms.some((p) => selectedPlatforms.has(p))
       )
     );
   }, [selectedPlatforms]);
@@ -460,12 +240,6 @@ export function LaunchReadyApp() {
     () => allVisible.filter((item) => checkedItems.has(item.id)).length,
     [allVisible, checkedItems]
   );
-
-  const tabs: { id: Phase; label: string }[] = [
-    { id: "before", label: "Before Launch" },
-    { id: "day", label: "Launch Day" },
-    { id: "after", label: "After Launch" },
-  ];
 
   const hasPlatforms = selectedPlatforms.size > 0;
 
@@ -478,6 +252,14 @@ export function LaunchReadyApp() {
               0% { transform: scale(0.7); opacity: 0; }
               60% { transform: scale(1.1); }
               100% { transform: scale(1); opacity: 1; }
+            }
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes fadeSlideIn {
+              from { opacity: 0; transform: translateY(4px); }
+              to { opacity: 1; transform: translateY(0); }
             }
           `,
         }}
@@ -508,7 +290,7 @@ export function LaunchReadyApp() {
           </h2>
           <p className="text-sm text-[#8B8B92] mb-6 text-center">
             Select the platforms you&apos;re targeting. We&apos;ll customize
-            your checklist.
+            your plan.
           </p>
           <PlatformSelector
             selected={selectedPlatforms}
@@ -516,89 +298,22 @@ export function LaunchReadyApp() {
           />
         </section>
 
-        {/* Step 2: Tool toggle + content */}
+        {/* Step 2 + 3: Day picker + planner */}
         {hasPlatforms && (
           <section className="motion-safe:animate-[fadeIn_300ms_ease]">
-            {/* Tool toggle */}
-            <div className="flex justify-center mb-8">
-              <div className="inline-flex rounded-full bg-[#141418] border border-[#1E1E24] p-1">
-                {(
-                  [
-                    { id: "checklist" as ActiveTool, label: "Checklist" },
-                    { id: "week" as ActiveTool, label: "Launch Week" },
-                  ] as const
-                ).map((tool) => (
-                  <button
-                    key={tool.id}
-                    onClick={() => setActiveTool(tool.id)}
-                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-150 cursor-pointer
-                      ${
-                        activeTool === tool.id
-                          ? "bg-[#1E1E24] text-[#EDEDEF]"
-                          : "text-[#55555C] hover:text-[#8B8B92]"
-                      }`}
-                  >
-                    {tool.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ProgressBar
+              checked={totalChecked}
+              total={allVisible.length}
+              onStartOver={() => setShowStartOver(true)}
+            />
 
-            {/* Checklist tool */}
-            {activeTool === "checklist" && (
-              <>
-                <ProgressBar
-                  checked={totalChecked}
-                  total={allVisible.length}
-                  onStartOver={() => setShowStartOver(true)}
-                />
-
-                {/* Tabs */}
-                <div className="flex gap-6 border-b border-[#1E1E24] mb-6">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`pb-3 text-sm font-medium transition-colors duration-150 relative cursor-pointer
-                        ${
-                          activeTab === tab.id
-                            ? "text-[#EDEDEF]"
-                            : "text-[#55555C] hover:text-[#8B8B92]"
-                        }`}
-                    >
-                      {tab.label}
-                      {activeTab === tab.id && (
-                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6366F1] rounded-full" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Items */}
-                <div className="motion-safe:animate-[fadeSlideIn_200ms_ease]">
-                  {visibleItems.map((item) => (
-                    <ChecklistItemRow
-                      key={item.id}
-                      item={item}
-                      checked={checkedItems.has(item.id)}
-                      onToggle={() => toggleItem(item.id)}
-                    />
-                  ))}
-                </div>
-
-                {/* Cheat sheets */}
-                <CheatSheetAccordion selectedPlatforms={selectedPlatforms} />
-              </>
-            )}
-
-            {/* Launch Week tool */}
-            {activeTool === "week" && (
-              <LaunchWeekPlanner
-                selectedPlatforms={selectedPlatforms}
-                launchDay={launchDay}
-                onLaunchDayChange={setLaunchDay}
-              />
-            )}
+            <LaunchPlanner
+              selectedPlatforms={selectedPlatforms}
+              launchDay={launchDay}
+              onLaunchDayChange={setLaunchDay}
+              checkedItems={checkedItems}
+              onToggleItem={toggleItem}
+            />
 
             {/* CTA section */}
             <section className="mt-20 text-center">
@@ -651,21 +366,6 @@ export function LaunchReadyApp() {
         open={showStartOver}
         onClose={() => setShowStartOver(false)}
         onConfirm={handleStartOver}
-      />
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            @keyframes fadeIn {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            @keyframes fadeSlideIn {
-              from { opacity: 0; transform: translateY(4px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-          `,
-        }}
       />
     </div>
   );
