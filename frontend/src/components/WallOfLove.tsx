@@ -1,7 +1,7 @@
 export default function WallOfLove() {
   return (
     <section className="border-t border-[#2A2A30] py-20">
-      <div className="mx-auto max-w-5xl px-4 text-center">
+      <div className="mx-auto max-w-6xl px-4 text-center">
         <h2 className="text-center text-[28px] font-medium text-white">
           Loved by indie hackers
         </h2>
