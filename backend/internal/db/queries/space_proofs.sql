@@ -1,7 +1,7 @@
 -- name: AddProofToSpace :one
 INSERT INTO space_proofs (space_id, proof_id, display_order)
 VALUES ($1, $2, $3)
-ON CONFLICT (space_id, proof_id) DO NOTHING
+ON CONFLICT (space_id, proof_id) DO UPDATE SET display_order = EXCLUDED.display_order
 RETURNING *;
 
 -- name: RemoveProofFromSpace :exec
