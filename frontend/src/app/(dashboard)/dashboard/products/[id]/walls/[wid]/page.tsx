@@ -501,7 +501,7 @@ function WallPreview({
   const headerSubColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color + "99" : t.textSecondary;
 
   return (
-    <div className="overflow-y-auto" style={{ background: bgStyle, maxHeight: "calc(100vh - 260px)" }}>
+    <div className="overflow-y-auto" style={{ background: bgStyle, maxHeight: "calc(100vh - 120px)" }}>
       {/* Header */}
       {wall.show_header && (
         <div className="max-w-5xl mx-auto px-4 py-10 text-center">
