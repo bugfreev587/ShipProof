@@ -91,6 +91,7 @@ export interface User {
   name: string;
   avatar_url: PgText;
   plan: "free" | "pro" | "business";
+  is_admin: boolean;
   stripe_customer_id: PgText;
   stripe_subscription_id: PgText;
   pro_trial_used: boolean;
@@ -822,6 +823,91 @@ export function fetchPublicSpaceProofs(slug: string) {
 export function fetchPublicWallProofs(slug: string) {
   return fetchApi<PublicWallResponse>(
     `/api/public/walls/${slug}/proofs`,
+  );
+}
+
+// --- Admin ---
+
+export interface AdminStats {
+  total_users: number;
+  paid_users: number;
+  pro_users: number;
+  business_users: number;
+  mrr: number;
+  mrr_change_this_week: number;
+  total_products: number;
+  total_proofs: number;
+  total_page_views: number;
+  total_page_views_today: number;
+  signups_this_week: number;
+  paid_this_week: number;
+  plan_distribution: { free: number; pro: number; business: number };
+}
+
+export interface AdminAnalytics {
+  summary: { total_views: number; today_views: number; period_views: number };
+  by_day: { date: string; views: number }[];
+  by_page: { path: string; views: number }[];
+  top_referrers: { referrer: string; views: number }[];
+  top_utm_sources: { utm_source: string; views: number }[];
+  utm_campaigns: { utm_source: string; utm_campaign: string; views: number }[];
+}
+
+export interface AdminUserRow {
+  id: string;
+  email: string;
+  name: string;
+  plan: string;
+  is_admin: boolean;
+  product_count: number;
+  proof_count: number;
+  created_at: string;
+}
+
+export interface AdminUsersResponse {
+  users: AdminUserRow[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AdminRecentSignup {
+  id: string;
+  email: string;
+  name: string;
+  created_at: string;
+}
+
+export function getAdminStats(token: string) {
+  return fetchApi<AdminStats>("/api/admin/stats", {}, token);
+}
+
+export function getAdminAnalytics(token: string, period = "7d") {
+  return fetchApi<AdminAnalytics>(
+    `/api/admin/analytics?period=${period}`,
+    {},
+    token,
+  );
+}
+
+export function getAdminUsers(
+  token: string,
+  page = 1,
+  limit = 20,
+  search = "",
+) {
+  return fetchApi<AdminUsersResponse>(
+    `/api/admin/users?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`,
+    {},
+    token,
+  );
+}
+
+export function getAdminRecentSignups(token: string) {
+  return fetchApi<AdminRecentSignup[]>(
+    "/api/admin/recent-signups",
+    {},
+    token,
   );
 }
 

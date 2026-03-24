@@ -342,6 +342,17 @@ type LaunchVersion struct {
 	LaunchNotes   pgtype.Text     `json:"launch_notes"`
 }
 
+type PageView struct {
+	ID          uuid.UUID   `json:"id"`
+	Path        string      `json:"path"`
+	Referrer    pgtype.Text `json:"referrer"`
+	UserAgent   pgtype.Text `json:"user_agent"`
+	UtmSource   pgtype.Text `json:"utm_source"`
+	UtmMedium   pgtype.Text `json:"utm_medium"`
+	UtmCampaign pgtype.Text `json:"utm_campaign"`
+	CreatedAt   time.Time   `json:"created_at"`
+}
+
 type Product struct {
 	ID              uuid.UUID   `json:"id"`
 	UserID          uuid.UUID   `json:"user_id"`
@@ -424,6 +435,7 @@ type User struct {
 	StripeSubscriptionID pgtype.Text `json:"stripe_subscription_id"`
 	CreatedAt            time.Time   `json:"created_at"`
 	UpdatedAt            time.Time   `json:"updated_at"`
+	IsAdmin              bool        `json:"is_admin"`
 	ProTrialUsed         bool        `json:"pro_trial_used"`
 	BusinessTrialUsed    bool        `json:"business_trial_used"`
 }

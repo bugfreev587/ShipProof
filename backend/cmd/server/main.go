@@ -98,6 +98,7 @@ func main() {
 		spaceHandler := handler.NewSpaceHandler(queries, userService, planService)
 		publicHandler := handler.NewPublicHandler(queries)
 		analyticsHandler := handler.NewAnalyticsHandler(queries, userService)
+		adminHandler := handler.NewAdminHandler(queries)
 		// Stripe config: prod + optional sandbox
 		prodConfig := handler.StripeConfig{
 			SecretKey:              os.Getenv("STRIPE_SECRET_KEY"),
@@ -132,6 +133,7 @@ func main() {
 		r.Get("/api/public/walls/{slug}/proofs", publicHandler.GetWallProofs)
 		r.Get("/api/public/spaces/{slug}/proofs", publicHandler.GetSpaceProofs)
 		r.Post("/api/public/views", publicHandler.RecordView)
+		r.Post("/api/analytics/pageview", adminHandler.RecordPageView)
 
 		// Authenticated routes
 		r.Group(func(r chi.Router) {
@@ -194,6 +196,15 @@ func main() {
 
 			// Analytics
 			r.Get("/api/analytics/views", analyticsHandler.GetViews)
+
+			// Admin routes (requires admin middleware)
+			r.Group(func(r chi.Router) {
+				r.Use(middleware.AdminOnly(queries))
+				r.Get("/api/admin/stats", adminHandler.GetStats)
+				r.Get("/api/admin/analytics", adminHandler.GetAnalytics)
+				r.Get("/api/admin/users", adminHandler.ListUsers)
+				r.Get("/api/admin/recent-signups", adminHandler.RecentSignups)
+			})
 
 			// Spaces
 			r.Get("/api/products/{id}/spaces", spaceHandler.List)

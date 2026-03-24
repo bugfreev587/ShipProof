@@ -1,14 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useUser, useClerk, useAuth } from "@clerk/nextjs";
 import { useState, useRef, useEffect } from "react";
+import { getCurrentUser } from "@/lib/api";
 
 export default function AvatarDropdown() {
   const { user } = useUser();
   const { signOut } = useClerk();
+  const { getToken } = useAuth();
   const [open, setOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getToken().then((token) => {
+      if (!token) return;
+      getCurrentUser(token)
+        .then((u) => setIsAdmin(u.is_admin ?? false))
+        .catch(() => {});
+    });
+  }, [getToken]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -65,6 +77,15 @@ export default function AvatarDropdown() {
           >
             Settings
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+            >
+              Admin
+            </Link>
+          )}
           <div className="my-1 border-t border-[var(--border)]" />
           <button
             onClick={() => signOut({ redirectUrl: "/" })}
