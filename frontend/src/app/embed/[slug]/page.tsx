@@ -4,6 +4,8 @@ import { getCompanyLogoUrl } from "@/lib/company-logo";
 import { CompanyLogoImg } from "@/components/company-logo";
 import { ViewTracker } from "@/components/view-tracker";
 
+export const dynamic = "force-dynamic";
+
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
   reddit: "bg-orange-500",
