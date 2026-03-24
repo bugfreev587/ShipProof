@@ -203,7 +203,7 @@ function PhaseCard({
 
   // Group by subgroup
   const groups: { label: string | null; items: PlannerItem[] }[] = [];
-  let currentGroup: string | null = null;
+  let currentGroup: string | null | undefined = undefined;
   for (const item of visibleItems) {
     const g = item.subgroup || null;
     if (g !== currentGroup) {
