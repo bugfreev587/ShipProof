@@ -5,6 +5,7 @@ import LandingNav from "@/components/landing-nav";
 import { LogoIcon } from "@/components/Logo";
 import EmbedCodeBlock from "@/components/embed-code-block";
 import { Footer } from "@/components/footer";
+import WallOfLove from "@/components/WallOfLove";
 
 export const metadata: Metadata = {
   title: "ShipProof — Turn every launch into lasting social proof",
@@ -238,6 +239,9 @@ export default function HomePage() {
           <EmbedCodeBlock />
         </div>
       </section>
+
+      {/* Wall of Love */}
+      <WallOfLove />
 
       {/* Pricing */}
       <section id="pricing" className="border-t border-[#2A2A30] py-20">
