@@ -428,6 +428,65 @@ function AutoFitPreview({
   const canPrev = startIndex > 0;
   const canNext = startIndex + displayCount < proofs.length;
 
+  const cardProps = {
+    themeKey: config.theme,
+    showPlatformIcon: config.show_platform_icon,
+    borderRadius: config.border_radius,
+    cardWidth: cardW,
+    textFontSize: config.text_font_size || 13,
+    textFont: config.text_font || "Inter",
+    textBold: config.text_bold || false,
+  };
+
+  // Marquee layout preview
+  if (config.layout === "marquee") {
+    const minCards = Math.max(6, proofs.length);
+    const repeatCount = Math.ceil(minCards / proofs.length);
+    const filledProofs: Proof[] = [];
+    for (let i = 0; i < repeatCount; i++) filledProofs.push(...proofs);
+    const duration = filledProofs.length * 4.5;
+
+    return (
+      <div ref={containerRef} className="px-4 pb-2">
+        <style>{`
+@keyframes sp-marquee-preview {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.sp-marquee-container {
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+}
+.sp-marquee-track {
+  display: flex;
+  gap: ${gap}px;
+  animation: sp-marquee-preview ${duration}s linear infinite;
+  width: max-content;
+}
+.sp-marquee-track:hover {
+  animation-play-state: paused;
+}
+        `}</style>
+        <div className="sp-marquee-container">
+          <div className="sp-marquee-track">
+            {filledProofs.map((proof, i) => (
+              <SpaceProofCard key={`ma-${i}`} proof={proof} {...cardProps} />
+            ))}
+            {filledProofs.map((proof, i) => (
+              <SpaceProofCard key={`mb-${i}`} proof={proof} {...cardProps} />
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-center mt-2 text-[10px] text-[var(--text-tertiary)]">
+          {proofs.length} proofs · auto-scrolling
+        </div>
+      </div>
+    );
+  }
+
+  // Carousel layout preview (default)
   return (
     <div ref={containerRef} className="px-4 pb-2">
       <div className="flex items-center justify-center gap-2">
@@ -457,13 +516,7 @@ function AutoFitPreview({
               <SpaceProofCard
                 key={proof.id}
                 proof={proof}
-                themeKey={config.theme}
-                showPlatformIcon={config.show_platform_icon}
-                borderRadius={config.border_radius}
-                cardWidth={cardW}
-                textFontSize={config.text_font_size || 13}
-                textFont={config.text_font || "Inter"}
-                textBold={config.text_bold || false}
+                {...cardProps}
               />
             ))}
           </div>
