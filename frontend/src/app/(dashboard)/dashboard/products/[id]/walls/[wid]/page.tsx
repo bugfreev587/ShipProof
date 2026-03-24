@@ -207,37 +207,6 @@ export default function WallEditPage() {
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-5">
             <h2 className="text-sm font-medium text-[var(--text-primary)]">Configuration</h2>
 
-            {/* Layout */}
-            <div>
-              <label className="block text-xs text-[var(--text-secondary)] mb-2">Layout</label>
-              <div className="flex gap-2">
-                {([
-                  { value: "masonry", label: "Masonry", desc: "Multi-column grid" },
-                  { value: "carousel", label: "Carousel", desc: "Manual scroll" },
-                  { value: "marquee", label: "Marquee", desc: "Auto-scrolling" },
-                ] as const).map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => handleConfigChange({ layout: opt.value })}
-                    className={`flex-1 rounded-lg border px-2 py-2 text-left transition-all cursor-pointer ${
-                      (wall.layout || "masonry") === opt.value
-                        ? "border-[#6366F1] bg-[#6366F1]/10"
-                        : "border-[var(--border)] bg-[var(--bg-base)] hover:border-[var(--border-hover)]"
-                    }`}
-                  >
-                    <span className={`block text-xs font-medium ${
-                      (wall.layout || "masonry") === opt.value ? "text-[#818CF8]" : "text-[var(--text-primary)]"
-                    }`}>
-                      {opt.label}
-                    </span>
-                    <span className="block text-[9px] text-[var(--text-tertiary)] mt-0.5">
-                      {opt.desc}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Show Header */}
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -632,8 +601,7 @@ function WallPreview({
           <div className="text-center py-12" style={{ color: t.textTertiary }}>
             No proofs selected. Toggle proofs on the left to see them here.
           </div>
-        ) : (wall.layout || "masonry") === "masonry" ? (
-          /* Masonry Grid */
+        ) : (
           <div
             className="columns-1 sm:columns-2 lg:columns-3"
             style={{ columnGap: spacing }}
@@ -641,51 +609,6 @@ function WallPreview({
             {proofs.map((proof) => (
               <WallProofCard key={proof.id} proof={proof} t={t} wall={wall} radius={radius} spacing={spacing} />
             ))}
-          </div>
-        ) : (wall.layout === "marquee") ? (
-          /* Marquee */
-          (() => {
-            const minCards = Math.max(6, proofs.length);
-            const repeatCount = Math.ceil(minCards / proofs.length);
-            const filled: Proof[] = [];
-            for (let i = 0; i < repeatCount; i++) filled.push(...proofs);
-            const duration = filled.length * 4.5;
-            return (
-              <>
-                <style>{`
-@keyframes wall-marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-.wall-marquee-wrap { overflow: hidden; width: 100%; mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); }
-.wall-marquee-track { display: flex; gap: ${spacing}; animation: wall-marquee ${duration}s linear infinite; width: max-content; }
-.wall-marquee-track:hover { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { .wall-marquee-track { animation: none; } .wall-marquee-wrap { overflow-x: auto; mask-image: none; -webkit-mask-image: none; } }
-                `}</style>
-                <div className="wall-marquee-wrap">
-                  <div className="wall-marquee-track">
-                    {filled.map((proof, i) => (
-                      <div key={`ma-${i}`} className="flex-shrink-0" style={{ width: "300px" }}>
-                        <WallProofCard proof={proof} t={t} wall={wall} radius={radius} spacing={spacing} />
-                      </div>
-                    ))}
-                    {filled.map((proof, i) => (
-                      <div key={`mb-${i}`} className="flex-shrink-0" style={{ width: "300px" }}>
-                        <WallProofCard proof={proof} t={t} wall={wall} radius={radius} spacing={spacing} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            );
-          })()
-        ) : (
-          /* Carousel */
-          <div className="overflow-x-auto pb-4" style={{ scrollSnapType: "x mandatory" }}>
-            <div className="flex" style={{ gap: spacing }}>
-              {proofs.map((proof) => (
-                <div key={proof.id} className="flex-shrink-0" style={{ width: "300px", scrollSnapAlign: "start" }}>
-                  <WallProofCard proof={proof} t={t} wall={wall} radius={radius} spacing={spacing} />
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>

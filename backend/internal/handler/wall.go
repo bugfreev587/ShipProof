@@ -223,9 +223,7 @@ func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Layout != "carousel" && req.Layout != "marquee" {
-		req.Layout = "masonry"
-	}
+	req.Layout = "masonry"
 
 	wall, err := h.queries.UpdateWallConfig(r.Context(), db.UpdateWallConfigParams{
 		ID:               wallID,

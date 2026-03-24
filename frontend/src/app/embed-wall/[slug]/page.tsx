@@ -50,25 +50,22 @@ function getThemeColors(theme: string) {
   }
 }
 
-function EmbedWallCard({ proof, t, wall, radius, masonry }: {
+function EmbedWallCard({ proof, t, wall, radius }: {
   proof: { id: string; source_platform: string; author_name: string; author_title: string | null; author_avatar_url: string | null; content_text: string | null; content_image_url: string | null; created_at: string };
   t: ReturnType<typeof getThemeColors>;
   wall: { show_platform_icon: boolean; border_radius: number; card_spacing: number };
   radius: string;
-  masonry?: boolean;
 }) {
   const companyLogoUrl = getCompanyLogoUrl(proof.author_title);
   return (
     <div
-      className={masonry ? "break-inside-avoid" : ""}
+      className="break-inside-avoid"
       style={{
         padding: "20px",
-        marginBottom: masonry ? `${wall.card_spacing}px` : undefined,
+        marginBottom: `${wall.card_spacing}px`,
         borderRadius: radius,
         border: `1px solid ${t.borderColor}`,
         background: t.bgCard,
-        width: masonry ? undefined : "300px",
-        flexShrink: masonry ? undefined : 0,
       }}
     >
       {companyLogoUrl && <CompanyLogoImg url={companyLogoUrl} />}
@@ -188,49 +185,13 @@ setInterval(function(){send(true)},1000);
         <div className="text-center py-12" style={{ color: t.textTertiary }}>
           No proofs yet.
         </div>
-      ) : (wall.layout || "masonry") === "marquee" ? (
-        (() => {
-          const minCards = Math.max(6, proofs.length);
-          const repeatCount = Math.ceil(minCards / proofs.length);
-          const filled = [];
-          for (let i = 0; i < repeatCount; i++) filled.push(...proofs);
-          const duration = filled.length * 4.5;
-          return (
-            <>
-              <style dangerouslySetInnerHTML={{ __html: `
-@keyframes ew-marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-.ew-marquee-wrap { overflow: hidden; width: 100%; mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); }
-.ew-marquee-track { display: flex; gap: ${spacing}; animation: ew-marquee ${duration}s linear infinite; width: max-content; }
-.ew-marquee-track:hover { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { .ew-marquee-track { animation: none; } .ew-marquee-wrap { overflow-x: auto; mask-image: none; -webkit-mask-image: none; } }
-              ` }} />
-              <div className="ew-marquee-wrap">
-                <div className="ew-marquee-track">
-                  {[...filled, ...filled].map((proof, i) => (
-                    <EmbedWallCard key={`m-${i}`} proof={proof} t={t} wall={wall} radius={radius} />
-                  ))}
-                </div>
-              </div>
-            </>
-          );
-        })()
-      ) : wall.layout === "carousel" ? (
-        <div style={{ overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: "8px" }}>
-          <div style={{ display: "flex", gap: spacing }}>
-            {proofs.map((proof) => (
-              <div key={proof.id} style={{ flexShrink: 0, width: "300px", scrollSnapAlign: "start" }}>
-                <EmbedWallCard proof={proof} t={t} wall={wall} radius={radius} />
-              </div>
-            ))}
-          </div>
-        </div>
       ) : (
         <div
           className="columns-1 sm:columns-2 lg:columns-3"
           style={{ columnGap: spacing }}
         >
           {proofs.map((proof) => (
-            <EmbedWallCard key={proof.id} proof={proof} t={t} wall={wall} radius={radius} masonry />
+            <EmbedWallCard key={proof.id} proof={proof} t={t} wall={wall} radius={radius} />
           ))}
         </div>
       )}

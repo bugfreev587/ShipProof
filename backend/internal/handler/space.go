@@ -203,6 +203,7 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		BgColor          string `json:"bg_color"`
 		BgOpacity        int32  `json:"bg_opacity"`
 		Layout           string `json:"layout"`
+		Rows             int32  `json:"rows"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
@@ -210,6 +211,9 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Defaults
+	if req.Rows < 1 || req.Rows > 4 {
+		req.Rows = 1
+	}
 	if req.VisibleCount < 1 || req.VisibleCount > 10 {
 		req.VisibleCount = 3
 	}
@@ -249,6 +253,7 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		BgColor:          req.BgColor,
 		BgOpacity:        req.BgOpacity,
 		Layout:           req.Layout,
+		Rows:             req.Rows,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update space config"}`, http.StatusInternalServerError)

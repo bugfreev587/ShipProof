@@ -42,6 +42,7 @@ interface WidgetSettings {
   bg_color?: string;
   bg_opacity?: number;
   layout?: string;
+  rows?: number;
 }
 
 type PgText = { String: string; Valid: boolean } | string | null;
@@ -260,6 +261,7 @@ export default async function EmbedPage({
   const textBold = widget.text_bold || false;
   const maxItems = widget.max_items || proofs.length;
   const layout = widget.layout || "carousel";
+  const rows = Math.max(1, Math.min(4, widget.rows || 1));
 
   // Compute container background from bg_color + bg_opacity
   let containerBg = "transparent";
@@ -286,15 +288,21 @@ export default async function EmbedPage({
   };
 
   if (layout === "marquee") {
-    // Ensure enough cards for seamless loop: duplicate until we have at least 6
-    const minCards = Math.max(6, displayProofs.length);
-    const repeatCount = displayProofs.length > 0 ? Math.ceil(minCards / displayProofs.length) : 1;
-    const filledProofs: ProofItem[] = [];
-    for (let i = 0; i < repeatCount; i++) {
-      filledProofs.push(...displayProofs);
-    }
-    // Duration: ~4.5s per card
-    const duration = filledProofs.length * 4.5;
+    // Split proofs across rows
+    const rowProofs: ProofItem[][] = Array.from({ length: rows }, () => []);
+    displayProofs.forEach((proof, i) => {
+      rowProofs[i % rows].push(proof);
+    });
+
+    // Build CSS for each row with alternating directions
+    const rowStyles = rowProofs.map((rp, idx) => {
+      const minCards = Math.max(6, rp.length);
+      const repeatCount = rp.length > 0 ? Math.ceil(minCards / rp.length) : 1;
+      const filledCount = repeatCount * rp.length;
+      const duration = filledCount * 4.5;
+      const direction = idx % 2 === 0 ? "marquee-left" : "marquee-right";
+      return { filledCount, repeatCount, duration, direction, proofs: rp };
+    });
 
     return (
       <div
@@ -312,9 +320,13 @@ export default async function EmbedPage({
           dangerouslySetInnerHTML={{
             __html: `
 .proof-card:hover { border-color: ${t.borderHover} !important; box-shadow: 0 4px 20px ${t.borderHover}40 !important; transform: translateY(-2px); }
-@keyframes marquee-scroll {
+@keyframes marquee-left {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
 }
 .marquee-container {
   overflow: hidden;
@@ -325,7 +337,6 @@ export default async function EmbedPage({
 .marquee-track {
   display: flex;
   gap: ${spacing};
-  animation: marquee-scroll ${duration}s linear infinite;
   width: max-content;
 }
 .marquee-track:hover {
@@ -333,7 +344,7 @@ export default async function EmbedPage({
 }
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {
-    animation: none;
+    animation: none !important;
     overflow-x: auto;
   }
   .marquee-container {
@@ -359,17 +370,27 @@ var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retry
           }}
         />
 
-        <div className="marquee-container">
-          <div className="marquee-track">
-            {/* First set */}
-            {filledProofs.map((proof, i) => (
-              <ProofCard key={`a-${i}`} proof={proof} {...cardProps} />
-            ))}
-            {/* Duplicate set for seamless loop */}
-            {filledProofs.map((proof, i) => (
-              <ProofCard key={`b-${i}`} proof={proof} {...cardProps} />
-            ))}
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: spacing }}>
+          {rowStyles.map((row, rowIdx) => {
+            if (row.proofs.length === 0) return null;
+            const filled: ProofItem[] = [];
+            for (let i = 0; i < row.repeatCount; i++) filled.push(...row.proofs);
+            return (
+              <div key={rowIdx} className="marquee-container">
+                <div
+                  className="marquee-track"
+                  style={{ animation: `${row.direction} ${row.duration}s linear infinite` }}
+                >
+                  {filled.map((proof, i) => (
+                    <ProofCard key={`a-${rowIdx}-${i}`} proof={proof} {...cardProps} />
+                  ))}
+                  {filled.map((proof, i) => (
+                    <ProofCard key={`b-${rowIdx}-${i}`} proof={proof} {...cardProps} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {widget.show_branding && <BrandingBadge t={t} />}
@@ -377,7 +398,13 @@ var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retry
     );
   }
 
-  // Carousel layout (default)
+  // Carousel layout (default) — multi-row with independent scrollable rows
+  // Split proofs across rows
+  const rowProofs: ProofItem[][] = Array.from({ length: rows }, () => []);
+  displayProofs.forEach((proof, i) => {
+    rowProofs[i % rows].push(proof);
+  });
+
   return (
     <div
       id="shipproof-embed"
@@ -392,168 +419,43 @@ var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retry
       <ViewTracker entityType="space" slug={slug} />
       <style
         dangerouslySetInnerHTML={{
-          __html: `.proof-card:hover { border-color: ${t.borderHover} !important; box-shadow: 0 4px 20px ${t.borderHover}40 !important; transform: translateY(-2px); }`,
+          __html: `
+.proof-card:hover { border-color: ${t.borderHover} !important; box-shadow: 0 4px 20px ${t.borderHover}40 !important; transform: translateY(-2px); }
+.carousel-row { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.carousel-row::-webkit-scrollbar { display: none; }
+`,
         }}
       />
       <script
         dangerouslySetInnerHTML={{
           __html: `(function(){
-var cw=${cardWidth},sp=${widget.card_spacing},page=0,totalCards=0,perPage=1,lastH=0,resizeTimer=0;
-function getTrack(){return document.getElementById("shipproof-track")}
-function getViewport(){return document.getElementById("shipproof-viewport")}
-function adjust(){
-  var vp=getViewport();if(!vp)return;
-  var row=vp.parentElement;
-  var pw=row.parentElement.clientWidth-80;
-  totalCards=${displayProofs.length};
-  perPage=Math.max(1,Math.floor((pw+sp)/(cw+sp)));
-  var maxW=perPage*cw+(perPage-1)*sp;
-  vp.style.maxWidth=maxW+"px";
-  if(page>Math.max(0,Math.ceil(totalCards/perPage)-1))page=Math.max(0,Math.ceil(totalCards/perPage)-1);
-  slideTo();
-  updateDots();
-  updateArrows();
-  send();
-}
-function slideTo(){
-  var track=getTrack();if(!track)return;
-  var offset=page*(perPage*cw+perPage*sp);
-  track.style.transform="translateX(-"+offset+"px)";
-}
-function totalPages(){return Math.max(1,Math.ceil(totalCards/perPage))}
-function updateDots(){
-  var dc=document.getElementById("shipproof-dots");
-  if(!dc)return;
-  var tp=totalPages();
-  dc.innerHTML="";
-  if(tp<=1){dc.style.display="none";return;}
-  dc.style.display="flex";
-  for(var i=0;i<tp;i++){
-    var d=document.createElement("span");
-    d.style.cssText="width:8px;height:8px;border-radius:50%;cursor:pointer;transition:background 0.2s;";
-    d.style.background=i===page?"${t.textSecondary}":"${t.border}";
-    d.setAttribute("data-page",i);
-    d.addEventListener("click",function(){page=parseInt(this.getAttribute("data-page"));slideTo();updateDots();send()});
-    dc.appendChild(d);
-  }
-}
-function updateArrows(){
-  var la=document.getElementById("shipproof-arrow-left");
-  var ra=document.getElementById("shipproof-arrow-right");
-  var tp=totalPages();
-  if(la)la.style.display=tp<=1?"none":"flex";
-  if(ra)ra.style.display=tp<=1?"none":"flex";
-}
+var lastH=0;
 function send(){
   var el=document.getElementById("shipproof-embed");
   if(el&&window.parent!==window){var h=el.scrollHeight;if(h!==lastH){lastH=h;window.parent.postMessage({type:"shipproof-resize",height:h},"*")}}
 }
-window.__shipproof_prev=function(){page=(page-1+totalPages())%totalPages();slideTo();updateDots();send()};
-window.__shipproof_next=function(){page=(page+1)%totalPages();slideTo();updateDots();send()};
-function vcenter(){
-  var el=document.getElementById("shipproof-embed");if(!el)return;
-  var wh=window.innerHeight,eh=el.scrollHeight;
-  if(wh>eh+20){el.style.paddingTop=Math.floor((wh-eh)/2)+"px"}
-}
-function debouncedAdjust(){clearTimeout(resizeTimer);resizeTimer=setTimeout(adjust,100)}
-if(document.readyState==="complete"){adjust();vcenter()}else window.addEventListener("load",function(){adjust();vcenter()});
-window.addEventListener("resize",debouncedAdjust);
-var retryCount=0;var retryId=setInterval(function(){var el=document.getElementById("shipproof-embed");if(el&&window.parent!==window){window.parent.postMessage({type:"shipproof-resize",height:el.scrollHeight},"*")}retryCount++;if(retryCount>=10)clearInterval(retryId)},500);
+if(document.readyState==="complete")send();else window.addEventListener("load",send);
+var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=10)clearInterval(retryId)},500);
 })();`,
         }}
       />
 
-      {/* Carousel row: arrow + cards + arrow */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          justifyContent: "center",
-          margin: "0 auto",
-        }}
-      >
-        {/* Left arrow */}
-        <button
-          id="shipproof-arrow-left"
-          style={{
-            flexShrink: 0,
-            zIndex: 10,
-            width: "28px",
-            height: "28px",
-            borderRadius: "50%",
-            border: `1px solid ${t.border}`,
-            background: t.bgSurface,
-            color: t.textSecondary,
-            display: "none",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            fontSize: "16px",
-            lineHeight: 1,
-          }}
-          dangerouslySetInnerHTML={{
-            __html: `<span onclick="__shipproof_prev()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u2039</span>`,
-          }}
-        />
-
-        {/* Cards viewport */}
-        <div
-          id="shipproof-viewport"
-          style={{
-            overflow: "hidden",
-            padding: "4px 0",
-          }}
-        >
-          <div
-            id="shipproof-track"
-            style={{
-              display: "flex",
-              gap: spacing,
-              transition: "transform 0.4s ease",
-            }}
-          >
-            {displayProofs.map((proof) => (
-              <ProofCard key={proof.id} proof={proof} {...cardProps} />
-            ))}
-          </div>
-        </div>
-
-        {/* Right arrow */}
-        <button
-          id="shipproof-arrow-right"
-          style={{
-            flexShrink: 0,
-            zIndex: 10,
-            width: "28px",
-            height: "28px",
-            borderRadius: "50%",
-            border: `1px solid ${t.border}`,
-            background: t.bgSurface,
-            color: t.textSecondary,
-            display: "none",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            fontSize: "16px",
-            lineHeight: 1,
-          }}
-          dangerouslySetInnerHTML={{
-            __html: `<span onclick="__shipproof_next()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u203A</span>`,
-          }}
-        />
+      <div style={{ display: "flex", flexDirection: "column", gap: spacing }}>
+        {rowProofs.map((rp, rowIdx) => {
+          if (rp.length === 0) return null;
+          return (
+            <div key={rowIdx} className="carousel-row">
+              <div style={{ display: "flex", gap: spacing }}>
+                {rp.map((proof) => (
+                  <div key={proof.id} style={{ scrollSnapAlign: "start" }}>
+                    <ProofCard proof={proof} {...cardProps} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
-
-      {/* Dot indicators */}
-      <div
-        id="shipproof-dots"
-        style={{
-          display: "none",
-          justifyContent: "center",
-          gap: "6px",
-          paddingTop: "8px",
-        }}
-      />
 
       {widget.show_branding && <BrandingBadge t={t} />}
     </div>

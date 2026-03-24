@@ -395,6 +395,7 @@ export interface Space {
   bg_color: string;
   bg_opacity: number;
   layout: string;
+  rows: number;
   created_at: string;
   updated_at: string;
 }
@@ -749,6 +750,7 @@ export function updateSpaceConfig(
     bg_color: string;
     bg_opacity: number;
     layout: string;
+    rows: number;
   },
   token: string,
 ) {

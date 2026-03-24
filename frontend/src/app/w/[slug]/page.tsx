@@ -160,42 +160,6 @@ export default async function WallPage({
           <div className="text-center py-12" style={{ color: t.textTertiary }}>
             No proofs yet.
           </div>
-        ) : (wall.layout || "masonry") === "marquee" ? (
-          (() => {
-            const minCards = Math.max(6, proofs.length);
-            const repeatCount = Math.ceil(minCards / proofs.length);
-            const filled = [];
-            for (let i = 0; i < repeatCount; i++) filled.push(...proofs);
-            const duration = filled.length * 4.5;
-            return (
-              <>
-                <style dangerouslySetInnerHTML={{ __html: `
-@keyframes wp-marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-.wp-marquee-wrap { overflow: hidden; width: 100%; mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); }
-.wp-marquee-track { display: flex; gap: ${spacing}; animation: wp-marquee ${duration}s linear infinite; width: max-content; }
-.wp-marquee-track:hover { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { .wp-marquee-track { animation: none; } .wp-marquee-wrap { overflow-x: auto; mask-image: none; -webkit-mask-image: none; } }
-                ` }} />
-                <div className="wp-marquee-wrap">
-                  <div className="wp-marquee-track">
-                    {[...filled, ...filled].map((proof, i) => (
-                      <WallCard key={`m-${i}`} proof={proof} t={t} wall={wall} radius={radius} />
-                    ))}
-                  </div>
-                </div>
-              </>
-            );
-          })()
-        ) : wall.layout === "carousel" ? (
-          <div style={{ overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: "8px" }}>
-            <div style={{ display: "flex", gap: spacing }}>
-              {proofs.map((proof) => (
-                <div key={proof.id} style={{ flexShrink: 0, width: "340px", scrollSnapAlign: "start" }}>
-                  <WallCard proof={proof} t={t} wall={wall} radius={radius} />
-                </div>
-              ))}
-            </div>
-          </div>
         ) : (
           <div
             className="columns-1 sm:columns-2 lg:columns-3"
