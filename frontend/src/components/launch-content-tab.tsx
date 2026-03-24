@@ -545,11 +545,11 @@ function GenerateForm({
           value={launchNotes}
           onChange={(e) => setLaunchNotes(e.target.value)}
           rows={4}
-          placeholder="Key talking points, unique angles, specific features to highlight, tone preferences, or any context the AI should use when generating content..."
+          placeholder={"What's in this launch? Include:\n\u2022 Key features or changes in this release\n\u2022 Your personal story / background (helps AI write authentic content)\n\u2022 Any interesting technical decisions\n\u2022 Honest metrics if you have them (users, revenue, even $0)\n\nExample: \"Built this in 4 weeks as a solo dev. Ex-Google engineer. Added dark mode + Reddit content gen. 50 signups, $0 MRR. Stack: Go + Next.js + Claude API.\""}
           className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none resize-none"
         />
         <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-          These notes will be used as the primary context for AI-generated content across all platforms.
+          The more personal context you provide, the more authentic the generated content will be.
         </p>
       </div>
 
@@ -770,6 +770,9 @@ function DraftEditor({
             })}
           </div>
 
+          {/* Platform safety tip */}
+          <PlatformSafetyTip platform={activePlatform} />
+
           {/* Content editor */}
           <ContentEditor
             platform={activePlatform}
@@ -883,6 +886,74 @@ function DraftEditor({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+const SAFETY_TIPS: Record<string, { type: "warn" | "safe"; text: string }> = {
+  reddit: {
+    type: "warn",
+    text: "Don\u2019t paste this directly. Customize with your personal story. Never put your product URL in the post body \u2014 add it in a comment instead.",
+  },
+  hackernews: {
+    type: "warn",
+    text: "Review for any marketing language. HN will penalize superlatives and promotional tone.",
+  },
+  twitter: {
+    type: "warn",
+    text: "Don\u2019t put URLs in your first tweet. Link goes in bio or last tweet.",
+  },
+  product_hunt: {
+    type: "safe",
+    text: "Product Hunt is more marketing-friendly. Still review the maker comment for authenticity.",
+  },
+  indiehackers: {
+    type: "safe",
+    text: "IndieHackers welcomes product posts. Make sure to include honest numbers.",
+  },
+};
+
+function PlatformSafetyTip({ platform }: { platform: string }) {
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const saved = localStorage.getItem("shipproof-safety-tips-dismissed");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const tip = SAFETY_TIPS[platform];
+  if (!tip || dismissed.has(platform)) return null;
+
+  const isWarn = tip.type === "warn";
+
+  return (
+    <div
+      className={`mb-4 flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs ${
+        isWarn
+          ? "bg-[#F59E0B]/5 text-[#F59E0B]/80"
+          : "bg-[#22C55E]/5 text-[#22C55E]/80"
+      }`}
+    >
+      <span className="shrink-0 mt-0.5">{isWarn ? "\u26a0\ufe0f" : "\u2705"}</span>
+      <span className="flex-1 text-[var(--text-secondary)]">{tip.text}</span>
+      <button
+        onClick={() => {
+          const next = new Set(dismissed);
+          next.add(platform);
+          setDismissed(next);
+          try {
+            localStorage.setItem("shipproof-safety-tips-dismissed", JSON.stringify([...next]));
+          } catch { /* ignore */ }
+        }}
+        className="shrink-0 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+      >
+        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   );
 }

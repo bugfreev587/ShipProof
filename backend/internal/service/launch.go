@@ -373,41 +373,74 @@ func extractJSON(text string) string {
 }
 
 func buildSystemPrompt(platforms []string, subreddits []string) string {
-	prompt := `You are an expert launch content writer for indie hackers and startup founders. You understand the culture, rules, and best practices of each platform.
+	prompt := `You are an expert at writing authentic, platform-native content for product launches. You deeply understand the culture, tone, and unwritten rules of each platform.
 
-Generate launch content in JSON format. Only include the platforms requested. Follow these rules strictly:
+Generate launch content in JSON format. Only include the platforms requested.
 
-**Product Hunt:**
-- title: Short, punchy, max 60 characters
+CRITICAL RULES:
+1. Every post must read like a real person wrote it — not like AI-generated marketing copy.
+2. Content must comply with each platform's self-promotion rules. Posts that get flagged, warned, or removed are a FAILURE.
+3. Lead with story, experience, or insight — NOT with the product.
+4. The product should emerge naturally from the narrative, never be the opening pitch.
+5. Avoid: feature lists as the main content, marketing buzzwords, "check it out" CTAs, excessive bullet points.
+6. Include: personal context, honest numbers, lessons learned, genuine questions to the community.
+7. Every generation should feel unique and personal, not templated.
+
+PLATFORM-SPECIFIC RULES:
+
+=== Reddit ===
+Reddit communities HATE self-promotion. Posts that look like ads get removed.
+
+Content must be 70% valuable content (experience, lessons, insights) and 30% product mention.
+- title: Interesting hook about your experience or lesson — NEVER the product name
+- body: Open with personal context, share what you learned or struggled with, mention the product naturally as part of your story, end with a genuine question to the community
+- The product URL must NEVER appear in the body. Users can find it in your profile.
+- Markdown format, authentic conversational voice
+
+Subreddit-specific tone:
+- r/SaaS: Share your SaaS journey, lessons, honest numbers. Product mention OK within a valuable story.
+- r/startups: Focus on founder journey, pivots, decisions. Less about the product, more about the process.
+- r/sideproject: Show what you built + ask for genuine feedback. More product-focused but still needs personal story.
+- r/webdev: Technical angle, interesting implementation decisions. Minimal product promotion.
+
+Each subreddit gets its own entry in the array with "subreddit", "title", and "body" fields.
+
+=== Hacker News (Show HN) ===
+HN values technical substance and intellectual honesty. Marketing language is instantly punished.
+
+- title: "Show HN: [Name] – [factual one-line description]" — no superlatives, no emoji
+- first_comment: Explain WHY you built it (personal motivation), technical decisions and tradeoffs, what's interesting technically, what you want feedback on. Tone: like explaining to a smart colleague.
+
+NEVER include: pricing, competitor comparisons, marketing language ("game-changer", "powerful", "all-in-one", "10x"), customer testimonials, "Happy to answer questions!"
+
+=== Product Hunt ===
+PH is the most marketing-friendly platform, but authenticity still wins.
+
+- title: Clear value prop, under 60 characters
 - subtitle: One-line value proposition
-- description: 3-4 paragraphs covering problem → solution → key features → CTA
-- maker_comment: Personal story + why you built this + ask for feedback. Friendly, personal, non-salesy.
+- description: 2-3 paragraphs. Problem → solution → how it works. Frame features as user benefits.
+- maker_comment: This is where you get personal. Share your story, your background, why you built this. Be vulnerable about challenges. Ask for SPECIFIC feedback. This should feel like a friend telling you about their project.
 
-**Reddit:**
-- Each subreddit gets its own entry in the array
-- r/SaaS: Direct product introduction, title describes the pain point
-- r/startups: Focus on journey and lessons learned
-- r/sideproject: Show what you built + request feedback
-- r/webdev: Technical angle, implementation details
-- General: Avoid pure self-promotion, frame as sharing/discussion. No external links in title.
-- title: Engaging, describes value or pain point
-- body: Markdown format, authentic voice
+=== Twitter/X ===
+Twitter rewards personality and story. Pure product announcements get low engagement.
 
-**Hacker News (Show HN):**
-- title: "Show HN: [Product Name] – [one-line description]"
-- first_comment: Technical decisions, motivation, honest and humble tone. No marketing language.
+Generate a "thread" array of 5-8 tweet strings.
+- Tweet 1: Hook — personal story or surprising insight (NO product link, NO product name)
+- Tweet 2-3: Context — what you were struggling with, what you learned
+- Tweet 4-5: The product enters naturally as part of the story
+- Tweet 6-7: Interesting details — tech stack, build process, honest metrics
+- Last tweet: Soft CTA — "link in bio" or "reply if you want to try it"
 
-**Twitter/X:**
-- Generate a thread of 5-8 tweets
-- Tweet 1: Hook + core value proposition
-- Middle tweets: Feature highlights, build story, screenshot suggestions
-- Last tweet: CTA + link placeholder
-- Each tweet MUST be under 280 characters
-- Use emoji sparingly
+Each tweet MUST be under 280 characters. Conversational tone, no corporate language. Max 1-2 emoji per tweet. No hashtags except optionally #buildinpublic in the last tweet. NEVER put a URL in the first tweet.
 
-**IndieHackers:**
+=== IndieHackers ===
+IH is the most forgiving for product mentions, but build-in-public style performs best.
+
 - title: Journey/build-in-public style
-- body: Share the process honestly, include numbers if available, ask for community feedback
+- body: Share your journey (background, timeline), be transparent with numbers (even if zero), explain decisions and why, what's working and what's not, end with a real question for the community
+
+IH readers love: honest metrics, technical details, pivot stories, "what I'd do differently"
+IH readers hate: polished marketing copy, vague claims, no substance
 
 Return ONLY valid JSON, no other text.`
 
@@ -460,32 +493,41 @@ func buildUserPrompt(req GenerateRequest, product db.Product) string {
 		launchNotes = req.LaunchNotes
 	}
 
-	prompt := fmt.Sprintf(`Generate launch content for the following product:
+	prompt := fmt.Sprintf(`PRODUCT BACKGROUND:
+- Name: %s
+- URL: %s
+- One-line: %s
+- Detailed: %s
+- Target audience: %s
 
-**Product Name:** %s
-**Product URL:** %s
-**Short Description:** %s
-**Detailed Description:** %s
-**Target Audience:** %s
-**Launch Type:** %s
-
-**Platforms to generate for:**
-%s`, name, url, desc, descLong, audience, ltLabel, platformStr)
+THIS LAUNCH:
+- Type: %s
+`, name, url, desc, descLong, audience, ltLabel)
 
 	if launchNotes != "" {
-		prompt += fmt.Sprintf("\n**Launch Notes (IMPORTANT — use these as the primary context and talking points for all generated content):**\n%s\n", launchNotes)
+		prompt += fmt.Sprintf("- Maker's notes (USE THIS AS PRIMARY CONTEXT — personal background, key points, metrics):\n%s\n", launchNotes)
 	}
 
+	prompt += fmt.Sprintf("\nGENERATE FOR:\n%s", platformStr)
+
 	if subredditStr != "" {
-		prompt += fmt.Sprintf("\n**Reddit Subreddits:**\n%s", subredditStr)
+		prompt += fmt.Sprintf("\nReddit Subreddits:\n%s", subredditStr)
 	}
 
 	prompt += `
+IMPORTANT REMINDERS:
+- Reddit: Story-first, product-second. NO product URL in post body. Title must NOT contain the product name. Each post must feel like genuine community participation, not promotion.
+- HN: Technical, humble, no marketing language whatsoever. No pricing, no superlatives.
+- Twitter: Personal hook first tweet (no product name, no URL). Product enters naturally mid-thread.
+- PH: Maker comment must feel genuine and personal — like telling a friend, not pitching an investor.
+- IH: Transparent journey post with real numbers and honest reflections.
 
-Generate the JSON content with ONLY the requested platforms as keys. Use these exact key names: "product_hunt", "reddit", "hackernews", "twitter", "indiehackers".
+Generate ONLY the requested platforms as JSON keys. Use these exact key names: "product_hunt", "reddit", "hackernews", "twitter", "indiehackers".
 
 For reddit, return an array of objects with "subreddit", "title", and "body" fields.
-For twitter, return an object with a "thread" array of tweet strings.`
+For twitter, return an object with a "thread" array of tweet strings.
+
+Write as a real indie hacker sharing their genuine experience — not as a marketer selling a product.`
 
 	// Add pgtype.Text helper
 	_ = pgtype.Text{}
