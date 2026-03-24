@@ -1,0 +1,2 @@
+ALTER TABLE walls DROP COLUMN IF EXISTS subtitle;
+ALTER TABLE walls DROP COLUMN IF EXISTS show_header;

@@ -463,6 +463,8 @@ type Wall struct {
 	BgColor          string      `json:"bg_color"`
 	TransparentBg    bool        `json:"transparent_bg"`
 	HeaderTextColor  string      `json:"header_text_color"`
+	Subtitle         string      `json:"subtitle"`
+	ShowHeader       bool        `json:"show_header"`
 }
 
 type WallProof struct {

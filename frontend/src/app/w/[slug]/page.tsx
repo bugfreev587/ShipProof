@@ -92,13 +92,19 @@ export default async function WallPage({
     <div className="min-h-screen" style={{ background: t.bgBase }}>
       <ViewTracker entityType="wall" slug={slug} />
       {/* Header */}
-      <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>{wall.name}</h1>
-        <p style={{ color: t.textSecondary }}>
-          What people are saying about{" "}
-          <span className="font-medium" style={{ color: t.textPrimary }}>{product.name}</span>
-        </p>
-      </div>
+      {wall.show_header !== false && (
+        <div className="max-w-6xl mx-auto px-4 py-12 text-center">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>{wall.name}</h1>
+          <p style={{ color: t.textSecondary }}>
+            {wall.subtitle || (
+              <>
+                What people are saying about{" "}
+                <span className="font-medium" style={{ color: t.textPrimary }}>{product.name}</span>
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Masonry Grid */}
       <div className="max-w-6xl mx-auto px-4 pb-12">

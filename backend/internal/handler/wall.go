@@ -214,6 +214,8 @@ func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		BgColor          string `json:"bg_color"`
 		TransparentBg    bool   `json:"transparent_bg"`
 		HeaderTextColor  string `json:"header_text_color"`
+		Subtitle         string `json:"subtitle"`
+		ShowHeader       bool   `json:"show_header"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
@@ -230,6 +232,8 @@ func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		BgColor:          req.BgColor,
 		TransparentBg:    req.TransparentBg,
 		HeaderTextColor:  req.HeaderTextColor,
+		Subtitle:         req.Subtitle,
+		ShowHeader:       req.ShowHeader,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update wall config"}`, http.StatusInternalServerError)

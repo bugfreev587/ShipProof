@@ -126,6 +126,8 @@ export default function WallEditPage() {
             bg_color: newWall.bg_color,
             transparent_bg: newWall.transparent_bg,
             header_text_color: newWall.header_text_color,
+            subtitle: newWall.subtitle,
+            show_header: newWall.show_header,
           },
           token,
         );
@@ -203,6 +205,55 @@ export default function WallEditPage() {
         <div className="w-1/4 min-w-[280px] flex-shrink-0 space-y-6">
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-5">
             <h2 className="text-sm font-medium text-[var(--text-primary)]">Configuration</h2>
+
+            {/* Show Header */}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={wall.show_header}
+                onChange={(e) => handleConfigChange({ show_header: e.target.checked })}
+                className="rounded border-[var(--border)]"
+              />
+              <span className="text-xs text-[var(--text-secondary)]">Show header</span>
+            </label>
+
+            {wall.show_header && (
+              <>
+                {/* Wall Name (header) */}
+                <div>
+                  <label className="block text-xs text-[var(--text-secondary)] mb-1">Header</label>
+                  <input
+                    type="text"
+                    value={wall.name}
+                    onChange={(e) => {
+                      setWall({ ...wall, name: e.target.value });
+                      if (debounceRef.current) clearTimeout(debounceRef.current);
+                      debounceRef.current = setTimeout(async () => {
+                        const token = await getToken();
+                        if (!token) return;
+                        try {
+                          const { updateWall } = await import("@/lib/api");
+                          await updateWall(wallId, e.target.value, token);
+                        } catch { /* ignore */ }
+                      }, 500);
+                    }}
+                    className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[#6366F1] focus:outline-none"
+                  />
+                </div>
+
+                {/* Subtitle */}
+                <div>
+                  <label className="block text-xs text-[var(--text-secondary)] mb-1">Subtitle</label>
+                  <input
+                    type="text"
+                    value={wall.subtitle}
+                    onChange={(e) => handleConfigChange({ subtitle: e.target.value })}
+                    placeholder="What people are saying about..."
+                    className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
+                  />
+                </div>
+              </>
+            )}
 
             {/* Theme */}
             <div>
@@ -423,17 +474,23 @@ function WallPreview({
   return (
     <div className="overflow-y-auto" style={{ background: bgStyle, maxHeight: "calc(100vh - 260px)" }}>
       {/* Header */}
-      <div className="max-w-5xl mx-auto px-4 py-10 text-center">
-        <h1 className="text-2xl font-bold mb-2" style={{ color: headerColor }}>
-          {wall.name}
-        </h1>
-        <p style={{ color: headerSubColor }}>
-          What people are saying about{" "}
-          <span className="font-medium" style={{ color: headerColor }}>
-            {product.name}
-          </span>
-        </p>
-      </div>
+      {wall.show_header && (
+        <div className="max-w-5xl mx-auto px-4 py-10 text-center">
+          <h1 className="text-2xl font-bold mb-2" style={{ color: headerColor }}>
+            {wall.name}
+          </h1>
+          <p style={{ color: headerSubColor }}>
+            {wall.subtitle || (
+              <>
+                What people are saying about{" "}
+                <span className="font-medium" style={{ color: headerColor }}>
+                  {product.name}
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Masonry Grid */}
       <div className="max-w-5xl mx-auto px-4 pb-10">

@@ -27,6 +27,8 @@ UPDATE walls SET
     bg_color = $7,
     transparent_bg = $8,
     header_text_color = $9,
+    subtitle = $10,
+    show_header = $11,
     updated_at = now()
 WHERE id = $1
 RETURNING *;

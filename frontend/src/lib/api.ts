@@ -350,6 +350,8 @@ export interface Wall {
   bg_color: string;
   transparent_bg: boolean;
   header_text_color: string;
+  subtitle: string;
+  show_header: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -632,6 +634,8 @@ export function updateWallConfig(
     bg_color: string;
     transparent_bg: boolean;
     header_text_color: string;
+    subtitle: string;
+    show_header: boolean;
   },
   token: string,
 ) {

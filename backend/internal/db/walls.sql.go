@@ -25,7 +25,7 @@ func (q *Queries) CountWallsByProductID(ctx context.Context, productID uuid.UUID
 const createWall = `-- name: CreateWall :one
 INSERT INTO walls (product_id, name, slug)
 VALUES ($1, $2, $3)
-RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color
+RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color, subtitle, show_header
 `
 
 type CreateWallParams struct {
@@ -52,6 +52,8 @@ func (q *Queries) CreateWall(ctx context.Context, arg CreateWallParams) (Wall, e
 		&i.BgColor,
 		&i.TransparentBg,
 		&i.HeaderTextColor,
+		&i.Subtitle,
+		&i.ShowHeader,
 	)
 	return i, err
 }
@@ -66,7 +68,7 @@ func (q *Queries) DeleteWall(ctx context.Context, id uuid.UUID) error {
 }
 
 const getWallByID = `-- name: GetWallByID :one
-SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color FROM walls WHERE id = $1
+SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color, subtitle, show_header FROM walls WHERE id = $1
 `
 
 func (q *Queries) GetWallByID(ctx context.Context, id uuid.UUID) (Wall, error) {
@@ -87,12 +89,14 @@ func (q *Queries) GetWallByID(ctx context.Context, id uuid.UUID) (Wall, error) {
 		&i.BgColor,
 		&i.TransparentBg,
 		&i.HeaderTextColor,
+		&i.Subtitle,
+		&i.ShowHeader,
 	)
 	return i, err
 }
 
 const getWallBySlug = `-- name: GetWallBySlug :one
-SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color FROM walls WHERE slug = $1
+SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color, subtitle, show_header FROM walls WHERE slug = $1
 `
 
 func (q *Queries) GetWallBySlug(ctx context.Context, slug string) (Wall, error) {
@@ -113,12 +117,14 @@ func (q *Queries) GetWallBySlug(ctx context.Context, slug string) (Wall, error) 
 		&i.BgColor,
 		&i.TransparentBg,
 		&i.HeaderTextColor,
+		&i.Subtitle,
+		&i.ShowHeader,
 	)
 	return i, err
 }
 
 const listWallsByProductID = `-- name: ListWallsByProductID :many
-SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color FROM walls WHERE product_id = $1 ORDER BY created_at DESC
+SELECT id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color, subtitle, show_header FROM walls WHERE product_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListWallsByProductID(ctx context.Context, productID uuid.UUID) ([]Wall, error) {
@@ -145,6 +151,8 @@ func (q *Queries) ListWallsByProductID(ctx context.Context, productID uuid.UUID)
 			&i.BgColor,
 			&i.TransparentBg,
 			&i.HeaderTextColor,
+			&i.Subtitle,
+			&i.ShowHeader,
 		); err != nil {
 			return nil, err
 		}
@@ -159,7 +167,7 @@ func (q *Queries) ListWallsByProductID(ctx context.Context, productID uuid.UUID)
 const updateWall = `-- name: UpdateWall :one
 UPDATE walls SET name = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color
+RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color, subtitle, show_header
 `
 
 type UpdateWallParams struct {
@@ -185,6 +193,8 @@ func (q *Queries) UpdateWall(ctx context.Context, arg UpdateWallParams) (Wall, e
 		&i.BgColor,
 		&i.TransparentBg,
 		&i.HeaderTextColor,
+		&i.Subtitle,
+		&i.ShowHeader,
 	)
 	return i, err
 }
@@ -199,9 +209,11 @@ UPDATE walls SET
     bg_color = $7,
     transparent_bg = $8,
     header_text_color = $9,
+    subtitle = $10,
+    show_header = $11,
     updated_at = now()
 WHERE id = $1
-RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color
+RETURNING id, product_id, name, slug, created_at, updated_at, theme, border_radius, card_spacing, show_platform_icon, show_branding, bg_color, transparent_bg, header_text_color, subtitle, show_header
 `
 
 type UpdateWallConfigParams struct {
@@ -214,6 +226,8 @@ type UpdateWallConfigParams struct {
 	BgColor          string      `json:"bg_color"`
 	TransparentBg    bool        `json:"transparent_bg"`
 	HeaderTextColor  string      `json:"header_text_color"`
+	Subtitle         string      `json:"subtitle"`
+	ShowHeader       bool        `json:"show_header"`
 }
 
 func (q *Queries) UpdateWallConfig(ctx context.Context, arg UpdateWallConfigParams) (Wall, error) {
@@ -227,6 +241,8 @@ func (q *Queries) UpdateWallConfig(ctx context.Context, arg UpdateWallConfigPara
 		arg.BgColor,
 		arg.TransparentBg,
 		arg.HeaderTextColor,
+		arg.Subtitle,
+		arg.ShowHeader,
 	)
 	var i Wall
 	err := row.Scan(
@@ -244,6 +260,8 @@ func (q *Queries) UpdateWallConfig(ctx context.Context, arg UpdateWallConfigPara
 		&i.BgColor,
 		&i.TransparentBg,
 		&i.HeaderTextColor,
+		&i.Subtitle,
+		&i.ShowHeader,
 	)
 	return i, err
 }
