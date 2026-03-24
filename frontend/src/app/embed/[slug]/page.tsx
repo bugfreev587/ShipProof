@@ -95,7 +95,7 @@ export default async function EmbedPage({
   const textFontSize = widget.text_font_size || 14;
   const textFont = widget.text_font || "Inter";
   const textBold = widget.text_bold || false;
-  const maxItems = widget.max_items || 6;
+  const maxItems = widget.max_items || proofs.length;
 
   // Compute container background from bg_color + bg_opacity
   let containerBg = "transparent";
