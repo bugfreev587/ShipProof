@@ -159,13 +159,15 @@ export default function HomePage() {
           <p className="mb-12 text-[#9CA3AF]">
             Embed a widget on your site or share a Wall of Love page.
           </p>
+        </div>
+        <div className="w-full overflow-hidden">
           <iframe
             id="shipproof-landing-page-space-afa275"
             src="https://shipproof.io/embed/landing-page-space-afa275"
             frameBorder="0"
             scrolling="no"
             width="100%"
-            style={{ border: "none", borderRadius: "12px", minHeight: "400px" }}
+            style={{ border: "none", minHeight: "400px" }}
             loading="lazy"
           />
           <script
