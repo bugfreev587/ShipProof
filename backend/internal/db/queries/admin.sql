@@ -28,13 +28,18 @@ INSERT INTO page_views (path, referrer, user_agent, utm_source, utm_medium, utm_
 VALUES ($1, $2, $3, $4, $5, $6);
 
 -- name: GetTotalPageViews :one
-SELECT COUNT(*)::int AS total FROM page_views;
+SELECT COUNT(*)::int AS total FROM page_views
+WHERE path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%';
 
 -- name: GetTodayPageViews :one
-SELECT COUNT(*)::int AS total FROM page_views WHERE created_at >= CURRENT_DATE;
+SELECT COUNT(*)::int AS total FROM page_views
+WHERE created_at >= CURRENT_DATE
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%';
 
 -- name: GetPeriodPageViews :one
-SELECT COUNT(*)::int AS total FROM page_views WHERE created_at > now() - @period::interval;
+SELECT COUNT(*)::int AS total FROM page_views
+WHERE created_at > now() - @period::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%';
 
 -- name: GetPageViewsByDay :many
 SELECT
@@ -42,6 +47,7 @@ SELECT
   COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - @period::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
 GROUP BY date
 ORDER BY date;
 
@@ -49,6 +55,7 @@ ORDER BY date;
 SELECT path, COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - @period::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
 GROUP BY path
 ORDER BY views DESC
 LIMIT 10;
@@ -59,6 +66,11 @@ SELECT
   COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - @period::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
+  AND (referrer IS NULL OR referrer = '' OR (
+    referrer NOT LIKE '%/dashboard%'
+    AND referrer NOT LIKE '%vercel.app%'
+  ))
 GROUP BY referrer
 ORDER BY views DESC
 LIMIT 10;
@@ -69,6 +81,7 @@ SELECT
   COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - @period::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
   AND utm_source IS NOT NULL AND utm_source != ''
 GROUP BY utm_source
 ORDER BY views DESC
@@ -81,6 +94,7 @@ SELECT
   COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - @period::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
   AND (utm_source IS NOT NULL AND utm_source != '')
 GROUP BY utm_source, utm_campaign
 ORDER BY views DESC

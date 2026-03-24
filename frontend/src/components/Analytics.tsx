@@ -10,6 +10,9 @@ export function Analytics() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Skip tracking for admin/dashboard pages
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) return;
+
     const utm_source = searchParams.get("utm_source") || null;
     const utm_medium = searchParams.get("utm_medium") || null;
     const utm_campaign = searchParams.get("utm_campaign") || null;

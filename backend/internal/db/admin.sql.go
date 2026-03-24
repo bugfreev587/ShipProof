@@ -33,6 +33,7 @@ SELECT
   COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - $1::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
 GROUP BY date
 ORDER BY date
 `
@@ -63,7 +64,9 @@ func (q *Queries) GetPageViewsByDay(ctx context.Context, period pgtype.Interval)
 }
 
 const getPeriodPageViews = `-- name: GetPeriodPageViews :one
-SELECT COUNT(*)::int AS total FROM page_views WHERE created_at > now() - $1::interval
+SELECT COUNT(*)::int AS total FROM page_views
+WHERE created_at > now() - $1::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
 `
 
 func (q *Queries) GetPeriodPageViews(ctx context.Context, period pgtype.Interval) (int32, error) {
@@ -116,7 +119,9 @@ func (q *Queries) GetRecentSignups(ctx context.Context) ([]GetRecentSignupsRow, 
 }
 
 const getTodayPageViews = `-- name: GetTodayPageViews :one
-SELECT COUNT(*)::int AS total FROM page_views WHERE created_at >= CURRENT_DATE
+SELECT COUNT(*)::int AS total FROM page_views
+WHERE created_at >= CURRENT_DATE
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
 `
 
 func (q *Queries) GetTodayPageViews(ctx context.Context) (int32, error) {
@@ -130,6 +135,7 @@ const getTopPages = `-- name: GetTopPages :many
 SELECT path, COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - $1::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
 GROUP BY path
 ORDER BY views DESC
 LIMIT 10
@@ -166,6 +172,11 @@ SELECT
   COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - $1::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
+  AND (referrer IS NULL OR referrer = '' OR (
+    referrer NOT LIKE '%/dashboard%'
+    AND referrer NOT LIKE '%vercel.app%'
+  ))
 GROUP BY referrer
 ORDER BY views DESC
 LIMIT 10
@@ -202,6 +213,7 @@ SELECT
   COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - $1::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
   AND utm_source IS NOT NULL AND utm_source != ''
 GROUP BY utm_source
 ORDER BY views DESC
@@ -235,6 +247,7 @@ func (q *Queries) GetTopUTMSources(ctx context.Context, period pgtype.Interval) 
 
 const getTotalPageViews = `-- name: GetTotalPageViews :one
 SELECT COUNT(*)::int AS total FROM page_views
+WHERE path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
 `
 
 func (q *Queries) GetTotalPageViews(ctx context.Context) (int32, error) {
@@ -281,6 +294,7 @@ SELECT
   COUNT(*)::int AS views
 FROM page_views
 WHERE created_at > now() - $1::interval
+  AND path NOT LIKE '/dashboard%' AND path NOT LIKE '/admin%'
   AND (utm_source IS NOT NULL AND utm_source != '')
 GROUP BY utm_source, utm_campaign
 ORDER BY views DESC
