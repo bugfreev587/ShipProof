@@ -164,6 +164,7 @@ func main() {
 			r.Post("/api/products/{id}/confirm", launchHandler.ConfirmVersion)
 			r.Get("/api/products/{id}/versions", launchHandler.ListVersions)
 			r.Get("/api/products/{id}/versions/{vid}", launchHandler.GetVersion)
+			r.Delete("/api/products/{id}/versions/{vid}", launchHandler.DeleteVersion)
 
 			// Proofs
 			r.Post("/api/products/{id}/proofs", proofHandler.Create)

@@ -17,5 +17,8 @@ SELECT COALESCE(MAX(version_number), 0)::integer AS max_version_number
 FROM launch_versions
 WHERE product_id = $1;
 
+-- name: DeleteVersion :exec
+DELETE FROM launch_versions WHERE id = $1;
+
 -- name: CountVersionsByProductID :one
 SELECT COUNT(*) FROM launch_versions WHERE product_id = $1;

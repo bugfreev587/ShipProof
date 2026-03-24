@@ -10,6 +10,7 @@ import {
   confirmVersion,
   listVersions,
   getVersion,
+  deleteVersion,
   regenerateField,
   type LaunchDraft,
   type LaunchVersion,
@@ -356,6 +357,15 @@ export default function LaunchContentTab({ product, onPlanLimit }: Props) {
                       platforms={expandedVersionData.platforms}
                       copyToClipboard={copyToClipboard}
                       readOnly
+                    />
+                    <DeleteVersionButton
+                      productId={product.id}
+                      versionId={v.id}
+                      onDeleted={() => {
+                        setExpandedVersion(null);
+                        setExpandedVersionData(null);
+                        fetchData();
+                      }}
                     />
                   </div>
                 )}
@@ -912,6 +922,65 @@ const SAFETY_TIPS: Record<string, { type: "warn" | "safe"; text: string }> = {
     text: "IndieHackers welcomes product posts. Make sure to include honest numbers.",
   },
 };
+
+function DeleteVersionButton({
+  productId,
+  versionId,
+  onDeleted,
+}: {
+  productId: string;
+  versionId: string;
+  onDeleted: () => void;
+}) {
+  const { getToken } = useAuth();
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await deleteVersion(productId, versionId, token);
+      onDeleted();
+    } catch {
+      // ignore
+    } finally {
+      setDeleting(false);
+      setConfirming(false);
+    }
+  };
+
+  return (
+    <div className="mt-4 flex justify-end">
+      {confirming ? (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-[var(--text-secondary)]">Delete this version?</span>
+          <button
+            onClick={() => setConfirming(false)}
+            className="px-3 py-1 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-3 py-1 text-xs text-red-400 hover:text-red-300 bg-red-500/10 rounded transition-colors disabled:opacity-50"
+          >
+            {deleting ? "Deleting..." : "Confirm Delete"}
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setConfirming(true)}
+          className="px-3 py-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+        >
+          Delete Version
+        </button>
+      )}
+    </div>
+  );
+}
 
 function PlatformSafetyTip({ platform }: { platform: string }) {
   const [dismissed, setDismissed] = useState<Set<string>>(() => {

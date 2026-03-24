@@ -36,6 +36,7 @@ type Querier interface {
 	DeleteProduct(ctx context.Context, id uuid.UUID) error
 	DeleteProof(ctx context.Context, id uuid.UUID) error
 	DeleteSpace(ctx context.Context, id uuid.UUID) error
+	DeleteVersion(ctx context.Context, id uuid.UUID) error
 	DeleteWall(ctx context.Context, id uuid.UUID) error
 	GetDraftByProductID(ctx context.Context, productID uuid.UUID) (LaunchDraft, error)
 	GetMaxVersionNumber(ctx context.Context, productID uuid.UUID) (int32, error)

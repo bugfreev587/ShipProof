@@ -306,3 +306,18 @@ func (h *LaunchHandler) GetVersion(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(version)
 }
+
+func (h *LaunchHandler) DeleteVersion(w http.ResponseWriter, r *http.Request) {
+	vid, err := uuid.Parse(chi.URLParam(r, "vid"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid version id"}`, http.StatusBadRequest)
+		return
+	}
+
+	if err := h.queries.DeleteVersion(r.Context(), vid); err != nil {
+		http.Error(w, `{"error":"failed to delete version"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

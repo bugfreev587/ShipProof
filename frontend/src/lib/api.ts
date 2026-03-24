@@ -304,6 +304,18 @@ export function getVersion(
   );
 }
 
+export function deleteVersion(
+  productId: string,
+  versionId: string,
+  token: string,
+) {
+  return fetchApi<void>(
+    `/api/products/${productId}/versions/${versionId}`,
+    { method: "DELETE" },
+    token,
+  );
+}
+
 // --- Proof Types ---
 
 type PgUUID = { Bytes: string; Valid: boolean };

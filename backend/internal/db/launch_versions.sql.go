@@ -69,6 +69,15 @@ func (q *Queries) CreateVersion(ctx context.Context, arg CreateVersionParams) (L
 	return i, err
 }
 
+const deleteVersion = `-- name: DeleteVersion :exec
+DELETE FROM launch_versions WHERE id = $1
+`
+
+func (q *Queries) DeleteVersion(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteVersion, id)
+	return err
+}
+
 const getMaxVersionNumber = `-- name: GetMaxVersionNumber :one
 SELECT COALESCE(MAX(version_number), 0)::integer AS max_version_number
 FROM launch_versions
