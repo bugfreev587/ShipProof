@@ -400,7 +400,6 @@ type Space struct {
 	Name             string      `json:"name"`
 	Slug             string      `json:"slug"`
 	Theme            WidgetTheme `json:"theme"`
-	MaxItems         int32       `json:"max_items"`
 	ShowPlatformIcon bool        `json:"show_platform_icon"`
 	BorderRadius     int32       `json:"border_radius"`
 	CardSpacing      int32       `json:"card_spacing"`

@@ -20,19 +20,18 @@ RETURNING *;
 -- name: UpdateSpaceConfig :one
 UPDATE spaces SET
     theme = $2,
-    max_items = $3,
-    show_platform_icon = $4,
-    border_radius = $5,
-    card_spacing = $6,
-    show_branding = $7,
-    visible_count = $8,
-    card_size = $9,
-    card_height = $10,
-    text_font_size = $11,
-    text_font = $12,
-    text_bold = $13,
-    bg_color = $14,
-    bg_opacity = $15,
+    show_platform_icon = $3,
+    border_radius = $4,
+    card_spacing = $5,
+    show_branding = $6,
+    visible_count = $7,
+    card_size = $8,
+    card_height = $9,
+    text_font_size = $10,
+    text_font = $11,
+    text_bold = $12,
+    bg_color = $13,
+    bg_opacity = $14,
     updated_at = now()
 WHERE id = $1
 RETURNING *;

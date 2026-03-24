@@ -367,7 +367,6 @@ export interface Space {
   name: string;
   slug: string;
   theme: string;
-  max_items: number;
   show_platform_icon: boolean;
   border_radius: number;
   card_spacing: number;
@@ -574,7 +573,6 @@ export function updateWidgetConfig(
   productId: string,
   data: {
     theme: string;
-    max_items: number;
     show_platform_icon: boolean;
     border_radius: number;
     card_spacing: number;
@@ -718,7 +716,6 @@ export function updateSpaceConfig(
   spaceId: string,
   data: {
     theme: string;
-    max_items: number;
     show_platform_icon: boolean;
     border_radius: number;
     card_spacing: number;
@@ -804,7 +801,6 @@ export function fetchPublicProofs(slug: string) {
 export interface PublicSpaceResponse {
   space: {
     theme: string;
-    max_items: number;
     show_platform_icon: boolean;
     border_radius: number;
     card_spacing: number;

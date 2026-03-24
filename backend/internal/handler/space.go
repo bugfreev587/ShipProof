@@ -190,7 +190,6 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		Theme            string `json:"theme"`
-		MaxItems         int32  `json:"max_items"`
 		ShowPlatformIcon bool   `json:"show_platform_icon"`
 		BorderRadius     int32  `json:"border_radius"`
 		CardSpacing      int32  `json:"card_spacing"`
@@ -233,7 +232,6 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	space, err := h.queries.UpdateSpaceConfig(r.Context(), db.UpdateSpaceConfigParams{
 		ID:               spaceID,
 		Theme:            db.WidgetTheme(req.Theme),
-		MaxItems:         req.MaxItems,
 		ShowPlatformIcon: req.ShowPlatformIcon,
 		BorderRadius:     req.BorderRadius,
 		CardSpacing:      req.CardSpacing,

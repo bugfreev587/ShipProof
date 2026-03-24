@@ -491,7 +491,6 @@ const SPACE_DEFAULTS: Partial<Space> = {
   border_radius: 3,
   card_spacing: 16,
   card_size: 300,
-  max_items: 6,
   show_platform_icon: true,
   show_branding: true,
   text_font_size: 15,
@@ -589,7 +588,6 @@ function SpaceCard({
           space.id,
           {
             theme: newConfig.theme,
-            max_items: newConfig.max_items,
             show_platform_icon: newConfig.show_platform_icon,
             border_radius: newConfig.border_radius,
             card_spacing: newConfig.card_spacing,

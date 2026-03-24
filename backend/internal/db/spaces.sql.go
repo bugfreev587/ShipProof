@@ -25,7 +25,7 @@ func (q *Queries) CountSpacesByProductID(ctx context.Context, productID uuid.UUI
 const createSpace = `-- name: CreateSpace :one
 INSERT INTO spaces (product_id, name, slug)
 VALUES ($1, $2, $3)
-RETURNING id, product_id, name, slug, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity
+RETURNING id, product_id, name, slug, theme, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity
 `
 
 type CreateSpaceParams struct {
@@ -43,7 +43,6 @@ func (q *Queries) CreateSpace(ctx context.Context, arg CreateSpaceParams) (Space
 		&i.Name,
 		&i.Slug,
 		&i.Theme,
-		&i.MaxItems,
 		&i.ShowPlatformIcon,
 		&i.BorderRadius,
 		&i.CardSpacing,
@@ -72,7 +71,7 @@ func (q *Queries) DeleteSpace(ctx context.Context, id uuid.UUID) error {
 }
 
 const getSpaceByID = `-- name: GetSpaceByID :one
-SELECT id, product_id, name, slug, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity FROM spaces WHERE id = $1
+SELECT id, product_id, name, slug, theme, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity FROM spaces WHERE id = $1
 `
 
 func (q *Queries) GetSpaceByID(ctx context.Context, id uuid.UUID) (Space, error) {
@@ -84,7 +83,6 @@ func (q *Queries) GetSpaceByID(ctx context.Context, id uuid.UUID) (Space, error)
 		&i.Name,
 		&i.Slug,
 		&i.Theme,
-		&i.MaxItems,
 		&i.ShowPlatformIcon,
 		&i.BorderRadius,
 		&i.CardSpacing,
@@ -104,7 +102,7 @@ func (q *Queries) GetSpaceByID(ctx context.Context, id uuid.UUID) (Space, error)
 }
 
 const getSpaceBySlug = `-- name: GetSpaceBySlug :one
-SELECT id, product_id, name, slug, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity FROM spaces WHERE slug = $1
+SELECT id, product_id, name, slug, theme, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity FROM spaces WHERE slug = $1
 `
 
 func (q *Queries) GetSpaceBySlug(ctx context.Context, slug string) (Space, error) {
@@ -116,7 +114,6 @@ func (q *Queries) GetSpaceBySlug(ctx context.Context, slug string) (Space, error
 		&i.Name,
 		&i.Slug,
 		&i.Theme,
-		&i.MaxItems,
 		&i.ShowPlatformIcon,
 		&i.BorderRadius,
 		&i.CardSpacing,
@@ -136,7 +133,7 @@ func (q *Queries) GetSpaceBySlug(ctx context.Context, slug string) (Space, error
 }
 
 const listSpacesByProductID = `-- name: ListSpacesByProductID :many
-SELECT id, product_id, name, slug, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity FROM spaces WHERE product_id = $1 ORDER BY created_at DESC
+SELECT id, product_id, name, slug, theme, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity FROM spaces WHERE product_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListSpacesByProductID(ctx context.Context, productID uuid.UUID) ([]Space, error) {
@@ -154,7 +151,6 @@ func (q *Queries) ListSpacesByProductID(ctx context.Context, productID uuid.UUID
 			&i.Name,
 			&i.Slug,
 			&i.Theme,
-			&i.MaxItems,
 			&i.ShowPlatformIcon,
 			&i.BorderRadius,
 			&i.CardSpacing,
@@ -183,7 +179,7 @@ func (q *Queries) ListSpacesByProductID(ctx context.Context, productID uuid.UUID
 const updateSpace = `-- name: UpdateSpace :one
 UPDATE spaces SET name = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, product_id, name, slug, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity
+RETURNING id, product_id, name, slug, theme, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity
 `
 
 type UpdateSpaceParams struct {
@@ -200,7 +196,6 @@ func (q *Queries) UpdateSpace(ctx context.Context, arg UpdateSpaceParams) (Space
 		&i.Name,
 		&i.Slug,
 		&i.Theme,
-		&i.MaxItems,
 		&i.ShowPlatformIcon,
 		&i.BorderRadius,
 		&i.CardSpacing,
@@ -222,28 +217,26 @@ func (q *Queries) UpdateSpace(ctx context.Context, arg UpdateSpaceParams) (Space
 const updateSpaceConfig = `-- name: UpdateSpaceConfig :one
 UPDATE spaces SET
     theme = $2,
-    max_items = $3,
-    show_platform_icon = $4,
-    border_radius = $5,
-    card_spacing = $6,
-    show_branding = $7,
-    visible_count = $8,
-    card_size = $9,
-    card_height = $10,
-    text_font_size = $11,
-    text_font = $12,
-    text_bold = $13,
-    bg_color = $14,
-    bg_opacity = $15,
+    show_platform_icon = $3,
+    border_radius = $4,
+    card_spacing = $5,
+    show_branding = $6,
+    visible_count = $7,
+    card_size = $8,
+    card_height = $9,
+    text_font_size = $10,
+    text_font = $11,
+    text_bold = $12,
+    bg_color = $13,
+    bg_opacity = $14,
     updated_at = now()
 WHERE id = $1
-RETURNING id, product_id, name, slug, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity
+RETURNING id, product_id, name, slug, theme, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, visible_count, card_size, card_height, text_font_size, text_font, text_bold, bg_color, bg_opacity
 `
 
 type UpdateSpaceConfigParams struct {
 	ID               uuid.UUID   `json:"id"`
 	Theme            WidgetTheme `json:"theme"`
-	MaxItems         int32       `json:"max_items"`
 	ShowPlatformIcon bool        `json:"show_platform_icon"`
 	BorderRadius     int32       `json:"border_radius"`
 	CardSpacing      int32       `json:"card_spacing"`
@@ -262,7 +255,6 @@ func (q *Queries) UpdateSpaceConfig(ctx context.Context, arg UpdateSpaceConfigPa
 	row := q.db.QueryRow(ctx, updateSpaceConfig,
 		arg.ID,
 		arg.Theme,
-		arg.MaxItems,
 		arg.ShowPlatformIcon,
 		arg.BorderRadius,
 		arg.CardSpacing,
@@ -283,7 +275,6 @@ func (q *Queries) UpdateSpaceConfig(ctx context.Context, arg UpdateSpaceConfigPa
 		&i.Name,
 		&i.Slug,
 		&i.Theme,
-		&i.MaxItems,
 		&i.ShowPlatformIcon,
 		&i.BorderRadius,
 		&i.CardSpacing,

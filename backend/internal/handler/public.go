@@ -100,7 +100,6 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 
 	type spaceConfig struct {
 		Theme            string `json:"theme"`
-		MaxItems         int32  `json:"max_items"`
 		ShowPlatformIcon bool   `json:"show_platform_icon"`
 		BorderRadius     int32  `json:"border_radius"`
 		CardSpacing      int32  `json:"card_spacing"`
@@ -122,7 +121,6 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response{
 		Space: spaceConfig{
 			Theme:            string(space.Theme),
-			MaxItems:         space.MaxItems,
 			ShowPlatformIcon: space.ShowPlatformIcon,
 			BorderRadius:     space.BorderRadius,
 			CardSpacing:      space.CardSpacing,
