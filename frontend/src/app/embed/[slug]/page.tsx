@@ -39,6 +39,7 @@ interface WidgetSettings {
   text_bold?: boolean;
   bg_color?: string;
   bg_opacity?: number;
+  layout?: string;
 }
 
 type PgText = { String: string; Valid: boolean } | string | null;
@@ -56,6 +57,166 @@ interface ProofItem {
   author_title: PgText;
   content_text: PgText;
   content_image_url: PgText;
+}
+
+function ProofCard({
+  proof,
+  widget,
+  t,
+  radius,
+  cardWidth,
+  cardHeight,
+  textFontSize,
+  textFont,
+  textBold,
+}: {
+  proof: ProofItem;
+  widget: WidgetSettings;
+  t: ReturnType<typeof getThemeColors>;
+  radius: string;
+  cardWidth: number;
+  cardHeight: number;
+  textFontSize: number;
+  textFont: string;
+  textBold: boolean;
+}) {
+  const authorTitle = pgStr(proof.author_title);
+  const contentText = pgStr(proof.content_text);
+  const contentImageUrl = pgStr(proof.content_image_url);
+  const companyLogoUrl = getCompanyLogoUrl(authorTitle);
+  return (
+    <div
+      className="proof-card"
+      style={{
+        width: `${cardWidth}px`,
+        minWidth: `${cardWidth}px`,
+        height: `${cardHeight}px`,
+        overflow: "hidden",
+        padding: "20px",
+        borderRadius: radius,
+        border: `1px solid ${t.border}`,
+        background: t.bgSurface,
+        flexShrink: 0,
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
+        cursor: "pointer",
+      }}
+    >
+      {companyLogoUrl && <CompanyLogoImg url={companyLogoUrl} />}
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "16px",
+        }}
+      >
+        {widget.show_platform_icon && (
+          <span
+            className={`inline-flex items-center justify-center w-9 h-9 rounded-full text-[12px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+          >
+            {PLATFORM_LABELS[proof.source_platform] || "O"}
+          </span>
+        )}
+        <div>
+          <div
+            style={{
+              fontSize: "15px",
+              fontWeight: 700,
+              color: t.textPrimary,
+            }}
+          >
+            {proof.author_name}
+          </div>
+          {authorTitle && (
+            <div
+              style={{
+                fontSize: "13px",
+                color: t.textTertiary,
+                marginTop: "3px",
+              }}
+            >
+              {authorTitle}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {contentText && (
+        <p
+          style={{
+            fontSize: `${textFontSize}px`,
+            lineHeight: "1.6",
+            color: t.textSecondary,
+            margin: 0,
+            fontFamily: textFont,
+            fontWeight: textBold ? 700 : 400,
+          }}
+        >
+          {contentText}
+        </p>
+      )}
+
+      {contentImageUrl && (
+        <img
+          src={contentImageUrl.replace(/^https?:\/\/https?:\/\//, "https://")}
+          alt="Proof"
+          style={{
+            marginTop: "8px",
+            maxWidth: "100%",
+            borderRadius: `${Math.max(widget.border_radius - 4, 0)}px`,
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function BrandingBadge({ t }: { t: ReturnType<typeof getThemeColors> }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "4px",
+        marginTop: "16px",
+        fontSize: "11px",
+        color: t.textTertiary,
+      }}
+    >
+      <a
+        href="https://shipproof.io"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "3px",
+          color: "#6366F1",
+          textDecoration: "none",
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 64 64">
+          <rect x="4" y="4" width="56" height="56" rx="14" fill="#6366F1" />
+          <rect x="14" y="11" width="36" height="26" rx="7" fill="white" />
+          <path d="M22,37 L18,48 L30,37Z" fill="white" />
+          <path
+            d="M22,22 L28,30 L42,15"
+            fill="none"
+            stroke="#6366F1"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        ShipProof
+      </a>
+    </div>
+  );
 }
 
 export default async function EmbedPage({
@@ -96,6 +257,7 @@ export default async function EmbedPage({
   const textFont = widget.text_font || "Inter";
   const textBold = widget.text_bold || false;
   const maxItems = widget.max_items || proofs.length;
+  const layout = widget.layout || "carousel";
 
   // Compute container background from bg_color + bg_opacity
   let containerBg = "transparent";
@@ -108,6 +270,112 @@ export default async function EmbedPage({
     containerBg = `rgba(${r},${g},${b},${a})`;
   }
 
+  const displayProofs = proofs.slice(0, maxItems);
+
+  const cardProps = {
+    widget,
+    t,
+    radius,
+    cardWidth,
+    cardHeight,
+    textFontSize,
+    textFont,
+    textBold,
+  };
+
+  if (layout === "marquee") {
+    // Ensure enough cards for seamless loop: duplicate until we have at least 6
+    const minCards = Math.max(6, displayProofs.length);
+    const repeatCount = displayProofs.length > 0 ? Math.ceil(minCards / displayProofs.length) : 1;
+    const filledProofs: ProofItem[] = [];
+    for (let i = 0; i < repeatCount; i++) {
+      filledProofs.push(...displayProofs);
+    }
+    // Duration: ~4.5s per card
+    const duration = filledProofs.length * 4.5;
+
+    return (
+      <div
+        id="shipproof-embed"
+        style={{
+          margin: 0,
+          padding: spacing,
+          background: containerBg,
+          fontFamily:
+            'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        }}
+      >
+        <ViewTracker entityType="space" slug={slug} />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+.proof-card:hover { border-color: ${t.borderHover} !important; box-shadow: 0 4px 20px ${t.borderHover}40 !important; transform: translateY(-2px); }
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-container {
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+}
+.marquee-track {
+  display: flex;
+  gap: ${spacing};
+  animation: marquee-scroll ${duration}s linear infinite;
+  width: max-content;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+    overflow-x: auto;
+  }
+  .marquee-container {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+`,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+var lastH=0;
+function send(){
+  var el=document.getElementById("shipproof-embed");
+  if(el&&window.parent!==window){var h=el.scrollHeight;if(h!==lastH){lastH=h;window.parent.postMessage({type:"shipproof-resize",height:h},"*")}}
+}
+if(document.readyState==="complete")send();else window.addEventListener("load",send);
+var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retryCount>=10)clearInterval(retryId)},500);
+})();`,
+          }}
+        />
+
+        <div className="marquee-container">
+          <div className="marquee-track">
+            {/* First set */}
+            {filledProofs.map((proof, i) => (
+              <ProofCard key={`a-${i}`} proof={proof} {...cardProps} />
+            ))}
+            {/* Duplicate set for seamless loop */}
+            {filledProofs.map((proof, i) => (
+              <ProofCard key={`b-${i}`} proof={proof} {...cardProps} />
+            ))}
+          </div>
+        </div>
+
+        {widget.show_branding && <BrandingBadge t={t} />}
+      </div>
+    );
+  }
+
+  // Carousel layout (default)
   return (
     <div
       id="shipproof-embed"
@@ -120,7 +388,11 @@ export default async function EmbedPage({
       }}
     >
       <ViewTracker entityType="space" slug={slug} />
-      <style dangerouslySetInnerHTML={{ __html: `.proof-card:hover { border-color: ${t.borderHover} !important; box-shadow: 0 4px 20px ${t.borderHover}40 !important; transform: translateY(-2px); }` }} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `.proof-card:hover { border-color: ${t.borderHover} !important; box-shadow: 0 4px 20px ${t.borderHover}40 !important; transform: translateY(-2px); }`,
+        }}
+      />
       <script
         dangerouslySetInnerHTML={{
           __html: `(function(){
@@ -131,7 +403,7 @@ function adjust(){
   var vp=getViewport();if(!vp)return;
   var row=vp.parentElement;
   var pw=row.parentElement.clientWidth-80;
-  totalCards=${Math.min(proofs.length, maxItems)};
+  totalCards=${displayProofs.length};
   perPage=Math.max(1,Math.floor((pw+sp)/(cw+sp)));
   var maxW=perPage*cw+(perPage-1)*sp;
   vp.style.maxWidth=maxW+"px";
@@ -218,7 +490,9 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
             fontSize: "16px",
             lineHeight: 1,
           }}
-          dangerouslySetInnerHTML={{ __html: `<span onclick="__shipproof_prev()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u2039</span>` }}
+          dangerouslySetInnerHTML={{
+            __html: `<span onclick="__shipproof_prev()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u2039</span>`,
+          }}
         />
 
         {/* Cards viewport */}
@@ -237,104 +511,9 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
               transition: "transform 0.4s ease",
             }}
           >
-            {proofs.slice(0, maxItems).map((proof) => {
-              const authorTitle = pgStr(proof.author_title);
-              const contentText = pgStr(proof.content_text);
-              const contentImageUrl = pgStr(proof.content_image_url);
-              const companyLogoUrl = getCompanyLogoUrl(authorTitle);
-              return (
-              <div
-                key={proof.id}
-                className="proof-card"
-                style={{
-                  width: `${cardWidth}px`,
-                  minWidth: `${cardWidth}px`,
-                  height: `${cardHeight}px`,
-                  overflow: "hidden",
-                  padding: "20px",
-                  borderRadius: radius,
-                  border: `1px solid ${t.border}`,
-                  background: t.bgSurface,
-                  flexShrink: 0,
-                  position: "relative",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
-                  cursor: "pointer",
-                }}
-              >
-                {companyLogoUrl && (
-                  <CompanyLogoImg url={companyLogoUrl} />
-                )}
-
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    marginBottom: "16px",
-                  }}
-                >
-                  {widget.show_platform_icon && (
-                    <span
-                      className={`inline-flex items-center justify-center w-9 h-9 rounded-full text-[12px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
-                    >
-                      {PLATFORM_LABELS[proof.source_platform] || "O"}
-                    </span>
-                  )}
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "15px",
-                        fontWeight: 700,
-                        color: t.textPrimary,
-                      }}
-                    >
-                      {proof.author_name}
-                    </div>
-                    {authorTitle && (
-                      <div
-                        style={{
-                          fontSize: "13px",
-                          color: t.textTertiary,
-                          marginTop: "3px",
-                        }}
-                      >
-                        {authorTitle}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {contentText && (
-                  <p
-                    style={{
-                      fontSize: `${textFontSize}px`,
-                      lineHeight: "1.6",
-                      color: t.textSecondary,
-                      margin: 0,
-                      fontFamily: textFont,
-                      fontWeight: textBold ? 700 : 400,
-                    }}
-                  >
-                    {contentText}
-                  </p>
-                )}
-
-                {contentImageUrl && (
-                  <img
-                    src={contentImageUrl.replace(/^https?:\/\/https?:\/\//, "https://")}
-                    alt="Proof"
-                    style={{
-                      marginTop: "8px",
-                      maxWidth: "100%",
-                      borderRadius: `${Math.max(widget.border_radius - 4, 0)}px`,
-                    }}
-                  />
-                )}
-              </div>
-              );
-            })}
+            {displayProofs.map((proof) => (
+              <ProofCard key={proof.id} proof={proof} {...cardProps} />
+            ))}
           </div>
         </div>
 
@@ -357,7 +536,9 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
             fontSize: "16px",
             lineHeight: 1,
           }}
-          dangerouslySetInnerHTML={{ __html: `<span onclick="__shipproof_next()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u203A</span>` }}
+          dangerouslySetInnerHTML={{
+            __html: `<span onclick="__shipproof_next()" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">\u203A</span>`,
+          }}
         />
       </div>
 
@@ -372,34 +553,7 @@ var retryCount=0;var retryId=setInterval(function(){var el=document.getElementBy
         }}
       />
 
-      {widget.show_branding && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "4px",
-            marginTop: "16px",
-            fontSize: "11px",
-            color: t.textTertiary,
-          }}
-        >
-          <a
-            href="https://shipproof.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: "#6366F1", textDecoration: "none" }}
-          >
-            <svg width="16" height="16" viewBox="0 0 64 64">
-              <rect x="4" y="4" width="56" height="56" rx="14" fill="#6366F1"/>
-              <rect x="14" y="11" width="36" height="26" rx="7" fill="white"/>
-              <path d="M22,37 L18,48 L30,37Z" fill="white"/>
-              <path d="M22,22 L28,30 L42,15" fill="none" stroke="#6366F1" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            ShipProof
-          </a>
-        </div>
-      )}
+      {widget.show_branding && <BrandingBadge t={t} />}
     </div>
   );
 }

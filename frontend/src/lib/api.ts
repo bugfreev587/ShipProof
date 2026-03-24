@@ -393,6 +393,7 @@ export interface Space {
   text_bold: boolean;
   bg_color: string;
   bg_opacity: number;
+  layout: string;
   created_at: string;
   updated_at: string;
 }
@@ -413,6 +414,7 @@ export interface WidgetConfig {
   border_radius: number;
   card_spacing: number;
   show_branding: boolean;
+  layout: string;
   created_at: string;
   updated_at: string;
 }
@@ -744,6 +746,7 @@ export function updateSpaceConfig(
     text_bold: boolean;
     bg_color: string;
     bg_opacity: number;
+    layout: string;
   },
   token: string,
 ) {

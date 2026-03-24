@@ -414,6 +414,7 @@ type Space struct {
 	TextBold         bool        `json:"text_bold"`
 	BgColor          string      `json:"bg_color"`
 	BgOpacity        int32       `json:"bg_opacity"`
+	Layout           string      `json:"layout"`
 }
 
 type SpaceProof struct {
@@ -485,4 +486,5 @@ type WidgetConfig struct {
 	ShowBranding     bool        `json:"show_branding"`
 	CreatedAt        time.Time   `json:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at"`
+	Layout           string      `json:"layout"`
 }

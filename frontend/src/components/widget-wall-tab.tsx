@@ -503,6 +503,7 @@ const SPACE_DEFAULTS: Partial<Space> = {
   text_bold: false,
   bg_color: "",
   bg_opacity: 35,
+  layout: "carousel",
 };
 
 function SpaceCard({
@@ -604,6 +605,7 @@ function SpaceCard({
             text_bold: newConfig.text_bold,
             bg_color: newConfig.bg_color,
             bg_opacity: newConfig.bg_opacity,
+            layout: newConfig.layout || "carousel",
           },
           token,
         );
@@ -690,6 +692,36 @@ function SpaceCard({
           {/* Widget Configuration */}
           <div className="space-y-4">
             <p className="text-xs font-medium text-[var(--text-primary)]">Widget Configuration</p>
+
+            {/* Layout toggle */}
+            <div>
+              <label className="block text-xs text-[var(--text-secondary)] mb-2">Layout</label>
+              <div className="flex gap-2">
+                {([
+                  { value: "carousel", label: "Carousel", desc: "Manual scroll, snap to cards" },
+                  { value: "marquee", label: "Marquee", desc: "Auto-scrolling, infinite loop" },
+                ] as const).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleConfigChange({ layout: opt.value })}
+                    className={`flex-1 rounded-lg border px-3 py-2 text-left transition-all cursor-pointer ${
+                      (config.layout || "carousel") === opt.value
+                        ? "border-[#6366F1] bg-[#6366F1]/10"
+                        : "border-[var(--border)] bg-[var(--bg-base)] hover:border-[var(--border-hover)]"
+                    }`}
+                  >
+                    <span className={`block text-sm font-medium ${
+                      (config.layout || "carousel") === opt.value ? "text-[#818CF8]" : "text-[var(--text-primary)]"
+                    }`}>
+                      {opt.label}
+                    </span>
+                    <span className="block text-[10px] text-[var(--text-tertiary)] mt-0.5">
+                      {opt.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>

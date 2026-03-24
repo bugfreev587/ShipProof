@@ -72,6 +72,7 @@ type updateWidgetRequest struct {
 	BorderRadius     int32  `json:"border_radius"`
 	CardSpacing      int32  `json:"card_spacing"`
 	ShowBranding     bool   `json:"show_branding"`
+	Layout           string `json:"layout"`
 }
 
 func (h *WidgetHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -100,6 +101,9 @@ func (h *WidgetHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if req.Theme == "" {
 		req.Theme = "dark"
 	}
+	if req.Layout != "marquee" {
+		req.Layout = "carousel"
+	}
 
 	// Ensure widget config exists
 	_, err = h.queries.GetWidgetConfigByProductID(r.Context(), productID)
@@ -115,6 +119,7 @@ func (h *WidgetHandler) Update(w http.ResponseWriter, r *http.Request) {
 		BorderRadius:     req.BorderRadius,
 		CardSpacing:      req.CardSpacing,
 		ShowBranding:     req.ShowBranding,
+		Layout:           req.Layout,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update widget config"}`, http.StatusInternalServerError)

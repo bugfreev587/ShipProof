@@ -1,0 +1,2 @@
+ALTER TABLE widget_configs DROP COLUMN IF EXISTS layout;
+ALTER TABLE spaces DROP COLUMN IF EXISTS layout;

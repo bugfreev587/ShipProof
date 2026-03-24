@@ -202,6 +202,7 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		TextBold         bool   `json:"text_bold"`
 		BgColor          string `json:"bg_color"`
 		BgOpacity        int32  `json:"bg_opacity"`
+		Layout           string `json:"layout"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
@@ -228,6 +229,9 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	if req.BgOpacity < 0 || req.BgOpacity > 100 {
 		req.BgOpacity = 100
 	}
+	if req.Layout != "marquee" {
+		req.Layout = "carousel"
+	}
 
 	space, err := h.queries.UpdateSpaceConfig(r.Context(), db.UpdateSpaceConfigParams{
 		ID:               spaceID,
@@ -244,6 +248,7 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		TextBold:         req.TextBold,
 		BgColor:          req.BgColor,
 		BgOpacity:        req.BgOpacity,
+		Layout:           req.Layout,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update space config"}`, http.StatusInternalServerError)

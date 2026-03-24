@@ -14,7 +14,7 @@ import (
 const createDefaultWidgetConfig = `-- name: CreateDefaultWidgetConfig :one
 INSERT INTO widget_configs (product_id)
 VALUES ($1)
-RETURNING id, product_id, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at
+RETURNING id, product_id, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, layout
 `
 
 func (q *Queries) CreateDefaultWidgetConfig(ctx context.Context, productID uuid.UUID) (WidgetConfig, error) {
@@ -31,12 +31,13 @@ func (q *Queries) CreateDefaultWidgetConfig(ctx context.Context, productID uuid.
 		&i.ShowBranding,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Layout,
 	)
 	return i, err
 }
 
 const getWidgetConfigByProductID = `-- name: GetWidgetConfigByProductID :one
-SELECT id, product_id, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at FROM widget_configs WHERE product_id = $1
+SELECT id, product_id, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, layout FROM widget_configs WHERE product_id = $1
 `
 
 func (q *Queries) GetWidgetConfigByProductID(ctx context.Context, productID uuid.UUID) (WidgetConfig, error) {
@@ -53,15 +54,16 @@ func (q *Queries) GetWidgetConfigByProductID(ctx context.Context, productID uuid
 		&i.ShowBranding,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Layout,
 	)
 	return i, err
 }
 
 const updateWidgetConfig = `-- name: UpdateWidgetConfig :one
 UPDATE widget_configs
-SET theme = $2, max_items = $3, show_platform_icon = $4, border_radius = $5, card_spacing = $6, show_branding = $7, updated_at = now()
+SET theme = $2, max_items = $3, show_platform_icon = $4, border_radius = $5, card_spacing = $6, show_branding = $7, layout = $8, updated_at = now()
 WHERE product_id = $1
-RETURNING id, product_id, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at
+RETURNING id, product_id, theme, max_items, show_platform_icon, border_radius, card_spacing, show_branding, created_at, updated_at, layout
 `
 
 type UpdateWidgetConfigParams struct {
@@ -72,6 +74,7 @@ type UpdateWidgetConfigParams struct {
 	BorderRadius     int32       `json:"border_radius"`
 	CardSpacing      int32       `json:"card_spacing"`
 	ShowBranding     bool        `json:"show_branding"`
+	Layout           string      `json:"layout"`
 }
 
 func (q *Queries) UpdateWidgetConfig(ctx context.Context, arg UpdateWidgetConfigParams) (WidgetConfig, error) {
@@ -83,6 +86,7 @@ func (q *Queries) UpdateWidgetConfig(ctx context.Context, arg UpdateWidgetConfig
 		arg.BorderRadius,
 		arg.CardSpacing,
 		arg.ShowBranding,
+		arg.Layout,
 	)
 	var i WidgetConfig
 	err := row.Scan(
@@ -96,6 +100,7 @@ func (q *Queries) UpdateWidgetConfig(ctx context.Context, arg UpdateWidgetConfig
 		&i.ShowBranding,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Layout,
 	)
 	return i, err
 }
