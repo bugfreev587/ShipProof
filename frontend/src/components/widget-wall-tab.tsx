@@ -443,25 +443,30 @@ function AutoFitPreview({
         </button>
 
         <div
-          className="flex overflow-hidden"
-          style={{
-            gap: `${gap}px`,
-            maxWidth: `${containerW}px`,
-          }}
+          className="overflow-hidden"
+          style={{ maxWidth: `${containerW}px` }}
         >
-          {proofs.slice(startIndex, startIndex + displayCount).map((proof) => (
-            <SpaceProofCard
-              key={proof.id}
-              proof={proof}
-              themeKey={config.theme}
-              showPlatformIcon={config.show_platform_icon}
-              borderRadius={config.border_radius}
-              cardWidth={cardW}
-              textFontSize={config.text_font_size || 13}
-              textFont={config.text_font || "Inter"}
-              textBold={config.text_bold || false}
-            />
-          ))}
+          <div
+            className="flex transition-transform duration-300 ease-out"
+            style={{
+              gap: `${gap}px`,
+              transform: `translateX(-${startIndex * (cardW + gap)}px)`,
+            }}
+          >
+            {proofs.map((proof) => (
+              <SpaceProofCard
+                key={proof.id}
+                proof={proof}
+                themeKey={config.theme}
+                showPlatformIcon={config.show_platform_icon}
+                borderRadius={config.border_radius}
+                cardWidth={cardW}
+                textFontSize={config.text_font_size || 13}
+                textFont={config.text_font || "Inter"}
+                textBold={config.text_bold || false}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Right arrow */}
