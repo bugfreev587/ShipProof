@@ -110,6 +110,7 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 		BgOpacity        int32  `json:"bg_opacity"`
 		Layout           string `json:"layout"`
 		Rows             int32  `json:"rows"`
+		WidthPercent     int32  `json:"width_percent"`
 	}
 
 	type response struct {
@@ -133,6 +134,7 @@ func (h *PublicHandler) GetSpaceProofs(w http.ResponseWriter, r *http.Request) {
 			BgOpacity:        space.BgOpacity,
 			Layout:           space.Layout,
 			Rows:             space.Rows,
+			WidthPercent:     space.WidthPercent,
 		},
 		Product: product,
 		Proofs:  proofs,

@@ -204,6 +204,7 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		BgOpacity        int32  `json:"bg_opacity"`
 		Layout           string `json:"layout"`
 		Rows             int32  `json:"rows"`
+		WidthPercent     int32  `json:"width_percent"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
@@ -213,6 +214,9 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	// Defaults
 	if req.Rows < 1 || req.Rows > 4 {
 		req.Rows = 1
+	}
+	if req.WidthPercent < 50 || req.WidthPercent > 100 {
+		req.WidthPercent = 100
 	}
 	if req.VisibleCount < 1 || req.VisibleCount > 10 {
 		req.VisibleCount = 3
@@ -254,6 +258,7 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		BgOpacity:        req.BgOpacity,
 		Layout:           req.Layout,
 		Rows:             req.Rows,
+		WidthPercent:     req.WidthPercent,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update space config"}`, http.StatusInternalServerError)

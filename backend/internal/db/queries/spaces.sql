@@ -34,6 +34,7 @@ UPDATE spaces SET
     bg_opacity = $14,
     layout = $15,
     rows = $16,
+    width_percent = $17,
     updated_at = now()
 WHERE id = $1
 RETURNING *;

@@ -43,6 +43,7 @@ interface WidgetSettings {
   bg_opacity?: number;
   layout?: string;
   rows?: number;
+  width_percent?: number;
 }
 
 type PgText = { String: string; Valid: boolean } | string | null;
@@ -262,6 +263,7 @@ export default async function EmbedPage({
   const maxItems = widget.max_items || proofs.length;
   const layout = widget.layout || "carousel";
   const rows = Math.max(1, Math.min(4, widget.rows || 1));
+  const widthPercent = Math.max(50, Math.min(100, widget.width_percent || 100));
 
   // Compute container background from bg_color + bg_opacity
   let containerBg = "transparent";
@@ -370,7 +372,7 @@ var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retry
           }}
         />
 
-        <div style={{ display: "flex", flexDirection: "column", gap: spacing }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: spacing, width: `${widthPercent}%`, margin: "0 auto" }}>
           {rowStyles.map((row, rowIdx) => {
             if (row.proofs.length === 0) return null;
             const filled: ProofItem[] = [];
@@ -440,7 +442,7 @@ var retryCount=0;var retryId=setInterval(function(){send();retryCount++;if(retry
         }}
       />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: spacing }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: spacing, width: `${widthPercent}%`, margin: "0 auto" }}>
         {rowProofs.map((rp, rowIdx) => {
           if (rp.length === 0) return null;
           return (

@@ -396,6 +396,7 @@ export interface Space {
   bg_opacity: number;
   layout: string;
   rows: number;
+  width_percent: number;
   created_at: string;
   updated_at: string;
 }
@@ -751,6 +752,7 @@ export function updateSpaceConfig(
     bg_opacity: number;
     layout: string;
     rows: number;
+    width_percent: number;
   },
   token: string,
 ) {

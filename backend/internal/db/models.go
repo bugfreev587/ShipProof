@@ -416,6 +416,7 @@ type Space struct {
 	BgOpacity        int32       `json:"bg_opacity"`
 	Layout           string      `json:"layout"`
 	Rows             int32       `json:"rows"`
+	WidthPercent     int32       `json:"width_percent"`
 }
 
 type SpaceProof struct {

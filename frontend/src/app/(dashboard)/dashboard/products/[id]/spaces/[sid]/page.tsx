@@ -56,6 +56,7 @@ const SPACE_DEFAULTS: Partial<Space> = {
   bg_opacity: 100,
   layout: "carousel",
   rows: 1,
+  width_percent: 100,
 };
 
 export default function SpaceEditPage() {
@@ -127,6 +128,7 @@ export default function SpaceEditPage() {
             bg_opacity: newSpace.bg_opacity,
             layout: newSpace.layout || "carousel",
             rows: newSpace.rows || 1,
+            width_percent: newSpace.width_percent || 100,
           },
           token,
         );
@@ -263,6 +265,21 @@ export default function SpaceEditPage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Width */}
+            <div>
+              <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                Width: {space.width_percent || 100}%
+              </label>
+              <input
+                type="range"
+                min={50}
+                max={100}
+                value={space.width_percent || 100}
+                onChange={(e) => handleConfigChange({ width_percent: Number(e.target.value) })}
+                className="w-full"
+              />
             </div>
 
             {/* Theme */}
@@ -639,6 +656,7 @@ function SpacePreview({ space, proofs }: { space: Space; proofs: Proof[] }) {
   const spacing = space.card_spacing || 16;
   const rows = Math.max(1, Math.min(4, space.rows || 1));
   const layout = space.layout || "carousel";
+  const widthPercent = Math.max(50, Math.min(100, space.width_percent || 100));
 
   // Compute background
   let containerBg = "transparent";
@@ -684,7 +702,7 @@ function SpacePreview({ space, proofs }: { space: Space; proofs: Proof[] }) {
 @media (prefers-reduced-motion: reduce) { .sp-marquee-track { animation: none; } .sp-marquee-wrap { overflow-x: auto; mask-image: none; -webkit-mask-image: none; } }
       `}</style>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: `${spacing}px` }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: `${spacing}px`, width: `${widthPercent}%`, margin: "0 auto" }}>
         {rowProofs.map((rp, rowIdx) => {
           if (rp.length === 0) return null;
 
