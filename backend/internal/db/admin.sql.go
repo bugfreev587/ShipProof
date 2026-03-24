@@ -16,7 +16,8 @@ import (
 const countUsersAdmin = `-- name: CountUsersAdmin :one
 SELECT COUNT(*)::int AS total
 FROM users
-WHERE (name ILIKE '%' || $1::text || '%' OR email ILIKE '%' || $1::text || '%' OR $1::text = '')
+WHERE is_admin = false
+  AND (name ILIKE '%' || $1::text || '%' OR email ILIKE '%' || $1::text || '%' OR $1::text = '')
 `
 
 func (q *Queries) CountUsersAdmin(ctx context.Context, search string) (int32, error) {
@@ -75,7 +76,8 @@ func (q *Queries) GetPeriodPageViews(ctx context.Context, period pgtype.Interval
 const getRecentSignups = `-- name: GetRecentSignups :many
 SELECT id, clerk_id, email, name, created_at
 FROM users
-WHERE created_at > now() - interval '7 days'
+WHERE is_admin = false
+  AND created_at > now() - interval '7 days'
 ORDER BY created_at DESC
 `
 
@@ -243,7 +245,9 @@ func (q *Queries) GetTotalPageViews(ctx context.Context) (int32, error) {
 }
 
 const getTotalProducts = `-- name: GetTotalProducts :one
-SELECT COUNT(*)::int AS total FROM products
+SELECT COUNT(*)::int AS total
+FROM products
+WHERE user_id NOT IN (SELECT id FROM users WHERE is_admin = true)
 `
 
 func (q *Queries) GetTotalProducts(ctx context.Context) (int32, error) {
@@ -254,7 +258,13 @@ func (q *Queries) GetTotalProducts(ctx context.Context) (int32, error) {
 }
 
 const getTotalProofs = `-- name: GetTotalProofs :one
-SELECT COUNT(*)::int AS total FROM proofs
+SELECT COUNT(*)::int AS total
+FROM proofs
+WHERE product_id IN (
+  SELECT p.id FROM products p
+  JOIN users u ON u.id = p.user_id
+  WHERE u.is_admin = false
+)
 `
 
 func (q *Queries) GetTotalProofs(ctx context.Context) (int32, error) {
@@ -312,6 +322,7 @@ SELECT
   COUNT(*) FILTER (WHERE created_at > now() - interval '7 days')::int AS signups_this_week,
   COUNT(*) FILTER (WHERE plan IN ('pro', 'business') AND created_at > now() - interval '7 days')::int AS paid_this_week
 FROM users
+WHERE is_admin = false
 `
 
 type GetUserStatsRow struct {
@@ -356,7 +367,8 @@ SELECT
 FROM users u
 LEFT JOIN products p ON p.user_id = u.id
 LEFT JOIN proofs pr ON pr.product_id = p.id
-WHERE (u.name ILIKE '%' || $1::text || '%' OR u.email ILIKE '%' || $1::text || '%' OR $1::text = '')
+WHERE u.is_admin = false
+  AND (u.name ILIKE '%' || $1::text || '%' OR u.email ILIKE '%' || $1::text || '%' OR $1::text = '')
 GROUP BY u.id
 ORDER BY u.created_at DESC
 LIMIT $3::int OFFSET $2::int

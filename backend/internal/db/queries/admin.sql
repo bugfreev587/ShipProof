@@ -6,7 +6,8 @@ SELECT
 FROM users u
 LEFT JOIN products p ON p.user_id = u.id
 LEFT JOIN proofs pr ON pr.product_id = p.id
-WHERE (u.name ILIKE '%' || @search::text || '%' OR u.email ILIKE '%' || @search::text || '%' OR @search::text = '')
+WHERE u.is_admin = false
+  AND (u.name ILIKE '%' || @search::text || '%' OR u.email ILIKE '%' || @search::text || '%' OR @search::text = '')
 GROUP BY u.id
 ORDER BY u.created_at DESC
 LIMIT @limit_val::int OFFSET @offset_val::int;
@@ -19,7 +20,8 @@ SELECT
   COUNT(*) FILTER (WHERE plan = 'business')::int AS business_users,
   COUNT(*) FILTER (WHERE created_at > now() - interval '7 days')::int AS signups_this_week,
   COUNT(*) FILTER (WHERE plan IN ('pro', 'business') AND created_at > now() - interval '7 days')::int AS paid_this_week
-FROM users;
+FROM users
+WHERE is_admin = false;
 
 -- name: RecordPageView :exec
 INSERT INTO page_views (path, referrer, user_agent, utm_source, utm_medium, utm_campaign)
@@ -87,19 +89,29 @@ LIMIT 20;
 -- name: CountUsersAdmin :one
 SELECT COUNT(*)::int AS total
 FROM users
-WHERE (name ILIKE '%' || @search::text || '%' OR email ILIKE '%' || @search::text || '%' OR @search::text = '');
+WHERE is_admin = false
+  AND (name ILIKE '%' || @search::text || '%' OR email ILIKE '%' || @search::text || '%' OR @search::text = '');
 
 -- name: GetRecentSignups :many
 SELECT id, clerk_id, email, name, created_at
 FROM users
-WHERE created_at > now() - interval '7 days'
+WHERE is_admin = false
+  AND created_at > now() - interval '7 days'
 ORDER BY created_at DESC;
 
 -- name: GetTotalProducts :one
-SELECT COUNT(*)::int AS total FROM products;
+SELECT COUNT(*)::int AS total
+FROM products
+WHERE user_id NOT IN (SELECT id FROM users WHERE is_admin = true);
 
 -- name: GetTotalProofs :one
-SELECT COUNT(*)::int AS total FROM proofs;
+SELECT COUNT(*)::int AS total
+FROM proofs
+WHERE product_id IN (
+  SELECT p.id FROM products p
+  JOIN users u ON u.id = p.user_id
+  WHERE u.is_admin = false
+);
 
 -- name: IsUserAdmin :one
 SELECT is_admin FROM users WHERE clerk_id = $1;
