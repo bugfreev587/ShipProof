@@ -575,10 +575,11 @@ export default function SpaceEditPage() {
   );
 }
 
-function SpaceProofCard({ proof, t, space }: {
+function SpaceProofCard({ proof, t, space, stretch }: {
   proof: Proof;
   t: ReturnType<typeof getThemeColors>;
   space: Space;
+  stretch?: boolean;
 }) {
   const companyLogoUrl = getCompanyLogoUrl(proof.author_title);
   const radius = `${space.border_radius}px`;
@@ -593,7 +594,7 @@ function SpaceProofCard({ proof, t, space }: {
       style={{
         width: `${cardWidth}px`,
         minWidth: `${cardWidth}px`,
-        height: cardHeight > 0 ? `${cardHeight}px` : undefined,
+        height: cardHeight > 0 ? `${cardHeight}px` : stretch ? "100%" : undefined,
         overflow: "hidden",
         padding: "20px",
         borderRadius: radius,
@@ -738,10 +739,10 @@ function SpacePreview({ space, proofs }: { space: Space; proofs: Proof[] }) {
           // Carousel
           return (
             <div key={rowIdx} style={{ overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: "4px" }}>
-              <div style={{ display: "flex", gap: `${spacing}px` }}>
+              <div style={{ display: "flex", gap: `${spacing}px`, alignItems: "stretch" }}>
                 {rp.map((proof) => (
-                  <div key={proof.id} style={{ scrollSnapAlign: "start" }}>
-                    <SpaceProofCard proof={proof} t={t} space={space} />
+                  <div key={proof.id} style={{ scrollSnapAlign: "start", display: "flex" }}>
+                    <SpaceProofCard proof={proof} t={t} space={space} stretch />
                   </div>
                 ))}
               </div>
