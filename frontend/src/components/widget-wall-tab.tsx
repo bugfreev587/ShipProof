@@ -10,6 +10,7 @@ import {
   deleteSpace,
   addProofToSpace,
   removeProofFromSpace,
+  listSpaceProofs,
   fetchPublicSpaceProofs,
   listWalls,
   createWall,
@@ -494,13 +495,15 @@ function SpaceCard({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Load space proofs for preview on mount
+  // Load ALL space proofs (authenticated, no max_items limit) for dashboard
   const fetchSpaceProofs = useCallback(async () => {
     setLoadingPreview(true);
     try {
-      const data = await fetchPublicSpaceProofs(space.slug);
-      setSpaceProofs(data.proofs);
-      setSpaceProofIds(new Set(data.proofs.map((p: Proof) => p.id)));
+      const token = await getToken();
+      if (!token) return;
+      const proofs = await listSpaceProofs(space.id, token);
+      setSpaceProofs(proofs);
+      setSpaceProofIds(new Set(proofs.map((p: Proof) => p.id)));
     } catch {
       // space may have no proofs yet
       setSpaceProofs([]);
@@ -508,7 +511,7 @@ function SpaceCard({
     } finally {
       setLoadingPreview(false);
     }
-  }, [space.slug]);
+  }, [space.id, getToken]);
 
   useEffect(() => {
     fetchSpaceProofs();

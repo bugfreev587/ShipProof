@@ -276,6 +276,28 @@ func (h *SpaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (h *SpaceHandler) ListProofs(w http.ResponseWriter, r *http.Request) {
+	spaceID, err := uuid.Parse(chi.URLParam(r, "sid"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid space id"}`, http.StatusBadRequest)
+		return
+	}
+
+	_, ok := h.verifySpaceOwnership(w, r, spaceID)
+	if !ok {
+		return
+	}
+
+	proofs, err := h.queries.ListProofsBySpaceID(r.Context(), spaceID)
+	if err != nil {
+		http.Error(w, `{"error":"failed to list proofs"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(proofs)
+}
+
 func (h *SpaceHandler) AddProof(w http.ResponseWriter, r *http.Request) {
 	spaceID, err := uuid.Parse(chi.URLParam(r, "sid"))
 	if err != nil {

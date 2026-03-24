@@ -745,6 +745,14 @@ export function deleteSpace(spaceId: string, token: string) {
   return fetchApi<void>(`/api/spaces/${spaceId}`, { method: "DELETE" }, token);
 }
 
+export function listSpaceProofs(spaceId: string, token: string) {
+  return fetchApi<(Proof & { space_display_order: number })[]>(
+    `/api/spaces/${spaceId}/proofs`,
+    {},
+    token,
+  );
+}
+
 export function addProofToSpace(
   spaceId: string,
   proofId: string,

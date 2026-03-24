@@ -213,6 +213,7 @@ func main() {
 			r.Put("/api/spaces/{sid}", spaceHandler.Update)
 			r.Put("/api/spaces/{sid}/config", spaceHandler.UpdateConfig)
 			r.Delete("/api/spaces/{sid}", spaceHandler.Delete)
+			r.Get("/api/spaces/{sid}/proofs", spaceHandler.ListProofs)
 			r.Post("/api/spaces/{sid}/proofs", spaceHandler.AddProof)
 			r.Delete("/api/spaces/{sid}/proofs/{pid}", spaceHandler.RemoveProof)
 			r.Put("/api/spaces/{sid}/proofs/order", spaceHandler.UpdateProofOrder)
