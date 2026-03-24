@@ -6,10 +6,8 @@ interface LogoProps {
 export function LogoIcon({ size = 32, className }: LogoProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
-      <rect x="4" y="4" width="56" height="56" rx="14" fill="#6366F1"/>
-      <rect x="14" y="11" width="36" height="26" rx="7" fill="white"/>
-      <path d="M22,37 L18,48 L30,37Z" fill="white"/>
-      <path d="M22,22 L28,30 L42,15" fill="none" stroke="#6366F1" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="32" cy="32" r="28" fill="#6366F1"/>
+      <path d="M32,46 C32,46 16,35 16,26 C16,20 19,17 24,17 C27,17 30,19 32,21 C34,19 37,17 40,17 C45,17 48,20 48,26 C48,35 32,46 32,46Z" fill="white"/>
     </svg>
   )
 }
