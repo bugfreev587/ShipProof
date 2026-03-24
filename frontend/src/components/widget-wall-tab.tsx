@@ -379,6 +379,7 @@ function AutoFitPreview({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(3);
+  const [startIndex, setStartIndex] = useState(0);
 
   const cardW = config.card_size || 340;
   const gap = config.card_spacing || 16;
@@ -396,6 +397,11 @@ function AutoFitPreview({
     ro.observe(el);
     return () => ro.disconnect();
   }, [cardW, gap]);
+
+  // Reset start index when proofs change
+  useEffect(() => {
+    setStartIndex(0);
+  }, [proofs.length]);
 
   if (loadingPreview) {
     return (
@@ -419,10 +425,23 @@ function AutoFitPreview({
 
   const displayCount = Math.min(visibleCount, proofs.length);
   const containerW = displayCount * cardW + (displayCount - 1) * gap;
+  const canPrev = startIndex > 0;
+  const canNext = startIndex + displayCount < proofs.length;
 
   return (
     <div ref={containerRef} className="px-4 pb-2">
-      <div className="flex justify-center">
+      <div className="flex items-center justify-center gap-2">
+        {/* Left arrow */}
+        <button
+          onClick={() => setStartIndex(Math.max(0, startIndex - 1))}
+          disabled={!canPrev}
+          className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] disabled:opacity-20 disabled:cursor-default transition-all cursor-pointer"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+
         <div
           className="flex overflow-hidden"
           style={{
@@ -430,7 +449,7 @@ function AutoFitPreview({
             maxWidth: `${containerW}px`,
           }}
         >
-          {proofs.slice(0, displayCount).map((proof) => (
+          {proofs.slice(startIndex, startIndex + displayCount).map((proof) => (
             <SpaceProofCard
               key={proof.id}
               proof={proof}
@@ -444,7 +463,25 @@ function AutoFitPreview({
             />
           ))}
         </div>
+
+        {/* Right arrow */}
+        <button
+          onClick={() => setStartIndex(Math.min(proofs.length - displayCount, startIndex + 1))}
+          disabled={!canNext}
+          className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] disabled:opacity-20 disabled:cursor-default transition-all cursor-pointer"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
       </div>
+
+      {/* Page indicator */}
+      {proofs.length > displayCount && (
+        <div className="flex justify-center mt-2 text-[10px] text-[var(--text-tertiary)]">
+          {startIndex + 1}–{Math.min(startIndex + displayCount, proofs.length)} of {proofs.length}
+        </div>
+      )}
     </div>
   );
 }
