@@ -216,10 +216,15 @@ func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		HeaderTextColor  string `json:"header_text_color"`
 		Subtitle         string `json:"subtitle"`
 		ShowHeader       bool   `json:"show_header"`
+		Layout           string `json:"layout"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
 		return
+	}
+
+	if req.Layout != "carousel" && req.Layout != "marquee" {
+		req.Layout = "masonry"
 	}
 
 	wall, err := h.queries.UpdateWallConfig(r.Context(), db.UpdateWallConfigParams{
@@ -234,6 +239,7 @@ func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		HeaderTextColor:  req.HeaderTextColor,
 		Subtitle:         req.Subtitle,
 		ShowHeader:       req.ShowHeader,
+		Layout:           req.Layout,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update wall config"}`, http.StatusInternalServerError)

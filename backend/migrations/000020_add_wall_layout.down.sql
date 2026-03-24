@@ -1,0 +1,1 @@
+ALTER TABLE walls DROP COLUMN IF EXISTS layout;

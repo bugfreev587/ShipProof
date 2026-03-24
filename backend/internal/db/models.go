@@ -466,6 +466,7 @@ type Wall struct {
 	HeaderTextColor  string      `json:"header_text_color"`
 	Subtitle         string      `json:"subtitle"`
 	ShowHeader       bool        `json:"show_header"`
+	Layout           string      `json:"layout"`
 }
 
 type WallProof struct {

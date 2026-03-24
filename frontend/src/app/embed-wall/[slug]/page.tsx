@@ -3,6 +3,8 @@ import { getCompanyLogoUrl } from "@/lib/company-logo";
 import { CompanyLogoImg } from "@/components/company-logo";
 import { ViewTracker } from "@/components/view-tracker";
 
+export const dynamic = "force-dynamic";
+
 const PLATFORM_COLORS: Record<string, string> = {
   product_hunt: "bg-red-500",
   reddit: "bg-orange-500",
@@ -46,6 +48,53 @@ function getThemeColors(theme: string) {
         textPrimary: "#F1F1F3", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
       };
   }
+}
+
+function EmbedWallCard({ proof, t, wall, radius, masonry }: {
+  proof: { id: string; source_platform: string; author_name: string; author_title: string | null; author_avatar_url: string | null; content_text: string | null; content_image_url: string | null; created_at: string };
+  t: ReturnType<typeof getThemeColors>;
+  wall: { show_platform_icon: boolean; border_radius: number; card_spacing: number };
+  radius: string;
+  masonry?: boolean;
+}) {
+  const companyLogoUrl = getCompanyLogoUrl(proof.author_title);
+  return (
+    <div
+      className={masonry ? "break-inside-avoid" : ""}
+      style={{
+        padding: "20px",
+        marginBottom: masonry ? `${wall.card_spacing}px` : undefined,
+        borderRadius: radius,
+        border: `1px solid ${t.borderColor}`,
+        background: t.bgCard,
+        width: masonry ? undefined : "300px",
+        flexShrink: masonry ? undefined : 0,
+      }}
+    >
+      {companyLogoUrl && <CompanyLogoImg url={companyLogoUrl} />}
+      <div className="flex items-center gap-2 mb-3">
+        {proof.author_avatar_url ? (
+          <img src={proof.author_avatar_url} alt={proof.author_name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+        ) : wall.show_platform_icon ? (
+          <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}>
+            {PLATFORM_LABELS[proof.source_platform] || "O"}
+          </span>
+        ) : null}
+        <div>
+          <div className="text-sm font-medium" style={{ color: t.textPrimary }}>{proof.author_name}</div>
+          {proof.author_title && <div className="text-xs" style={{ color: t.textTertiary }}>{proof.author_title}</div>}
+        </div>
+      </div>
+      {proof.content_text && <p className="text-sm leading-relaxed" style={{ color: t.textSecondary }}>{proof.content_text}</p>}
+      {proof.content_image_url && (
+        <img src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")} alt="Proof" className="mt-3 w-full"
+          style={{ borderRadius: `${Math.max(wall.border_radius - 4, 0)}px`, border: `1px solid ${t.borderColor}` }} />
+      )}
+      <div className="mt-3 text-xs" style={{ color: t.textTertiary }}>
+        {new Date(proof.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+      </div>
+    </div>
+  );
 }
 
 export default async function EmbedWallPage({
@@ -139,84 +188,50 @@ setInterval(function(){send(true)},1000);
         <div className="text-center py-12" style={{ color: t.textTertiary }}>
           No proofs yet.
         </div>
+      ) : (wall.layout || "masonry") === "marquee" ? (
+        (() => {
+          const minCards = Math.max(6, proofs.length);
+          const repeatCount = Math.ceil(minCards / proofs.length);
+          const filled = [];
+          for (let i = 0; i < repeatCount; i++) filled.push(...proofs);
+          const duration = filled.length * 4.5;
+          return (
+            <>
+              <style dangerouslySetInnerHTML={{ __html: `
+@keyframes ew-marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.ew-marquee-wrap { overflow: hidden; width: 100%; mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); }
+.ew-marquee-track { display: flex; gap: ${spacing}; animation: ew-marquee ${duration}s linear infinite; width: max-content; }
+.ew-marquee-track:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .ew-marquee-track { animation: none; } .ew-marquee-wrap { overflow-x: auto; mask-image: none; -webkit-mask-image: none; } }
+              ` }} />
+              <div className="ew-marquee-wrap">
+                <div className="ew-marquee-track">
+                  {[...filled, ...filled].map((proof, i) => (
+                    <EmbedWallCard key={`m-${i}`} proof={proof} t={t} wall={wall} radius={radius} />
+                  ))}
+                </div>
+              </div>
+            </>
+          );
+        })()
+      ) : wall.layout === "carousel" ? (
+        <div style={{ overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: "8px" }}>
+          <div style={{ display: "flex", gap: spacing }}>
+            {proofs.map((proof) => (
+              <div key={proof.id} style={{ flexShrink: 0, width: "300px", scrollSnapAlign: "start" }}>
+                <EmbedWallCard proof={proof} t={t} wall={wall} radius={radius} />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <div
           className="columns-1 sm:columns-2 lg:columns-3"
           style={{ columnGap: spacing }}
         >
-          {proofs.map((proof) => {
-            const companyLogoUrl = getCompanyLogoUrl(proof.author_title);
-            return (
-              <div
-                key={proof.id}
-                className="break-inside-avoid p-5 relative"
-                style={{
-                  marginBottom: spacing,
-                  borderRadius: radius,
-                  border: `1px solid ${t.borderColor}`,
-                  background: t.bgCard,
-                }}
-              >
-                {companyLogoUrl && (
-                  <CompanyLogoImg url={companyLogoUrl} />
-                )}
-                {/* Author */}
-                <div className="flex items-center gap-2 mb-3">
-                  {proof.author_avatar_url ? (
-                    <img
-                      src={proof.author_avatar_url}
-                      alt={proof.author_name}
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : wall.show_platform_icon ? (
-                    <span
-                      className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
-                    >
-                      {PLATFORM_LABELS[proof.source_platform] || "O"}
-                    </span>
-                  ) : null}
-                  <div>
-                    <div className="text-sm font-medium" style={{ color: t.textPrimary }}>
-                      {proof.author_name}
-                    </div>
-                    {proof.author_title && (
-                      <div className="text-xs" style={{ color: t.textTertiary }}>
-                        {proof.author_title}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Content */}
-                {proof.content_text && (
-                  <p className="text-sm leading-relaxed" style={{ color: t.textSecondary }}>
-                    {proof.content_text}
-                  </p>
-                )}
-
-                {proof.content_image_url && (
-                  <img
-                    src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
-                    alt="Proof"
-                    className="mt-3 w-full"
-                    style={{
-                      borderRadius: `${Math.max(wall.border_radius - 4, 0)}px`,
-                      border: `1px solid ${t.borderColor}`,
-                    }}
-                  />
-                )}
-
-                {/* Date */}
-                <div className="mt-3 text-xs" style={{ color: t.textTertiary }}>
-                  {new Date(proof.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </div>
-              </div>
-            );
-          })}
+          {proofs.map((proof) => (
+            <EmbedWallCard key={proof.id} proof={proof} t={t} wall={wall} radius={radius} masonry />
+          ))}
         </div>
       )}
 

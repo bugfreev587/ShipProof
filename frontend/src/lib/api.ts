@@ -364,6 +364,7 @@ export interface Wall {
   header_text_color: string;
   subtitle: string;
   show_header: boolean;
+  layout: string;
   created_at: string;
   updated_at: string;
 }
@@ -650,6 +651,7 @@ export function updateWallConfig(
     header_text_color: string;
     subtitle: string;
     show_header: boolean;
+    layout: string;
   },
   token: string,
 ) {

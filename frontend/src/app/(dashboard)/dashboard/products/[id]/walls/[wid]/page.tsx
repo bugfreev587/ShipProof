@@ -128,6 +128,7 @@ export default function WallEditPage() {
             header_text_color: newWall.header_text_color,
             subtitle: newWall.subtitle,
             show_header: newWall.show_header,
+            layout: newWall.layout || "masonry",
           },
           token,
         );
@@ -205,6 +206,37 @@ export default function WallEditPage() {
         <div className="w-1/4 min-w-[280px] flex-shrink-0 space-y-6">
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-5">
             <h2 className="text-sm font-medium text-[var(--text-primary)]">Configuration</h2>
+
+            {/* Layout */}
+            <div>
+              <label className="block text-xs text-[var(--text-secondary)] mb-2">Layout</label>
+              <div className="flex gap-2">
+                {([
+                  { value: "masonry", label: "Masonry", desc: "Multi-column grid" },
+                  { value: "carousel", label: "Carousel", desc: "Manual scroll" },
+                  { value: "marquee", label: "Marquee", desc: "Auto-scrolling" },
+                ] as const).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleConfigChange({ layout: opt.value })}
+                    className={`flex-1 rounded-lg border px-2 py-2 text-left transition-all cursor-pointer ${
+                      (wall.layout || "masonry") === opt.value
+                        ? "border-[#6366F1] bg-[#6366F1]/10"
+                        : "border-[var(--border)] bg-[var(--bg-base)] hover:border-[var(--border-hover)]"
+                    }`}
+                  >
+                    <span className={`block text-xs font-medium ${
+                      (wall.layout || "masonry") === opt.value ? "text-[#818CF8]" : "text-[var(--text-primary)]"
+                    }`}>
+                      {opt.label}
+                    </span>
+                    <span className="block text-[9px] text-[var(--text-tertiary)] mt-0.5">
+                      {opt.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Show Header */}
             <label className="flex items-center gap-2 cursor-pointer">
@@ -481,6 +513,79 @@ export default function WallEditPage() {
   );
 }
 
+function WallProofCard({ proof, t, wall, radius, spacing }: {
+  proof: Proof;
+  t: ReturnType<typeof getThemeColors>;
+  wall: Wall;
+  radius: string;
+  spacing: string;
+}) {
+  return (
+    <div
+      className="break-inside-avoid p-5 relative"
+      style={{
+        marginBottom: spacing,
+        borderRadius: radius,
+        border: `1px solid ${t.borderColor}`,
+        background: t.bgCard,
+      }}
+    >
+      {(() => {
+        const logoUrl = getCompanyLogoUrl(proof.author_title);
+        return logoUrl ? <CompanyLogoImg url={logoUrl} /> : null;
+      })()}
+      <div className="flex items-center gap-2 mb-3">
+        {proof.author_avatar_url ? (
+          <img
+            src={proof.author_avatar_url}
+            alt={proof.author_name}
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <span
+            className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
+          >
+            {proof.author_name.charAt(0).toUpperCase()}
+          </span>
+        )}
+        <div>
+          <div className="text-sm font-medium" style={{ color: t.textPrimary }}>
+            {proof.author_name}
+          </div>
+          {proof.author_title && (
+            <div className="text-xs" style={{ color: t.textTertiary }}>
+              {proof.author_title}
+            </div>
+          )}
+        </div>
+      </div>
+      {proof.content_text && (
+        <p className="text-sm leading-relaxed" style={{ color: t.textSecondary }}>
+          {proof.content_text}
+        </p>
+      )}
+      {proof.content_image_url && (
+        <img
+          src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
+          alt="Proof"
+          className="mt-3 w-full"
+          style={{
+            borderRadius: `${Math.max(wall.border_radius - 4, 0)}px`,
+            border: `1px solid ${t.borderColor}`,
+          }}
+        />
+      )}
+      <div className="mt-3 text-xs" style={{ color: t.textTertiary }}>
+        {new Date(proof.created_at).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </div>
+    </div>
+  );
+}
+
 function WallPreview({
   wall,
   product,
@@ -521,88 +626,66 @@ function WallPreview({
         </div>
       )}
 
-      {/* Masonry Grid */}
+      {/* Proof cards */}
       <div className="max-w-5xl mx-auto px-4 pb-10">
         {proofs.length === 0 ? (
           <div className="text-center py-12" style={{ color: t.textTertiary }}>
             No proofs selected. Toggle proofs on the left to see them here.
           </div>
-        ) : (
+        ) : (wall.layout || "masonry") === "masonry" ? (
+          /* Masonry Grid */
           <div
             className="columns-1 sm:columns-2 lg:columns-3"
             style={{ columnGap: spacing }}
           >
             {proofs.map((proof) => (
-              <div
-                key={proof.id}
-                className="break-inside-avoid p-5 relative"
-                style={{
-                  marginBottom: spacing,
-                  borderRadius: radius,
-                  border: `1px solid ${t.borderColor}`,
-                  background: t.bgCard,
-                }}
-              >
-                {(() => {
-                  const logoUrl = getCompanyLogoUrl(proof.author_title);
-                  return logoUrl ? <CompanyLogoImg url={logoUrl} /> : null;
-                })()}
-                {/* Author */}
-                <div className="flex items-center gap-2 mb-3">
-                  {proof.author_avatar_url ? (
-                    <img
-                      src={proof.author_avatar_url}
-                      alt={proof.author_name}
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <span
-                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
-                    >
-                      {proof.author_name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                  <div>
-                    <div className="text-sm font-medium" style={{ color: t.textPrimary }}>
-                      {proof.author_name}
-                    </div>
-                    {proof.author_title && (
-                      <div className="text-xs" style={{ color: t.textTertiary }}>
-                        {proof.author_title}
+              <WallProofCard key={proof.id} proof={proof} t={t} wall={wall} radius={radius} spacing={spacing} />
+            ))}
+          </div>
+        ) : (wall.layout === "marquee") ? (
+          /* Marquee */
+          (() => {
+            const minCards = Math.max(6, proofs.length);
+            const repeatCount = Math.ceil(minCards / proofs.length);
+            const filled: Proof[] = [];
+            for (let i = 0; i < repeatCount; i++) filled.push(...proofs);
+            const duration = filled.length * 4.5;
+            return (
+              <>
+                <style>{`
+@keyframes wall-marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.wall-marquee-wrap { overflow: hidden; width: 100%; mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); }
+.wall-marquee-track { display: flex; gap: ${spacing}; animation: wall-marquee ${duration}s linear infinite; width: max-content; }
+.wall-marquee-track:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .wall-marquee-track { animation: none; } .wall-marquee-wrap { overflow-x: auto; mask-image: none; -webkit-mask-image: none; } }
+                `}</style>
+                <div className="wall-marquee-wrap">
+                  <div className="wall-marquee-track">
+                    {filled.map((proof, i) => (
+                      <div key={`ma-${i}`} className="flex-shrink-0" style={{ width: "300px" }}>
+                        <WallProofCard proof={proof} t={t} wall={wall} radius={radius} spacing={spacing} />
                       </div>
-                    )}
+                    ))}
+                    {filled.map((proof, i) => (
+                      <div key={`mb-${i}`} className="flex-shrink-0" style={{ width: "300px" }}>
+                        <WallProofCard proof={proof} t={t} wall={wall} radius={radius} spacing={spacing} />
+                      </div>
+                    ))}
                   </div>
                 </div>
-
-                {/* Content */}
-                {proof.content_text && (
-                  <p className="text-sm leading-relaxed" style={{ color: t.textSecondary }}>
-                    {proof.content_text}
-                  </p>
-                )}
-
-                {proof.content_image_url && (
-                  <img
-                    src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
-                    alt="Proof"
-                    className="mt-3 w-full"
-                    style={{
-                      borderRadius: `${Math.max(wall.border_radius - 4, 0)}px`,
-                      border: `1px solid ${t.borderColor}`,
-                    }}
-                  />
-                )}
-
-                {/* Date */}
-                <div className="mt-3 text-xs" style={{ color: t.textTertiary }}>
-                  {new Date(proof.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+              </>
+            );
+          })()
+        ) : (
+          /* Carousel */
+          <div className="overflow-x-auto pb-4" style={{ scrollSnapType: "x mandatory" }}>
+            <div className="flex" style={{ gap: spacing }}>
+              {proofs.map((proof) => (
+                <div key={proof.id} className="flex-shrink-0" style={{ width: "300px", scrollSnapAlign: "start" }}>
+                  <WallProofCard proof={proof} t={t} wall={wall} radius={radius} spacing={spacing} />
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>
