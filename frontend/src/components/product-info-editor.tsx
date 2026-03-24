@@ -2,7 +2,8 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useState, useEffect, useRef } from "react";
-import { updateProduct, uploadAvatar, type Product } from "@/lib/api";
+import { updateProduct, uploadAvatar, deleteProduct, type Product } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 interface Props {
   product: Product;
@@ -12,7 +13,10 @@ interface Props {
 
 export default function ProductInfoEditor({ product, onUpdated, onClose }: Props) {
   const { getToken } = useAuth();
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [name, setName] = useState(product.name);
   const [url, setUrl] = useState(product.url?.Valid ? product.url.String : "");
@@ -80,6 +84,20 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
       // ignore
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await deleteProduct(product.id, token);
+      router.push("/dashboard");
+    } catch {
+      // ignore
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -221,7 +239,7 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
           </div>
         </div>
 
-        <div className="mt-4 flex gap-3">
+        <div className="mt-4 flex items-center gap-3">
           <button
             onClick={handleSave}
             disabled={saving || !name.trim()}
@@ -235,7 +253,39 @@ export default function ProductInfoEditor({ product, onUpdated, onClose }: Props
           >
             Cancel
           </button>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="ml-auto rounded-lg px-4 py-2 text-sm font-medium text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
+          >
+            Delete
+          </button>
         </div>
+
+        {showDeleteConfirm && (
+          <div className="mt-4 rounded-lg border border-[#ef4444]/30 bg-[#ef4444]/5 p-4">
+            <p className="text-sm font-medium text-[var(--text-primary)] mb-1">
+              Delete this product?
+            </p>
+            <p className="text-xs text-[var(--text-secondary)] mb-3">
+              This action cannot be undone. All proofs, widgets, and data associated with this product will be permanently deleted.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="rounded-lg bg-[#ef4444] px-4 py-2 text-sm font-medium text-white hover:bg-[#dc2626] disabled:opacity-50 transition-colors"
+              >
+                {deleting ? "Deleting..." : "Yes, delete"}
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
