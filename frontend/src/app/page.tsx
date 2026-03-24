@@ -150,7 +150,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Social Proof Demo */}
+      {/* Social Proof Demo — ShipProof's own embed (dogfooding) */}
       <section className="border-t border-[#2A2A30] py-20">
         <div className="mx-auto max-w-6xl px-4 text-center">
           <h2 className="mb-4 text-3xl font-bold text-[#F1F1F3]">
@@ -159,46 +159,20 @@ export default function HomePage() {
           <p className="mb-12 text-[#9CA3AF]">
             Embed a widget on your site or share a Wall of Love page.
           </p>
-          <div className="rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-8">
-            <div className="flex gap-5 overflow-x-auto pb-2" style={{ scrollbarWidth: "thin" }}>
-              {[
-                {
-                  name: "Alex Chen",
-                  title: "Founder, LaunchKit",
-                  text: "ShipProof saved me hours of writing launch copy. The AI nailed the tone for every platform.",
-                },
-                {
-                  name: "Sarah M.",
-                  title: "Indie Hacker",
-                  text: "The Wall of Love page is gorgeous. I share it with every potential customer.",
-                },
-                {
-                  name: "Mike R.",
-                  title: "Product Manager",
-                  text: "Finally, a tool that understands the difference between a Reddit post and a Product Hunt description.",
-                },
-              ].map((t) => (
-                <div
-                  key={t.name}
-                  className="flex-shrink-0 rounded-xl border border-[#2A2A30] bg-[#0F0F10] p-6 text-left"
-                  style={{ width: "340px" }}
-                >
-                  <p className="mb-4 text-base leading-relaxed text-[#F1F1F3]">
-                    &ldquo;{t.text}&rdquo;
-                  </p>
-                  <div className="text-sm text-[#9CA3AF]">
-                    <span className="font-medium text-[#F1F1F3]">{t.name}</span>
-                    {" — "}
-                    {t.title}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-[#6B7280]">
-              <LogoIcon className="w-4 h-4" />
-              <span className="font-medium">ShipProof</span>
-            </div>
-          </div>
+          <iframe
+            id="shipproof-landing-page-space-afa275"
+            src="https://shipproof.io/embed/landing-page-space-afa275"
+            frameBorder="0"
+            scrolling="no"
+            width="100%"
+            style={{ border: "none", borderRadius: "12px", minHeight: "400px" }}
+            loading="lazy"
+          />
+          <script
+            type="text/javascript"
+            src="https://shipproof.io/js/embed.js"
+            async
+          />
         </div>
       </section>
 
