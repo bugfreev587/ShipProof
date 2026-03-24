@@ -902,7 +902,38 @@ function SpaceCard({
 
           {/* Manage Proofs */}
           <div className="space-y-3">
-            <p className="text-xs font-medium text-[var(--text-primary)]">Proofs</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-medium text-[var(--text-primary)]">Proofs</p>
+              {allProofs.length > 0 && (
+                <button
+                  onClick={async () => {
+                    const token = await getToken();
+                    if (!token) return;
+                    const allSelected = allProofs.every((p) => spaceProofIds.has(p.id));
+                    if (allSelected) {
+                      for (const proof of allProofs) {
+                        if (spaceProofIds.has(proof.id)) {
+                          await removeProofFromSpace(space.id, proof.id, token);
+                        }
+                      }
+                      setSpaceProofIds(new Set());
+                      setSpaceProofs([]);
+                    } else {
+                      for (const proof of allProofs) {
+                        if (!spaceProofIds.has(proof.id)) {
+                          await addProofToSpace(space.id, proof.id, spaceProofIds.size, token);
+                        }
+                      }
+                      setSpaceProofIds(new Set(allProofs.map((p) => p.id)));
+                      setSpaceProofs([...allProofs]);
+                    }
+                  }}
+                  className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
+                >
+                  {allProofs.every((p) => spaceProofIds.has(p.id)) ? "Unselect all" : "Select all"}
+                </button>
+              )}
+            </div>
             {loadingAllProofs ? (
               <p className="text-xs text-[var(--text-tertiary)]">Loading proofs...</p>
             ) : allProofs.length === 0 ? (

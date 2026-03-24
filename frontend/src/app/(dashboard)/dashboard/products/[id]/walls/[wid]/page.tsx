@@ -399,7 +399,36 @@ export default function WallEditPage() {
 
           {/* Proofs list */}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-3">
-            <h2 className="text-sm font-medium text-[var(--text-primary)]">Proofs</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-medium text-[var(--text-primary)]">Proofs</h2>
+              {allProofs.length > 0 && (
+                <button
+                  onClick={async () => {
+                    const token = await getToken();
+                    if (!token) return;
+                    const allSelected = allProofs.every((p) => wallProofIds.has(p.id));
+                    if (allSelected) {
+                      for (const proof of allProofs) {
+                        if (wallProofIds.has(proof.id)) {
+                          await removeProofFromWall(wallId, proof.id, token);
+                        }
+                      }
+                      setWallProofIds(new Set());
+                    } else {
+                      for (const proof of allProofs) {
+                        if (!wallProofIds.has(proof.id)) {
+                          await addProofToWall(wallId, proof.id, wallProofIds.size, token);
+                        }
+                      }
+                      setWallProofIds(new Set(allProofs.map((p) => p.id)));
+                    }
+                  }}
+                  className="text-xs text-[#6366F1] hover:text-[#818CF8] transition-colors"
+                >
+                  {allProofs.every((p) => wallProofIds.has(p.id)) ? "Unselect all" : "Select all"}
+                </button>
+              )}
+            </div>
             {allProofs.length === 0 ? (
               <p className="text-xs text-[var(--text-tertiary)]">
                 No proofs available. Add proofs in the Proofs tab first.
