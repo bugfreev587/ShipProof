@@ -12,12 +12,16 @@ import {
   createWall,
   deleteWall,
   listWallProofs,
+  updateWallConfig,
   getCurrentUser,
   type Space,
   type Wall,
   type Product,
+  type Proof,
   ApiError,
 } from "@/lib/api";
+import type { WallProof, WallDisplayConfig } from "@/components/wall-of-proof/types";
+import WallEditorPreview from "@/components/wall-of-proof/wall-editor-preview";
 
 interface Props {
   product: Product;
@@ -444,6 +448,22 @@ function CreateWallButton({
   );
 }
 
+function proofToWallProof(proof: Proof): WallProof {
+  return {
+    id: proof.id,
+    author_name: proof.author_name,
+    author_title: proof.author_title,
+    author_avatar_url: proof.author_avatar_url,
+    content_text: proof.content_text,
+    content_image_url: proof.content_image_url,
+    source_platform: proof.source_platform,
+    source_url: proof.source_url,
+    is_verified: false,
+    created_at: proof.created_at,
+    tags: proof.tags,
+  };
+}
+
 function WallCard({
   wall,
   product,
@@ -457,6 +477,74 @@ function WallCard({
 }) {
   const { getToken } = useAuth();
   const router = useRouter();
+  const [showPreview, setShowPreview] = useState(false);
+  const [wallProofs, setWallProofs] = useState<WallProof[]>([]);
+  const [loadingProofs, setLoadingProofs] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const [displayConfig, setDisplayConfig] = useState<WallDisplayConfig>({
+    layout: (wall.layout as WallDisplayConfig["layout"]) || "masonry",
+    theme: (wall.theme as WallDisplayConfig["theme"]) || "dark",
+    columns: 3,
+    showSourceBadges: wall.show_platform_icon,
+    showVerifiedTags: true,
+    showTimeContext: true,
+    showBranding: wall.show_branding,
+    borderRadius: wall.border_radius,
+    cardSpacing: wall.card_spacing,
+    showPlatformIcon: wall.show_platform_icon,
+  });
+
+  const togglePreview = async () => {
+    if (!showPreview && wallProofs.length === 0) {
+      setLoadingProofs(true);
+      try {
+        const token = await getToken();
+        if (token) {
+          const proofs = await listWallProofs(wall.id, token);
+          setWallProofs(proofs.map(proofToWallProof));
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoadingProofs(false);
+      }
+    }
+    setShowPreview(!showPreview);
+  };
+
+  const handleSaveConfig = async () => {
+    setSaving(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await updateWallConfig(
+        wall.id,
+        {
+          theme: displayConfig.theme,
+          border_radius: displayConfig.borderRadius,
+          card_spacing: displayConfig.cardSpacing,
+          show_platform_icon: displayConfig.showSourceBadges,
+          show_branding: displayConfig.showBranding,
+          bg_color: wall.bg_color,
+          transparent_bg: wall.transparent_bg,
+          header_text_color: wall.header_text_color,
+          subtitle: wall.subtitle,
+          show_header: wall.show_header,
+          layout: displayConfig.layout,
+        },
+        token,
+      );
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+      onUpdated();
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const wallUrl =
     typeof window !== "undefined"
@@ -496,6 +584,16 @@ function WallCard({
         <h4 className="text-sm font-medium text-[var(--text-primary)]">{wall.name}</h4>
         <div className="flex items-center gap-3">
           <button
+            onClick={togglePreview}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+              showPreview
+                ? "bg-[#6366F1] text-white"
+                : "bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-primary)] hover:opacity-80"
+            }`}
+          >
+            {loadingProofs ? "Loading..." : showPreview ? "Hide Preview" : "Preview"}
+          </button>
+          <button
             onClick={() => router.push(`/dashboard/products/${product.id}/walls/${wall.id}`)}
             className="rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
           >
@@ -519,6 +617,26 @@ function WallCard({
           {proofCount}
         </div>
       </div>
+
+      {/* Editor Preview */}
+      {showPreview && (
+        <div className="space-y-3">
+          <WallEditorPreview
+            proofs={wallProofs}
+            config={displayConfig}
+            onConfigChange={setDisplayConfig}
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={handleSaveConfig}
+              disabled={saving}
+              className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
+            >
+              {saving ? "Saving..." : saveSuccess ? "Saved!" : "Save Settings"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Wall URL */}
       <div className="flex items-center gap-2">

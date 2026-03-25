@@ -1,71 +1,30 @@
 import { fetchPublicWallProofs, type Proof } from "@/lib/api";
-import { getCompanyLogoUrl } from "@/lib/company-logo";
-import { CompanyLogoImg } from "@/components/company-logo";
+import WallPublic from "@/components/wall-of-proof/wall-public";
+import type { WallProof } from "@/components/wall-of-proof/types";
 
-const PLATFORM_COLORS: Record<string, string> = {
-  product_hunt: "bg-red-500",
-  reddit: "bg-orange-500",
-  twitter: "bg-zinc-700",
-  hackernews: "bg-orange-400",
-  indiehackers: "bg-blue-500",
-  direct: "bg-green-500",
-  other: "bg-gray-500",
-};
+function toWallProof(proof: Proof): WallProof {
+  const pgStr = (v: unknown): string | null => {
+    if (v == null) return null;
+    if (typeof v === "string") return v || null;
+    if (typeof v === "object" && v !== null && "Valid" in v) {
+      const pg = v as { String: string; Valid: boolean };
+      return pg.Valid ? pg.String : null;
+    }
+    return null;
+  };
 
-type PgText = { String: string; Valid: boolean } | string | null;
-
-function pgStr(v: PgText): string | null {
-  if (v == null) return null;
-  if (typeof v === "string") return v || null;
-  return v.Valid ? v.String : null;
-}
-
-function TestimonialCard({ proof }: { proof: Proof }) {
-  const authorTitle = pgStr(proof.author_title as PgText);
-  const contentText = pgStr(proof.content_text as PgText);
-  const contentImageUrl = pgStr(proof.content_image_url as PgText);
-  const companyLogoUrl = getCompanyLogoUrl(authorTitle);
-
-  return (
-    <div className="break-inside-avoid mb-4 rounded-xl border border-[#2A2A30] bg-[#1A1A1F] p-5 hover:border-[#3F3F46] transition-colors relative">
-      {companyLogoUrl && <CompanyLogoImg url={companyLogoUrl} />}
-      <div className="flex items-center gap-3 mb-3">
-        {proof.author_avatar_url ? (
-          <img
-            src={proof.author_avatar_url}
-            alt={proof.author_name}
-            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-          />
-        ) : (
-          <span
-            className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[11px] font-bold text-white flex-shrink-0 ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}
-          >
-            {proof.author_name.charAt(0).toUpperCase()}
-          </span>
-        )}
-        <div>
-          <div className="text-sm font-semibold text-white">
-            {proof.author_name}
-          </div>
-          {authorTitle && (
-            <div className="text-xs text-[#6B7280] mt-0.5">{authorTitle}</div>
-          )}
-        </div>
-      </div>
-      {contentText && (
-        <p className="text-sm leading-relaxed text-[#9CA3AF]">
-          {contentText}
-        </p>
-      )}
-      {contentImageUrl && (
-        <img
-          src={contentImageUrl.replace(/^https?:\/\/https?:\/\//, "https://")}
-          alt="Proof"
-          className="mt-3 w-full rounded-lg border border-[#2A2A30]"
-        />
-      )}
-    </div>
-  );
+  return {
+    id: proof.id,
+    author_name: proof.author_name,
+    author_title: pgStr(proof.author_title),
+    author_avatar_url: pgStr(proof.author_avatar_url),
+    content_text: pgStr(proof.content_text),
+    content_image_url: pgStr(proof.content_image_url),
+    source_platform: proof.source_platform,
+    source_url: pgStr(proof.source_url),
+    created_at: proof.created_at,
+    tags: proof.tags,
+  };
 }
 
 export default async function WallOfLove() {
@@ -79,23 +38,35 @@ export default async function WallOfLove() {
 
   if (proofs.length === 0) return null;
 
+  const wallProofs = proofs.map(toWallProof);
+
   return (
-    <section className="border-t border-[#2A2A30] py-20">
+    <section className="border-t border-border py-20">
       <div className="mx-auto max-w-6xl px-4 text-center mb-10">
-        <h2 className="text-[28px] font-medium text-white">
+        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
           Loved by indie hackers
         </h2>
-        <p className="mt-2 text-sm text-[#8B8B92]">
+        <p className="mt-2 text-sm text-muted-foreground">
           See what builders are saying about ShipProof
         </p>
       </div>
 
       <div className="mx-auto max-w-6xl px-4">
-        <div className="columns-1 sm:columns-2 lg:columns-3" style={{ columnGap: "16px" }}>
-          {proofs.map((proof) => (
-            <TestimonialCard key={proof.id} proof={proof} />
-          ))}
-        </div>
+        <WallPublic
+          proofs={wallProofs}
+          config={{
+            layout: "masonry",
+            theme: "dark",
+            columns: 3,
+            showSourceBadges: true,
+            showVerifiedTags: true,
+            showTimeContext: false,
+            showBranding: false,
+            borderRadius: 12,
+            cardSpacing: 16,
+            showPlatformIcon: true,
+          }}
+        />
       </div>
     </section>
   );

@@ -98,6 +98,55 @@
   --sidebar-ring: #6366F1;
 }
 
+:root.light, [data-theme="light"] {
+  --background: #FAFAFA;
+  --foreground: #0F0F10;
+  --card: #FFFFFF;
+  --card-foreground: #0F0F10;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F0F10;
+  --primary: #6366F1;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #1F2937;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: #F3F4F6;
+  --accent-foreground: #1F2937;
+  --destructive: #EF4444;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #6366F1;
+  --chart-1: #6366F1;
+  --chart-2: #818CF8;
+  --chart-3: #22C55E;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
+  --sidebar: #FAFAFA;
+  --sidebar-foreground: #0F0F10;
+  --sidebar-primary: #6366F1;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #1F2937;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: #6366F1;
+  /* ShipProof custom */
+  --color-bg-base: #FAFAFA;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-hover: #F3F4F6;
+  --color-brand-primary: #6366F1;
+  --color-brand-primary-hover: #818CF8;
+  --color-text-primary: #0F0F10;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-border-default: rgba(0, 0, 0, 0.1);
+  --color-border-hover: rgba(0, 0, 0, 0.15);
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -108,4 +157,13 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Hide scrollbar for carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

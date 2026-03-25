@@ -1,97 +1,41 @@
 import { fetchPublicWallProofs } from "@/lib/api";
-import { getCompanyLogoUrl } from "@/lib/company-logo";
-import { CompanyLogoImg } from "@/components/company-logo";
 import { ViewTracker } from "@/components/view-tracker";
+import WallPublic from "@/components/wall-of-proof/wall-public";
+import { getWallThemeColors } from "@/components/wall-of-proof/types";
+import type { WallProof, WallDisplayConfig } from "@/components/wall-of-proof/types";
 
 export const dynamic = "force-dynamic";
 
-const PLATFORM_COLORS: Record<string, string> = {
-  product_hunt: "bg-red-500",
-  reddit: "bg-orange-500",
-  twitter: "bg-zinc-700",
-  hackernews: "bg-orange-400",
-  indiehackers: "bg-blue-500",
-  direct: "bg-green-500",
-  other: "bg-gray-500",
-};
-
-const PLATFORM_LABELS: Record<string, string> = {
-  product_hunt: "P",
-  reddit: "R",
-  twitter: "X",
-  hackernews: "H",
-  indiehackers: "I",
-  direct: "D",
-  other: "O",
-};
-
-function getThemeColors(theme: string) {
-  switch (theme) {
-    case "dim":
-      return {
-        bgCard: "#1E2D3D", borderColor: "#2B3D4F",
-        textPrimary: "#F1F1F3", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
-      };
-    case "gray":
-      return {
-        bgCard: "#343440", borderColor: "#45454F",
-        textPrimary: "#F1F1F3", textSecondary: "#B0B0B8", textTertiary: "#8A8A94",
-      };
-    case "light":
-      return {
-        bgCard: "#FFFFFF", borderColor: "#E5E7EB",
-        textPrimary: "#111827", textSecondary: "#6B7280", textTertiary: "#9CA3AF",
-      };
-    default: // dark
-      return {
-        bgCard: "#1A1A1F", borderColor: "#2A2A30",
-        textPrimary: "#F1F1F3", textSecondary: "#9CA3AF", textTertiary: "#6B7280",
-      };
+function pgStr(v: unknown): string | null {
+  if (v == null) return null;
+  if (typeof v === "string") return v || null;
+  if (typeof v === "object" && v !== null && "Valid" in v) {
+    const pg = v as { String: string; Valid: boolean };
+    return pg.Valid ? pg.String : null;
   }
+  return null;
 }
 
-function EmbedWallCard({ proof, t, wall, radius }: {
-  proof: { id: string; source_platform: string; author_name: string; author_title: string | null; author_avatar_url: string | null; content_text: string | null; content_image_url: string | null; created_at: string };
-  t: ReturnType<typeof getThemeColors>;
-  wall: { show_platform_icon: boolean; border_radius: number; card_spacing: number };
-  radius: string;
-}) {
-  const companyLogoUrl = getCompanyLogoUrl(proof.author_title);
-  return (
-    <div
-      className="break-inside-avoid"
-      style={{
-        padding: "20px",
-        marginBottom: `${wall.card_spacing}px`,
-        borderRadius: radius,
-        border: `1px solid ${t.borderColor}`,
-        background: t.bgCard,
-      }}
-    >
-      {companyLogoUrl && <CompanyLogoImg url={companyLogoUrl} />}
-      <div className="flex items-center gap-2 mb-3">
-        {proof.author_avatar_url ? (
-          <img src={proof.author_avatar_url} alt={proof.author_name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-        ) : wall.show_platform_icon ? (
-          <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white ${PLATFORM_COLORS[proof.source_platform] || "bg-gray-500"}`}>
-            {PLATFORM_LABELS[proof.source_platform] || "O"}
-          </span>
-        ) : null}
-        <div>
-          <div className="text-sm font-medium" style={{ color: t.textPrimary }}>{proof.author_name}</div>
-          {proof.author_title && <div className="text-xs" style={{ color: t.textTertiary }}>{proof.author_title}</div>}
-        </div>
-      </div>
-      {proof.content_text && <p className="text-sm leading-relaxed" style={{ color: t.textSecondary }}>{proof.content_text}</p>}
-      {proof.content_image_url && (
-        <img src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")} alt="Proof" className="mt-3 w-full"
-          style={{ borderRadius: `${Math.max(wall.border_radius - 4, 0)}px`, border: `1px solid ${t.borderColor}` }} />
-      )}
-      <div className="mt-3 text-xs" style={{ color: t.textTertiary }}>
-        {new Date(proof.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-      </div>
-    </div>
-  );
+function toWallProof(proof: {
+  id: string;
+  source_platform: string;
+  author_name: string;
+  author_title: string | null;
+  author_avatar_url: string | null;
+  content_text: string | null;
+  content_image_url: string | null;
+  created_at: string;
+}): WallProof {
+  return {
+    id: proof.id,
+    author_name: proof.author_name,
+    author_title: pgStr(proof.author_title),
+    author_avatar_url: pgStr(proof.author_avatar_url),
+    content_text: pgStr(proof.content_text),
+    content_image_url: pgStr(proof.content_image_url),
+    source_platform: proof.source_platform,
+    created_at: proof.created_at,
+  };
 }
 
 export default async function EmbedWallPage({
@@ -113,11 +57,29 @@ export default async function EmbedWallPage({
   }
 
   const { wall, product, proofs } = data;
-  const t = getThemeColors(wall.theme);
-  const radius = `${wall.border_radius}px`;
-  const spacing = `${wall.card_spacing}px`;
-  const headerColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color : t.textPrimary;
-  const headerSubColor = (wall.transparent_bg && wall.header_text_color) ? wall.header_text_color + "99" : t.textSecondary;
+  const theme = getWallThemeColors(wall.theme);
+  const wallProofs = proofs.map(toWallProof);
+  const headerColor =
+    wall.transparent_bg && wall.header_text_color
+      ? wall.header_text_color
+      : theme.textPrimary;
+  const headerSubColor =
+    wall.transparent_bg && wall.header_text_color
+      ? wall.header_text_color + "99"
+      : theme.textSecondary;
+
+  const config: WallDisplayConfig = {
+    layout: "masonry",
+    theme: (wall.theme as WallDisplayConfig["theme"]) || "dark",
+    columns: 3,
+    showSourceBadges: wall.show_platform_icon,
+    showVerifiedTags: true,
+    showTimeContext: true,
+    showBranding: wall.show_branding,
+    borderRadius: wall.border_radius,
+    cardSpacing: wall.card_spacing,
+    showPlatformIcon: wall.show_platform_icon,
+  };
 
   return (
     <div
@@ -164,65 +126,34 @@ setInterval(function(){send(true)},1000);
         }}
       />
 
-      {/* Header */}
+      {/* Custom header for embed (preserves transparent bg logic) */}
       {wall.show_header !== false && (
         <div style={{ textAlign: "center", padding: "24px 16px 32px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: 700, color: headerColor, marginBottom: "8px" }}>
+          <h1
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              color: headerColor,
+              marginBottom: "8px",
+            }}
+          >
             {wall.name}
           </h1>
           <p style={{ fontSize: "14px", color: headerSubColor, margin: 0 }}>
             {wall.subtitle || (
               <>
                 What people are saying about{" "}
-                <span style={{ fontWeight: 500, color: headerColor }}>{product.name}</span>
+                <span style={{ fontWeight: 500, color: headerColor }}>
+                  {product.name}
+                </span>
               </>
             )}
           </p>
         </div>
       )}
 
-      {proofs.length === 0 ? (
-        <div className="text-center py-12" style={{ color: t.textTertiary }}>
-          No proofs yet.
-        </div>
-      ) : (
-        <div
-          className="columns-1 sm:columns-2 lg:columns-3"
-          style={{ columnGap: spacing }}
-        >
-          {proofs.map((proof) => (
-            <EmbedWallCard key={proof.id} proof={proof} t={t} wall={wall} radius={radius} />
-          ))}
-        </div>
-      )}
-
-      {/* Branding */}
-      {wall.show_branding && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "4px",
-            marginTop: "16px",
-            fontSize: "11px",
-            color: t.textTertiary,
-          }}
-        >
-          <a
-            href="https://shipproof.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: "#6366F1", textDecoration: "none" }}
-          >
-            <svg width="16" height="16" viewBox="0 0 64 64">
-              <circle cx="32" cy="32" r="28" fill="#6366F1"/>
-              <path d="M32,46 C32,46 16,35 16,26 C16,20 19,17 24,17 C27,17 30,19 32,21 C34,19 37,17 40,17 C45,17 48,20 48,26 C48,35 32,46 32,46Z" fill="white"/>
-            </svg>
-            ShipProof
-          </a>
-        </div>
-      )}
+      {/* Wall content (without header, since we render it above) */}
+      <WallPublic proofs={wallProofs} config={config} />
     </div>
   );
 }

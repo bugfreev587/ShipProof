@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import { ThemeProvider } from "next-themes";
 import { Analytics } from "@/components/Analytics";
 import "./globals.css";
 
@@ -27,9 +28,16 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider appearance={{ baseTheme: dark }}>
-      <html lang="en" className="dark">
+      <html lang="en" suppressHydrationWarning>
         <body className={`${inter.variable} font-sans antialiased`}>
-          {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            storageKey="shipproof-theme"
+            enableSystem
+          >
+            {children}
+          </ThemeProvider>
           <Suspense fallback={null}>
             <Analytics />
           </Suspense>
