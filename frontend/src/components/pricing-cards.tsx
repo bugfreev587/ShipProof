@@ -11,8 +11,7 @@ const plans: {
   monthlyPrice: number;
   yearlyPrice: number;
   badge: string | null;
-  borderColor: string;
-  badgeColor: string;
+  highlighted: boolean;
   description?: string;
   features: { text: string; type: FeatureType }[];
   ctaText: string;
@@ -24,8 +23,7 @@ const plans: {
     monthlyPrice: 0,
     yearlyPrice: 0,
     badge: null,
-    borderColor: "border-[#2A2A30]",
-    badgeColor: "",
+    highlighted: false,
     features: [
       { text: "1 Product", type: "included" },
       { text: "5 Proofs", type: "included" },
@@ -44,8 +42,7 @@ const plans: {
     monthlyPrice: 12,
     yearlyPrice: 9,
     badge: "Most Popular",
-    borderColor: "border-[#6366F1]",
-    badgeColor: "bg-[#6366F1]",
+    highlighted: true,
     description: "Everything in Free, plus:",
     features: [
       { text: "Unlimited Proofs", type: "included" },
@@ -63,8 +60,7 @@ const plans: {
     monthlyPrice: 29,
     yearlyPrice: 24,
     badge: null,
-    borderColor: "border-[#2A2A30]",
-    badgeColor: "",
+    highlighted: false,
     description: "Everything in Pro, plus:",
     features: [
       { text: "Up to 10 Products", type: "included" },
@@ -161,14 +157,14 @@ export default function PricingCards() {
       {/* Toggle */}
       <div className="mb-8 flex items-center justify-center gap-3">
         <span
-          className={`text-sm ${!yearly ? "text-[#F1F1F3]" : "text-[#9CA3AF]"}`}
+          className={`text-sm ${!yearly ? "text-foreground" : "text-muted-foreground"}`}
         >
           Monthly
         </span>
         <button
           onClick={() => setYearly(!yearly)}
           className={`relative h-6 w-11 rounded-full transition-colors ${
-            yearly ? "bg-[#6366F1]" : "bg-[#3F3F46]"
+            yearly ? "bg-[#6366F1]" : "bg-border"
           }`}
         >
           <span
@@ -178,7 +174,7 @@ export default function PricingCards() {
           />
         </button>
         <span
-          className={`text-sm ${yearly ? "text-[#F1F1F3]" : "text-[#9CA3AF]"}`}
+          className={`text-sm ${yearly ? "text-foreground" : "text-muted-foreground"}`}
         >
           Yearly{" "}
           <span className="text-[#10B981] text-xs font-medium">Save 25%</span>
@@ -196,30 +192,32 @@ export default function PricingCards() {
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`relative flex flex-col rounded-xl border ${plan.borderColor} bg-[#1A1A1F] p-6`}
+            className={`relative flex flex-col rounded-xl border p-6 ${
+              plan.highlighted ? "border-[#6366F1]" : "border-border"
+            } bg-card`}
           >
             {plan.badge && (
               <div
-                className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full ${plan.badgeColor} px-3 py-0.5 text-xs font-medium text-white`}
+                className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#6366F1] px-3 py-0.5 text-xs font-medium text-white"
               >
                 {plan.badge}
               </div>
             )}
 
-            <h3 className="text-lg font-semibold text-[#F1F1F3]">
+            <h3 className="text-lg font-semibold text-foreground">
               {plan.name}
             </h3>
             <div className="mt-2 mb-4">
-              <span className="text-3xl font-bold text-[#F1F1F3]">
+              <span className="text-3xl font-bold text-foreground">
                 ${yearly ? plan.yearlyPrice : plan.monthlyPrice}
               </span>
               {plan.monthlyPrice > 0 && (
-                <span className="text-[#9CA3AF] text-sm">/mo</span>
+                <span className="text-muted-foreground text-sm">/mo</span>
               )}
             </div>
 
             {plan.description && (
-              <p className="text-xs text-[#9CA3AF] mb-2">{plan.description}</p>
+              <p className="text-xs text-muted-foreground mb-2">{plan.description}</p>
             )}
 
             <ul className="flex-1 space-y-2">
@@ -255,7 +253,7 @@ export default function PricingCards() {
                     </svg>
                   ) : (
                     <svg
-                      className="h-4 w-4 shrink-0 text-[#6B7280]"
+                      className="h-4 w-4 shrink-0 text-muted-foreground"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -270,7 +268,7 @@ export default function PricingCards() {
                   )}
                   <span
                     className={
-                      feature.type === "excluded" ? "text-[#6B7280]" : "text-[#F1F1F3]"
+                      feature.type === "excluded" ? "text-muted-foreground" : "text-foreground"
                     }
                   >
                     {feature.text}
@@ -283,7 +281,7 @@ export default function PricingCards() {
               {plan.plan === "free" ? (
                 <a
                   href={plan.ctaLink}
-                  className="block w-full rounded-lg border border-[#2A2A30] px-4 py-2 text-center text-sm font-medium text-[#F1F1F3] hover:bg-[#2A2A30] transition-colors"
+                  className="block w-full rounded-lg border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-muted transition-colors"
                 >
                   {plan.ctaText}
                 </a>
