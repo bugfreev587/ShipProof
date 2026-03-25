@@ -110,6 +110,28 @@ export function getCurrentUser(token: string) {
   return fetchApi<User>("/api/user/me", {}, token);
 }
 
+// --- API Key ---
+
+export function getApiKeyStatus(token: string) {
+  return fetchApi<{ has_key: boolean }>("/api/settings/api-key", {}, token);
+}
+
+export function generateApiKey(token: string) {
+  return fetchApi<{ api_key: string }>(
+    "/api/settings/api-key",
+    { method: "POST" },
+    token,
+  );
+}
+
+export function deleteApiKey(token: string) {
+  return fetchApi<void>(
+    "/api/settings/api-key",
+    { method: "DELETE" },
+    token,
+  );
+}
+
 export function createCheckoutSession(
   data: { price_id: string; plan: string },
   token: string,

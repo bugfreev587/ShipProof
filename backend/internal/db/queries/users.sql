@@ -40,3 +40,9 @@ WHERE id = $1;
 
 -- name: CountProductsByUserID :one
 SELECT COUNT(*) FROM products WHERE user_id = $1;
+
+-- name: GetUserByApiKey :one
+SELECT * FROM users WHERE api_key = $1;
+
+-- name: SetUserApiKey :one
+UPDATE users SET api_key = $2, updated_at = now() WHERE id = $1 RETURNING *;

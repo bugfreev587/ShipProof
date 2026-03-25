@@ -17,8 +17,9 @@ import (
 type CollectionMethod string
 
 const (
-	CollectionMethodManual CollectionMethod = "manual"
-	CollectionMethodForm   CollectionMethod = "form"
+	CollectionMethodManual    CollectionMethod = "manual"
+	CollectionMethodForm      CollectionMethod = "form"
+	CollectionMethodExtension CollectionMethod = "extension"
 )
 
 func (e *CollectionMethod) Scan(src interface{}) error {
@@ -440,6 +441,7 @@ type User struct {
 	ProTrialUsed         bool        `json:"pro_trial_used"`
 	BusinessTrialUsed    bool        `json:"business_trial_used"`
 	IsAdmin              bool        `json:"is_admin"`
+	ApiKey               pgtype.Text `json:"api_key"`
 }
 
 type ViewEvent struct {

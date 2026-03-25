@@ -26,7 +26,7 @@ func (q *Queries) CountProductsByUserID(ctx context.Context, userID uuid.UUID) (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (clerk_id, email, name, avatar_url)
 VALUES ($1, $2, $3, $4)
-RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin
+RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key
 `
 
 type CreateUserParams struct {
@@ -58,12 +58,39 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ProTrialUsed,
 		&i.BusinessTrialUsed,
 		&i.IsAdmin,
+		&i.ApiKey,
+	)
+	return i, err
+}
+
+const getUserByApiKey = `-- name: GetUserByApiKey :one
+SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key FROM users WHERE api_key = $1
+`
+
+func (q *Queries) GetUserByApiKey(ctx context.Context, apiKey pgtype.Text) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByApiKey, apiKey)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.ClerkID,
+		&i.Email,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.Plan,
+		&i.StripeCustomerID,
+		&i.StripeSubscriptionID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ProTrialUsed,
+		&i.BusinessTrialUsed,
+		&i.IsAdmin,
+		&i.ApiKey,
 	)
 	return i, err
 }
 
 const getUserByClerkID = `-- name: GetUserByClerkID :one
-SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin FROM users WHERE clerk_id = $1
+SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key FROM users WHERE clerk_id = $1
 `
 
 func (q *Queries) GetUserByClerkID(ctx context.Context, clerkID string) (User, error) {
@@ -83,12 +110,13 @@ func (q *Queries) GetUserByClerkID(ctx context.Context, clerkID string) (User, e
 		&i.ProTrialUsed,
 		&i.BusinessTrialUsed,
 		&i.IsAdmin,
+		&i.ApiKey,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin FROM users WHERE id = $1
+SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
@@ -108,12 +136,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.ProTrialUsed,
 		&i.BusinessTrialUsed,
 		&i.IsAdmin,
+		&i.ApiKey,
 	)
 	return i, err
 }
 
 const getUserByStripeCustomerID = `-- name: GetUserByStripeCustomerID :one
-SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin FROM users WHERE stripe_customer_id = $1
+SELECT id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key FROM users WHERE stripe_customer_id = $1
 `
 
 func (q *Queries) GetUserByStripeCustomerID(ctx context.Context, stripeCustomerID pgtype.Text) (User, error) {
@@ -133,6 +162,7 @@ func (q *Queries) GetUserByStripeCustomerID(ctx context.Context, stripeCustomerI
 		&i.ProTrialUsed,
 		&i.BusinessTrialUsed,
 		&i.IsAdmin,
+		&i.ApiKey,
 	)
 	return i, err
 }
@@ -155,11 +185,42 @@ func (q *Queries) MarkTrialUsed(ctx context.Context, arg MarkTrialUsedParams) er
 	return err
 }
 
+const setUserApiKey = `-- name: SetUserApiKey :one
+UPDATE users SET api_key = $2, updated_at = now() WHERE id = $1 RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key
+`
+
+type SetUserApiKeyParams struct {
+	ID     uuid.UUID   `json:"id"`
+	ApiKey pgtype.Text `json:"api_key"`
+}
+
+func (q *Queries) SetUserApiKey(ctx context.Context, arg SetUserApiKeyParams) (User, error) {
+	row := q.db.QueryRow(ctx, setUserApiKey, arg.ID, arg.ApiKey)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.ClerkID,
+		&i.Email,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.Plan,
+		&i.StripeCustomerID,
+		&i.StripeSubscriptionID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ProTrialUsed,
+		&i.BusinessTrialUsed,
+		&i.IsAdmin,
+		&i.ApiKey,
+	)
+	return i, err
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET email = $2, name = $3, avatar_url = $4, updated_at = now()
 WHERE clerk_id = $1
-RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin
+RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key
 `
 
 type UpdateUserParams struct {
@@ -191,6 +252,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.ProTrialUsed,
 		&i.BusinessTrialUsed,
 		&i.IsAdmin,
+		&i.ApiKey,
 	)
 	return i, err
 }
@@ -199,7 +261,7 @@ const updateUserPlan = `-- name: UpdateUserPlan :one
 UPDATE users
 SET plan = $2, stripe_customer_id = $3, stripe_subscription_id = $4, updated_at = now()
 WHERE id = $1
-RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin
+RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key
 `
 
 type UpdateUserPlanParams struct {
@@ -231,6 +293,7 @@ func (q *Queries) UpdateUserPlan(ctx context.Context, arg UpdateUserPlanParams) 
 		&i.ProTrialUsed,
 		&i.BusinessTrialUsed,
 		&i.IsAdmin,
+		&i.ApiKey,
 	)
 	return i, err
 }
@@ -240,7 +303,7 @@ INSERT INTO users (clerk_id, email, name)
 VALUES ($1, $2, $3)
 ON CONFLICT (clerk_id) DO UPDATE
 SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = now()
-RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin
+RETURNING id, clerk_id, email, name, avatar_url, plan, stripe_customer_id, stripe_subscription_id, created_at, updated_at, pro_trial_used, business_trial_used, is_admin, api_key
 `
 
 type UpsertUserByClerkIDParams struct {
@@ -266,6 +329,7 @@ func (q *Queries) UpsertUserByClerkID(ctx context.Context, arg UpsertUserByClerk
 		&i.ProTrialUsed,
 		&i.BusinessTrialUsed,
 		&i.IsAdmin,
+		&i.ApiKey,
 	)
 	return i, err
 }

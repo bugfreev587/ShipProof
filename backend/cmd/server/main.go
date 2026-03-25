@@ -135,12 +135,19 @@ func main() {
 		r.Post("/api/public/views", publicHandler.RecordView)
 		r.Post("/api/analytics/pageview", adminHandler.RecordPageView)
 
+		settingsHandler := handler.NewSettingsHandler(queries, userService)
+
 		// Authenticated routes
 		r.Group(func(r chi.Router) {
-			r.Use(middleware.Auth)
+			r.Use(middleware.AuthWithApiKey(queries))
 
 			// User
 			r.Get("/api/user/me", userHandler.GetCurrentUser)
+
+			// Settings (API Key)
+			r.Get("/api/settings/api-key", settingsHandler.GetApiKeyStatus)
+			r.Post("/api/settings/api-key", settingsHandler.GenerateApiKey)
+			r.Delete("/api/settings/api-key", settingsHandler.DeleteApiKey)
 
 			// Stripe
 			r.Post("/api/stripe/create-checkout", stripeHandler.CreateCheckout)

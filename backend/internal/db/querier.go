@@ -56,6 +56,7 @@ type Querier interface {
 	GetTotalProducts(ctx context.Context) (int32, error)
 	GetTotalProofs(ctx context.Context) (int32, error)
 	GetUTMCampaigns(ctx context.Context, period pgtype.Interval) ([]GetUTMCampaignsRow, error)
+	GetUserByApiKey(ctx context.Context, apiKey pgtype.Text) (User, error)
 	GetUserByClerkID(ctx context.Context, clerkID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByStripeCustomerID(ctx context.Context, stripeCustomerID pgtype.Text) (User, error)
@@ -82,6 +83,7 @@ type Querier interface {
 	RemoveProofFromSpace(ctx context.Context, arg RemoveProofFromSpaceParams) error
 	RemoveProofFromWall(ctx context.Context, arg RemoveProofFromWallParams) error
 	RemoveTagFromProof(ctx context.Context, arg RemoveTagFromProofParams) error
+	SetUserApiKey(ctx context.Context, arg SetUserApiKeyParams) (User, error)
 	ToggleProofFeatured(ctx context.Context, id uuid.UUID) (Proof, error)
 	UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) (LaunchDraft, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)

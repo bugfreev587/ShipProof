@@ -8,12 +8,14 @@ import {
   createBillingPortalSession,
   getSubscriptionStatus,
   reactivateSubscription,
+  getApiKeyStatus,
+  generateApiKey,
   type User,
   type SubscriptionStatus,
 } from "@/lib/api";
 import { useTheme, type DashboardTheme } from "@/lib/theme";
 
-type TabKey = "general" | "profile" | "billing";
+type TabKey = "general" | "profile" | "billing" | "api_keys";
 
 const planBadgeColors: Record<string, string> = {
   free: "bg-[#3F3F46] text-[#9CA3AF]",
@@ -90,7 +92,7 @@ function SettingsContent() {
 
   const tabParam = searchParams.get("tab");
   const activeTab: TabKey =
-    tabParam === "profile" || tabParam === "billing" || tabParam === "general"
+    tabParam === "profile" || tabParam === "billing" || tabParam === "general" || tabParam === "api_keys"
       ? tabParam
       : "general";
 
@@ -268,11 +270,18 @@ function SettingsContent() {
             </svg>
             Plans & Billing
           </button>
+
+          <button onClick={() => setActiveTab("api_keys")} className={navBtnClass("api_keys")} style={navBtnStyle("api_keys")}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+            </svg>
+            API Keys
+          </button>
         </nav>
 
         {/* Mobile horizontal tabs */}
         <div className="flex md:hidden w-full" style={{ borderBottom: `1px solid ${colors.border}` }}>
-          {(["general", "profile", "billing"] as const).map((tab) => (
+          {(["general", "profile", "billing", "api_keys"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -283,7 +292,7 @@ function SettingsContent() {
                 fontWeight: activeTab === tab ? 500 : 400,
               }}
             >
-              {tab === "billing" ? "Billing" : tab}
+              {tab === "billing" ? "Billing" : tab === "api_keys" ? "API Keys" : tab}
             </button>
           ))}
         </div>
@@ -308,6 +317,7 @@ function SettingsContent() {
               businessTrialUsed={user?.business_trial_used}
             />
           )}
+          {activeTab === "api_keys" && <ApiKeysTab />}
         </div>
       </div>
     </div>
@@ -601,6 +611,141 @@ function BillingTab({
             </button>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── API Keys Tab ─── */
+
+function ApiKeysTab() {
+  const { getToken } = useAuth();
+  const { colors } = useTheme();
+  const [hasKey, setHasKey] = useState(false);
+  const [newKey, setNewKey] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const status = await getApiKeyStatus(token);
+        setHasKey(status.has_key);
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [getToken]);
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const result = await generateApiKey(token);
+      setNewKey(result.api_key);
+      setHasKey(true);
+    } catch {
+      // ignore
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (!newKey) return;
+    navigator.clipboard.writeText(newKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (loading) {
+    return <div style={{ color: colors.textSecondary }}>Loading...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold mb-1" style={{ color: colors.textPrimary }}>API Keys</h2>
+        <p className="text-sm" style={{ color: colors.textSecondary }}>
+          Generate an API key to use with the ShipProof Chrome Extension.
+        </p>
+      </div>
+
+      <div className="rounded-xl border p-6" style={{ borderColor: colors.border, background: colors.bgSurface }}>
+        {newKey ? (
+          <div className="space-y-4">
+            <div className="rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/20 px-4 py-3 text-sm text-[#22C55E]">
+              Your API key has been generated. Copy it now — it won&apos;t be shown again.
+            </div>
+            <div className="flex items-center gap-2">
+              <code
+                className="flex-1 rounded-lg border px-4 py-3 text-sm font-mono select-all"
+                style={{ borderColor: colors.border, background: colors.bgBase, color: colors.textPrimary }}
+              >
+                {newKey}
+              </code>
+              <button
+                onClick={handleCopy}
+                className="rounded-lg bg-[#6366F1] px-4 py-3 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <button
+              onClick={() => setNewKey(null)}
+              className="text-sm transition-colors"
+              style={{ color: colors.textSecondary }}
+            >
+              Done
+            </button>
+          </div>
+        ) : hasKey ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm" style={{ color: "#22C55E" }}>API key is active</span>
+            </div>
+            <p className="text-sm" style={{ color: colors.textSecondary }}>
+              Regenerating will invalidate your current key. Any extensions using the old key will need to be updated.
+            </p>
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              style={{ borderColor: colors.border, color: colors.textPrimary }}
+            >
+              {generating ? "Generating..." : "Regenerate API Key"}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm" style={{ color: colors.textSecondary }}>
+              You don&apos;t have an API key yet. Generate one to connect the Chrome Extension.
+            </p>
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
+            >
+              {generating ? "Generating..." : "Generate API Key"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-xl border p-6" style={{ borderColor: colors.border, background: colors.bgSurface }}>
+        <h3 className="text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>Chrome Extension</h3>
+        <p className="text-sm" style={{ color: colors.textSecondary }}>
+          Capture social proof from anywhere on the web. Screenshots, text, automatic platform detection.
+        </p>
+        <p className="text-sm mt-2" style={{ color: colors.textTertiary }}>
+          Coming soon to the Chrome Web Store.
+        </p>
       </div>
     </div>
   );
