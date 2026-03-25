@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   listProofs,
   listSpaces,
@@ -61,7 +62,6 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTag, setFilterTag] = useState("");
   const [allTags, setAllTags] = useState<string[]>([]);
-  const [expandedProofId, setExpandedProofId] = useState<string | null>(null);
   const [addToSpaceProof, setAddToSpaceProof] = useState<Proof | null>(null);
 
   const fetchProofs = useCallback(async () => {
@@ -216,18 +216,16 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                   </button>
                 )}
               </div>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.filter((p) => p.status === "pending").map((proof) => (
                   <ProofCard
                     key={proof.id}
                     proof={proof}
+                    productId={product.id}
                     isPending
-                    isExpanded={expandedProofId === proof.id}
-                    onToggleExpand={() => setExpandedProofId(expandedProofId === proof.id ? null : proof.id)}
                     onToggleFeatured={() => handleToggleFeatured(proof.id)}
-                    onEdit={() => { setEditingProof(proof); setExpandedProofId(null); }}
-                    onDelete={() => { setDeletingProof(proof); setExpandedProofId(null); }}
-                    onAddToSpace={() => { setAddToSpaceProof(proof); setExpandedProofId(null); }}
+                    onEdit={() => setEditingProof(proof)}
+                    onDelete={() => setDeletingProof(proof)}
                     onApprove={() => handleApprove(proof.id)}
                   />
                 ))}
@@ -244,18 +242,16 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                   {filtered.filter((p) => p.status !== "pending").length}
                 </span>
               </div>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.filter((p) => p.status !== "pending").map((proof) => (
                   <ProofCard
                     key={proof.id}
                     proof={proof}
+                    productId={product.id}
                     isPending={false}
-                    isExpanded={expandedProofId === proof.id}
-                    onToggleExpand={() => setExpandedProofId(expandedProofId === proof.id ? null : proof.id)}
                     onToggleFeatured={() => handleToggleFeatured(proof.id)}
-                    onEdit={() => { setEditingProof(proof); setExpandedProofId(null); }}
-                    onDelete={() => { setDeletingProof(proof); setExpandedProofId(null); }}
-                    onAddToSpace={() => { setAddToSpaceProof(proof); setExpandedProofId(null); }}
+                    onEdit={() => setEditingProof(proof)}
+                    onDelete={() => setDeletingProof(proof)}
                   />
                 ))}
               </div>
@@ -325,184 +321,201 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
 // --- Proof Card ---
 
-const COLLECTION_METHOD_LABELS: Record<string, string> = {
-  extension: "via Extension",
-  form: "via Form",
-  manual: "manual",
-};
-
 function ProofCard({
   proof,
+  productId,
   isPending,
-  isExpanded,
-  onToggleExpand,
   onToggleFeatured,
   onEdit,
   onDelete,
-  onAddToSpace,
   onApprove,
 }: {
   proof: Proof;
+  productId: string;
   isPending: boolean;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
   onToggleFeatured: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onAddToSpace: () => void;
   onApprove?: () => void;
 }) {
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const platformInfo = PLATFORMS.find((x) => x.key === proof.source_platform) || PLATFORMS[6];
+
+  const handleCardClick = () => {
+    router.push(`/dashboard/products/${productId}/proofs/${proof.id}`);
+  };
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  const tagsToShow = proof.tags?.slice(0, 3) || [];
+  const extraTagCount = (proof.tags?.length || 0) - 3;
+
   return (
     <div
-      className={`rounded-xl border bg-[var(--bg-surface)] p-4 ${
-        isPending
-          ? "border-l-2 border-l-[#F59E0B] border-[var(--border)]"
-          : "border-[var(--border)]"
+      onClick={handleCardClick}
+      className={`rounded-xl bg-[#141418] border border-[#1E1E24] hover:border-[#2A2A32] p-4 h-[220px] cursor-pointer transition-all duration-150 hover:-translate-y-[2px] flex flex-col ${
+        isPending ? "border-l-[3px] border-l-[#F59E0B]" : ""
       }`}
     >
-      <div className="flex items-start gap-3">
-        {/* Pending indicator */}
-        {isPending && (
-          <div className="w-2 h-2 rounded-full bg-[#F59E0B] mt-2 flex-shrink-0" />
-        )}
-
-        {/* Avatar or Platform badge */}
-        {!isPending && (proof.author_avatar_url ? (
+      {/* Top row */}
+      <div className="flex items-center gap-2">
+        {/* Avatar */}
+        {proof.author_avatar_url ? (
           <img
             src={proof.author_avatar_url}
             alt={proof.author_name}
             className="h-8 w-8 rounded-full object-cover flex-shrink-0"
           />
         ) : (
-          <PlatformBadge platform={proof.source_platform} />
-        ))}
+          <div
+            className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${platformInfo.color}`}
+          >
+            {proof.author_name[0]?.toUpperCase() || "?"}
+          </div>
+        )}
 
-        <div className="flex-1 min-w-0">
-          {/* Author + collection method */}
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-[var(--text-primary)]">
+        {/* Author info */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[13px] font-medium text-white truncate">
               {proof.author_name}
             </span>
-            {proof.author_title && (
-              <span className="text-xs text-[var(--text-tertiary)]">
-                {proof.author_title}
-              </span>
-            )}
-            {isPending && proof.collection_method && (
-              <span className="text-xs text-[#55555C]">
-                {COLLECTION_METHOD_LABELS[proof.collection_method] || proof.collection_method}
-              </span>
+            {isPending && (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] flex-shrink-0" />
+                <span className="text-[11px] text-[#F59E0B] flex-shrink-0">pending</span>
+              </>
             )}
           </div>
-
-          {/* Content */}
-          {proof.content_text && (
-            <p className="text-sm text-[var(--text-secondary)] mb-2 line-clamp-3">
-              {proof.content_text}
-            </p>
-          )}
-
-          {proof.content_image_url && (
-            <div className="mb-2">
-              <img
-                src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
-                alt="Proof screenshot"
-                className="max-h-40 rounded-lg border border-[var(--border)]"
-              />
-            </div>
-          )}
-
-          {/* Tags */}
-          {proof.tags && proof.tags.length > 0 && (
-            <div className="flex gap-1 flex-wrap mb-2">
-              {proof.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-secondary)]"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Source URL */}
-          {proof.source_url && (
-            <a
-              href={proof.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[#6366F1] hover:text-[#818CF8]"
-            >
-              View source
-            </a>
+          {proof.author_title && (
+            <span className="text-xs text-[#8B8B92] truncate block">
+              {proof.author_title}
+            </span>
           )}
         </div>
 
-        {/* Featured toggle (only for approved) */}
-        {!isPending && (
+        {/* Right side actions */}
+        <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+          {/* Featured star */}
           <button
-            onClick={onToggleFeatured}
-            className={`text-lg ${
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFeatured();
+            }}
+            className={`text-sm p-1 transition-colors ${
               proof.is_featured
                 ? "text-yellow-400"
-                : "text-[var(--text-tertiary)] hover:text-yellow-400"
-            } transition-colors`}
+                : "text-[#55555C] hover:text-yellow-400"
+            }`}
             title={proof.is_featured ? "Unfeature" : "Feature this proof"}
           >
             ★
           </button>
-        )}
+
+          {/* More menu */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(!menuOpen);
+              }}
+              className="text-[#55555C] hover:text-white p-1 transition-colors text-sm"
+            >
+              ···
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-lg border border-[#2A2A30] bg-[#1A1A1F] shadow-xl py-1">
+                {isPending && onApprove && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(false);
+                      onApprove();
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-xs text-[#22C55E] hover:bg-[#242429] transition-colors"
+                  >
+                    Approve
+                  </button>
+                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                    onEdit();
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-[#EDEDEF] hover:bg-[#242429] transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                    onDelete();
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-[#242429] transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Expanded action bar */}
-      {isExpanded && (
-        <div className="mt-3 flex items-center justify-end gap-2 border-t border-[var(--border)] pt-3 flex-wrap">
-          {isPending && onApprove && (
-            <button
-              onClick={onApprove}
-              className="flex items-center gap-1.5 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/20 px-3 py-1.5 text-xs font-medium text-[#22C55E] hover:bg-[#22C55E]/20 transition-all"
-            >
-              Approve
-            </button>
-          )}
-          <button
-            onClick={onEdit}
-            className="flex items-center gap-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
-          >
-            Edit
-          </button>
-          <button
-            onClick={onDelete}
-            className="flex items-center gap-1.5 rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
-          >
-            Delete
-          </button>
-          <button
-            onClick={onAddToSpace}
-            className="flex items-center gap-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
-          >
-            Add to Space
-          </button>
-        </div>
-      )}
+      {/* Middle content */}
+      <div className="flex-1 overflow-hidden mt-2">
+        {proof.content_image_url ? (
+          <img
+            src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
+            alt="Proof screenshot"
+            className="object-cover rounded-lg h-full w-full"
+          />
+        ) : proof.content_text ? (
+          <p className="line-clamp-4 text-[13px] text-[#EDEDEF] leading-relaxed">
+            {proof.content_text}
+          </p>
+        ) : null}
+      </div>
 
-      {/* Chevron toggle */}
-      <div className="flex justify-end mt-2">
-        <button
-          onClick={onToggleExpand}
-          className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
+      {/* Bottom row */}
+      <div className="flex items-center justify-between mt-auto pt-2">
+        {/* Tag pills */}
+        <div className="flex items-center gap-1 min-w-0 overflow-hidden">
+          {tagsToShow.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full bg-[var(--bg-elevated)] px-1.5 py-0.5 text-[11px] text-[var(--text-secondary)] whitespace-nowrap flex-shrink-0"
+            >
+              {tag}
+            </span>
+          ))}
+          {extraTagCount > 0 && (
+            <span className="text-[11px] text-[var(--text-tertiary)] flex-shrink-0">
+              +{extraTagCount}
+            </span>
+          )}
+        </div>
+
+        {/* Platform badge */}
+        <span
+          className={`inline-flex items-center justify-center w-4 h-4 rounded text-[8px] font-bold text-white flex-shrink-0 ${platformInfo.color}`}
         >
-          <svg
-            className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+          {platformInfo.label[0]}
+        </span>
       </div>
     </div>
   );

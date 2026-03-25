@@ -508,6 +508,10 @@ export function updateProof(
   );
 }
 
+export function getProof(proofId: string, token: string) {
+  return fetchApi<Proof>(`/api/proofs/${proofId}`, {}, token);
+}
+
 export function approveProof(proofId: string, token: string) {
   return fetchApi<Proof>(
     `/api/proofs/${proofId}/approve`,

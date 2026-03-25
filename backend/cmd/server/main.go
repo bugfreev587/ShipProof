@@ -176,6 +176,7 @@ func main() {
 			// Proofs
 			r.Post("/api/products/{id}/proofs", proofHandler.Create)
 			r.Get("/api/products/{id}/proofs", proofHandler.List)
+			r.Get("/api/proofs/{pid}", proofHandler.Get)
 			r.Put("/api/proofs/{pid}", proofHandler.Update)
 			r.Delete("/api/proofs/{pid}", proofHandler.Delete)
 			r.Put("/api/proofs/{pid}/approve", proofHandler.Approve)

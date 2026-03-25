@@ -69,6 +69,32 @@ func (h *ProofHandler) verifyProofOwnership(w http.ResponseWriter, r *http.Reque
 	return &proof, true
 }
 
+func (h *ProofHandler) Get(w http.ResponseWriter, r *http.Request) {
+	proofID, err := uuid.Parse(chi.URLParam(r, "pid"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid proof id"}`, http.StatusBadRequest)
+		return
+	}
+
+	proof, ok := h.verifyProofOwnership(w, r, proofID)
+	if !ok {
+		return
+	}
+
+	type proofWithTags struct {
+		db.Proof
+		Tags []string `json:"tags"`
+	}
+	tags, _ := h.queries.ListTagsByProofID(r.Context(), proof.ID)
+	tagStrings := make([]string, 0, len(tags))
+	for _, t := range tags {
+		tagStrings = append(tagStrings, t.Tag)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(proofWithTags{Proof: *proof, Tags: tagStrings})
+}
+
 type createProofRequest struct {
 	SourcePlatform  string   `json:"source_platform"`
 	SourceURL       string   `json:"source_url"`
