@@ -87,6 +87,10 @@
   --chart-3: #22C55E;
   --chart-4: #F59E0B;
   --chart-5: #EF4444;
+  --landing-bg-a: #0A0A0C;
+  --landing-bg-b: #111114;
+  --landing-panel: rgba(20, 20, 24, 0.5);
+  --landing-panel-border: rgba(255, 255, 255, 0.03);
   --radius: 0.75rem;
   --sidebar: #0F0F10;
   --sidebar-foreground: #F1F1F3;
@@ -130,6 +134,10 @@
   --sidebar-accent-foreground: #1F2937;
   --sidebar-border: rgba(0, 0, 0, 0.08);
   --sidebar-ring: #6366F1;
+  --landing-bg-a: #FAFAFA;
+  --landing-bg-b: #F3F4F6;
+  --landing-panel: rgba(255, 255, 255, 0.6);
+  --landing-panel-border: rgba(0, 0, 0, 0.04);
   /* ShipProof custom */
   --color-bg-base: #FAFAFA;
   --color-bg-surface: #FFFFFF;

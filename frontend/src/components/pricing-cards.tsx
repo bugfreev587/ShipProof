@@ -188,12 +188,12 @@ export default function PricingCards() {
       )}
 
       {/* Cards */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 items-stretch">
+      <div className="grid grid-cols-1 gap-6 md:gap-8 md:grid-cols-3 items-stretch">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`relative flex flex-col rounded-xl border p-6 ${
-              plan.highlighted ? "border-[#6366F1]" : "border-border"
+            className={`relative flex flex-col rounded-2xl p-8 ${
+              plan.highlighted ? "border-2 border-[#6366F1]" : "border border-border"
             } bg-card`}
           >
             {plan.badge && (
@@ -220,7 +220,7 @@ export default function PricingCards() {
               <p className="text-xs text-muted-foreground mb-2">{plan.description}</p>
             )}
 
-            <ul className="flex-1 space-y-2">
+            <ul className="flex-1 space-y-3">
               {plan.features.map((feature) => (
                 <li key={feature.text} className="flex items-center gap-2 text-sm">
                   {feature.type === "included" ? (
@@ -281,7 +281,7 @@ export default function PricingCards() {
               {plan.plan === "free" ? (
                 <a
                   href={plan.ctaLink}
-                  className="block w-full rounded-lg border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  className="block w-full rounded-xl border border-border px-4 py-2.5 text-center text-sm font-medium text-foreground hover:bg-muted transition-colors"
                 >
                   {plan.ctaText}
                 </a>
@@ -290,7 +290,7 @@ export default function PricingCards() {
                   <button
                     onClick={() => handleUpgrade(plan.plan)}
                     disabled={loading === plan.plan}
-                    className={`w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
+                    className={`w-full rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
                       plan.plan === "pro"
                         ? "bg-[#6366F1] hover:bg-[#818CF8]"
                         : "bg-[#F59E0B] hover:bg-[#FBBF24]"
