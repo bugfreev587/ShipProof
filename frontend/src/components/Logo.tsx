@@ -17,8 +17,8 @@ export function LogoFull({ size = 32, className }: LogoProps) {
     <div className={`flex items-center gap-2.5 ${className || ''}`}>
       <LogoIcon size={size} />
       <span
-        className="font-semibold tracking-tight"
-        style={{ fontSize: size * 0.55, color: '#F1F1F3', letterSpacing: '-0.3px' }}
+        className="font-semibold tracking-tight text-foreground"
+        style={{ fontSize: size * 0.55, letterSpacing: '-0.3px' }}
       >
         Ship<span style={{ color: '#818CF8' }}>Proof</span>
       </span>
