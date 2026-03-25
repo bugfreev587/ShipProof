@@ -117,7 +117,7 @@ function HeroSection() {
     <section className="pt-32 md:pt-40 pb-24 px-6">
       <div className="mx-auto max-w-4xl text-center">
         {/* Overline */}
-        <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#818CF8] mb-6">
+        <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#6366F1] mb-6">
           Launch Content + Social Proof
         </p>
 
@@ -127,7 +127,7 @@ function HeroSection() {
           lasting social proof
         </h1>
 
-        <p className="mt-6 text-lg text-[#9CA3AF] leading-relaxed max-w-2xl mx-auto">
+        <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
           Generate platform-ready launch copy with AI. Collect community praise.
           Display it everywhere. All in one place.
         </p>
@@ -142,7 +142,7 @@ function HeroSection() {
           </a>
           <a
             href="#how-it-works"
-            className="rounded-xl border border-white/10 px-8 py-4 text-base font-semibold text-foreground hover:bg-white/5 transition-colors"
+            className="rounded-xl border border-border px-8 py-4 text-base font-semibold text-foreground hover:bg-muted transition-colors"
           >
             See How It Works
           </a>
@@ -150,16 +150,16 @@ function HeroSection() {
 
         {/* Product screenshot placeholder */}
         <div className="mt-16 mx-auto max-w-5xl relative">
-          <div className="rounded-2xl border border-white/10 bg-[#141418] overflow-hidden shadow-2xl shadow-black/40">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/40">
             {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
               <span className="h-3 w-3 rounded-full bg-[#FF5F56]" />
               <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
               <span className="h-3 w-3 rounded-full bg-[#27C93F]" />
-              <span className="ml-4 flex-1 rounded-md bg-white/5 h-5" />
+              <span className="ml-4 flex-1 rounded-md bg-muted h-5" />
             </div>
-            <div className="aspect-[16/9] flex items-center justify-center">
-              <span className="text-[#55555C] text-sm">Dashboard screenshot coming soon</span>
+            <div className="aspect-[16/9] flex items-center justify-center bg-muted/50">
+              <span className="text-muted-foreground text-sm">Dashboard screenshot coming soon</span>
             </div>
           </div>
           {/* Fade out at bottom */}
@@ -176,19 +176,19 @@ function TrustBar() {
   return (
     <ScrollFadeIn>
       <section className="pb-24 px-6">
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[13px] text-[#6B7280]">
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[13px] text-muted-foreground/70">
           <span>
             Built with{" "}
-            <span className="text-[#9CA3AF] font-medium">Claude Code</span>
+            <span className="text-muted-foreground font-medium">Claude Code</span>
           </span>
-          <span className="text-[#3F3F46]">&middot;</span>
+          <span className="text-border">&middot;</span>
           <span>
             Powered by{" "}
-            <span className="text-[#9CA3AF] font-medium">Anthropic</span>
+            <span className="text-muted-foreground font-medium">Anthropic</span>
           </span>
-          <span className="text-[#3F3F46]">&middot;</span>
+          <span className="text-border">&middot;</span>
           <span>
-            <span className="text-[#9CA3AF] font-medium">2+</span> products launched
+            <span className="text-muted-foreground font-medium">2+</span> products launched
           </span>
         </div>
       </section>
@@ -204,13 +204,13 @@ function PainPointSection() {
       <section className="py-28 md:py-32 px-6">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#818CF8] mb-4">
+            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#6366F1] mb-4">
               The Problem
             </p>
             <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.8px] leading-[1.2] text-foreground">
               Launching is the hardest part of building
             </h2>
-            <p className="mt-4 text-lg text-[#9CA3AF] leading-relaxed max-w-[600px] mx-auto">
+            <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-[600px] mx-auto">
               You built something great. Now you need to tell the world.
               But writing launch posts for 5 platforms, collecting feedback, and displaying social proof? That&apos;s a full-time job.
             </p>
@@ -220,15 +220,15 @@ function PainPointSection() {
             {painPoints.map((point) => (
               <div
                 key={point.title}
-                className="rounded-2xl border border-[#1E1E24] bg-[#141418] p-8"
+                className="rounded-2xl border border-border bg-card p-8"
               >
-                <div className="mb-5 text-[#9CA3AF]">
+                <div className="mb-5 text-muted-foreground">
                   {point.icon}
                 </div>
                 <h3 className="text-lg font-medium text-foreground mb-3">
                   {point.title}
                 </h3>
-                <p className="text-sm text-[#9CA3AF] leading-[1.7]">
+                <p className="text-sm text-muted-foreground leading-[1.7]">
                   {point.description}
                 </p>
               </div>
@@ -248,13 +248,13 @@ function HowItWorksSection() {
       <div className="mx-auto max-w-6xl">
         <ScrollFadeIn>
           <div className="text-center mb-20">
-            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#818CF8] mb-4">
+            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#6366F1] mb-4">
               How It Works
             </p>
             <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.8px] leading-[1.2] text-foreground">
               Three steps. One flywheel.
             </h2>
-            <p className="mt-4 text-lg text-[#9CA3AF] leading-relaxed max-w-[600px] mx-auto">
+            <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-[600px] mx-auto">
               Each cycle makes your next launch stronger.
             </p>
           </div>
@@ -275,20 +275,18 @@ function HowItWorksSection() {
                   <h3 className="text-[28px] md:text-[32px] font-semibold text-foreground mb-4">
                     {item.title}
                   </h3>
-                  <p className="text-base text-[#D1D5DB] leading-[1.7] mb-6">
+                  <p className="text-base text-muted-foreground leading-[1.7] mb-6">
                     {item.description}
                   </p>
-                  <p className="text-sm italic text-[#818CF8]">
+                  <p className="text-sm italic" style={{ color: item.color }}>
                     &ldquo;{item.quote}&rdquo;
                   </p>
                 </div>
 
                 {/* Screenshot placeholder */}
                 <div className={i % 2 === 1 ? "md:order-1" : ""} style={{ direction: "ltr" }}>
-                  <div
-                    className="rounded-2xl border border-white/10 bg-[#141418] aspect-[4/3] flex items-center justify-center"
-                  >
-                    <span className="text-[#55555C] text-sm">Screenshot coming soon</span>
+                  <div className="rounded-2xl border border-border bg-card aspect-[4/3] flex items-center justify-center">
+                    <span className="text-muted-foreground text-sm">Screenshot coming soon</span>
                   </div>
                 </div>
               </div>
@@ -307,13 +305,13 @@ function SocialProofSection() {
     <ScrollFadeIn>
       <section id="features" className="py-28 md:py-32">
         <div className="mx-auto max-w-6xl px-6 text-center mb-16">
-          <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#818CF8] mb-4">
+          <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#6366F1] mb-4">
             Social Proof
           </p>
           <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.8px] leading-[1.2] text-foreground">
             Loved by indie hackers
           </h2>
-          <p className="mt-4 text-lg text-[#9CA3AF] leading-relaxed max-w-[600px] mx-auto">
+          <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-[600px] mx-auto">
             See what builders are saying about ShipProof.
           </p>
         </div>
@@ -346,13 +344,13 @@ function EmbedDemoSection() {
       <section className="py-28 md:py-32 px-6">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#818CF8] mb-4">
+            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#6366F1] mb-4">
               Embed in Seconds
             </p>
             <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.8px] leading-[1.2] text-foreground">
               Add to your website in two lines of code
             </h2>
-            <p className="mt-4 text-lg text-[#9CA3AF] leading-relaxed max-w-[600px] mx-auto">
+            <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-[600px] mx-auto">
               Works with HTML, WordPress, Webflow, Framer — anywhere.
             </p>
           </div>
@@ -374,13 +372,13 @@ function PricingSection() {
       <section id="pricing" className="py-28 md:py-32 px-6">
         <div className="mx-auto max-w-4xl">
           <div className="text-center mb-16">
-            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#818CF8] mb-4">
+            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#6366F1] mb-4">
               Pricing
             </p>
             <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.8px] leading-[1.2] text-foreground">
               Ship fast, prove it, grow
             </h2>
-            <p className="mt-4 text-lg text-[#9CA3AF] leading-relaxed max-w-[600px] mx-auto">
+            <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-[600px] mx-auto">
               Start free. Upgrade when you need more.
             </p>
           </div>
@@ -399,7 +397,7 @@ function FAQSection() {
       <section id="faq" className="py-28 md:py-32 px-6">
         <div className="mx-auto max-w-3xl">
           <div className="text-center mb-12">
-            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#818CF8] mb-4">
+            <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#6366F1] mb-4">
               FAQ
             </p>
             <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.8px] leading-[1.2] text-foreground">
@@ -424,7 +422,7 @@ function FAQSection() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <div className="border-t border-border px-5 py-4 text-base text-[#D1D5DB] leading-[1.7]">
+                <div className="border-t border-border px-5 py-4 text-base text-muted-foreground leading-[1.7]">
                   {faq.a}
                 </div>
               </details>
@@ -441,23 +439,23 @@ function FAQSection() {
 function FinalCTA() {
   return (
     <ScrollFadeIn>
-      <section className="border-y border-white/5 bg-gradient-to-br from-[#6366F1]/10 to-[#8B5CF6]/5 py-24 md:py-28 px-6">
+      <section className="border-y border-border bg-gradient-to-br from-[#6366F1]/10 to-[#8B5CF6]/5 py-24 md:py-28 px-6">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-[28px] md:text-[36px] font-semibold tracking-[-0.8px] text-foreground">
             Ready to ship your next launch?
           </h2>
-          <p className="mt-4 text-base text-[#D1D5DB] leading-relaxed">
+          <p className="mt-4 text-base text-muted-foreground leading-relaxed">
             Join indie hackers who are turning launches into lasting social proof.
           </p>
           <div className="mt-10">
             <a
               href="/sign-up"
-              className="inline-block rounded-xl bg-white text-[#0F0F10] px-8 py-4 text-base font-semibold hover:bg-white/90 transition-colors"
+              className="inline-block rounded-xl bg-foreground text-background px-8 py-4 text-base font-semibold hover:opacity-90 transition-opacity"
             >
               Get Started Free &rarr;
             </a>
           </div>
-          <p className="mt-6 text-[13px] text-[#6B7280]">
+          <p className="mt-6 text-[13px] text-muted-foreground">
             Free forever plan &bull; No credit card required &bull; Setup in 2 minutes
           </p>
         </div>

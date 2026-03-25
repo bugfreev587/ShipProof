@@ -9,7 +9,7 @@ export default function LandingNav() {
   const { isSignedIn } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-white/5 bg-[var(--color-bg-base,#0F0F10)]/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <a href="/">
           <LogoFull size={28} />
