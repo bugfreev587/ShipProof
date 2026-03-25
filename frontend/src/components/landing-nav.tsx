@@ -24,8 +24,8 @@ export default function LandingNav() {
           <a href="#faq" className="hover:text-foreground transition-colors">
             FAQ
           </a>
-          <a href="/launchready" className="hover:text-foreground transition-colors flex items-center">
-            LaunchReady
+          <a href="/tools" className="hover:text-foreground transition-colors flex items-center">
+            Tools
             <span className="text-[10px] bg-[#22C55E]/10 text-[#22C55E] rounded-full px-1.5 py-0.5 ml-1.5">Free</span>
           </a>
         </div>
