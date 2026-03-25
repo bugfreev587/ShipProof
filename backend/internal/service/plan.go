@@ -17,6 +17,8 @@ type PlanLimits struct {
 	MaxVersions       int  // per product; -1 = unlimited
 	MaxSpaces         int  // per product; 0 = none, -1 = unlimited
 	MaxWalls          int  // per product; -1 = unlimited
+	MaxEmbeds         int  // per product; -1 = unlimited
+	MaxPendingProofs  int  // per product pending queue; -1 = unlimited
 	CanRemoveBranding bool
 }
 
@@ -31,6 +33,8 @@ func LimitsFor(plan db.UserPlan) PlanLimits {
 			MaxVersions:       -1,
 			MaxSpaces:         1,
 			MaxWalls:          -1,
+			MaxEmbeds:         3,
+			MaxPendingProofs:  50,
 			CanRemoveBranding: false,
 		}
 	case db.UserPlanBusiness:
@@ -41,16 +45,20 @@ func LimitsFor(plan db.UserPlan) PlanLimits {
 			MaxVersions:       -1,
 			MaxSpaces:         10,
 			MaxWalls:          -1,
+			MaxEmbeds:         -1,
+			MaxPendingProofs:  -1,
 			CanRemoveBranding: true,
 		}
 	default: // free
 		return PlanLimits{
 			MaxProducts:       1,
 			MaxProofs:         5,
-			MaxGenerations:    3,
+			MaxGenerations:    -1, // free — AI generation is now unlimited
 			MaxVersions:       3,
 			MaxSpaces:         1,
 			MaxWalls:          1,
+			MaxEmbeds:         1,
+			MaxPendingProofs:  10,
 			CanRemoveBranding: false,
 		}
 	}
@@ -166,6 +174,40 @@ func (s *PlanService) CheckWallLimit(ctx context.Context, productID uuid.UUID, p
 	if int(count) >= limits.MaxWalls {
 		return &PlanLimitError{
 			Message: fmt.Sprintf("Wall limit reached (%d). Upgrade to Pro for unlimited walls.", limits.MaxWalls),
+		}
+	}
+	return nil
+}
+
+func (s *PlanService) CheckEmbedLimit(ctx context.Context, productID uuid.UUID, plan db.UserPlan) error {
+	limits := LimitsFor(plan)
+	if limits.MaxEmbeds < 0 {
+		return nil
+	}
+	count, err := s.queries.CountEmbedsByProductID(ctx, productID)
+	if err != nil {
+		return fmt.Errorf("failed to check embed limit: %w", err)
+	}
+	if int(count) >= limits.MaxEmbeds {
+		return &PlanLimitError{
+			Message: fmt.Sprintf("Embed limit reached (%d). Upgrade your plan to create more embeds.", limits.MaxEmbeds),
+		}
+	}
+	return nil
+}
+
+func (s *PlanService) CheckPendingProofLimit(ctx context.Context, productID uuid.UUID, plan db.UserPlan) error {
+	limits := LimitsFor(plan)
+	if limits.MaxPendingProofs < 0 {
+		return nil
+	}
+	count, err := s.queries.CountPendingProofsByProduct(ctx, productID)
+	if err != nil {
+		return fmt.Errorf("failed to check pending proof limit: %w", err)
+	}
+	if int(count) >= limits.MaxPendingProofs {
+		return &PlanLimitError{
+			Message: "Pending queue is full. Approve or reject existing submissions first.",
 		}
 	}
 	return nil

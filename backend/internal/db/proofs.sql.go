@@ -15,7 +15,7 @@ import (
 const approveProof = `-- name: ApproveProof :one
 UPDATE proofs SET status = 'approved', updated_at = now()
 WHERE id = $1
-RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at
+RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash
 `
 
 func (q *Queries) ApproveProof(ctx context.Context, id uuid.UUID) (Proof, error) {
@@ -40,8 +40,25 @@ func (q *Queries) ApproveProof(ctx context.Context, id uuid.UUID) (Proof, error)
 		&i.DisplayOrder,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AuthorEmail,
+		&i.AuthorHandle,
+		&i.Rating,
+		&i.VideoUrl,
+		&i.VideoDurationSeconds,
+		&i.SubmittedIpHash,
 	)
 	return i, err
+}
+
+const countPendingProofsByProduct = `-- name: CountPendingProofsByProduct :one
+SELECT COUNT(*) FROM proofs WHERE product_id = $1 AND status = 'pending'
+`
+
+func (q *Queries) CountPendingProofsByProduct(ctx context.Context, productID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingProofsByProduct, productID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const countProofsByProductID = `-- name: CountProofsByProductID :one
@@ -58,7 +75,7 @@ func (q *Queries) CountProofsByProductID(ctx context.Context, productID uuid.UUI
 const createProof = `-- name: CreateProof :one
 INSERT INTO proofs (product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, linked_version_id, is_featured, display_order)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, 0)
-RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at
+RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash
 `
 
 type CreateProofParams struct {
@@ -111,6 +128,82 @@ func (q *Queries) CreateProof(ctx context.Context, arg CreateProofParams) (Proof
 		&i.DisplayOrder,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AuthorEmail,
+		&i.AuthorHandle,
+		&i.Rating,
+		&i.VideoUrl,
+		&i.VideoDurationSeconds,
+		&i.SubmittedIpHash,
+	)
+	return i, err
+}
+
+const createPublicProof = `-- name: CreatePublicProof :one
+INSERT INTO proofs (
+  product_id, status, collection_method, source_platform,
+  content_type, content_text, content_image_url,
+  author_name, author_email, author_handle, author_title,
+  rating, submitted_ip_hash
+) VALUES (
+  $1, 'pending', 'submission', $2,
+  'text', $3, $4,
+  $5, $6, $7, $8,
+  $9, $10
+) RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash
+`
+
+type CreatePublicProofParams struct {
+	ProductID       uuid.UUID      `json:"product_id"`
+	SourcePlatform  SourcePlatform `json:"source_platform"`
+	ContentText     pgtype.Text    `json:"content_text"`
+	ContentImageUrl pgtype.Text    `json:"content_image_url"`
+	AuthorName      string         `json:"author_name"`
+	AuthorEmail     pgtype.Text    `json:"author_email"`
+	AuthorHandle    pgtype.Text    `json:"author_handle"`
+	AuthorTitle     pgtype.Text    `json:"author_title"`
+	Rating          pgtype.Int4    `json:"rating"`
+	SubmittedIpHash pgtype.Text    `json:"submitted_ip_hash"`
+}
+
+func (q *Queries) CreatePublicProof(ctx context.Context, arg CreatePublicProofParams) (Proof, error) {
+	row := q.db.QueryRow(ctx, createPublicProof,
+		arg.ProductID,
+		arg.SourcePlatform,
+		arg.ContentText,
+		arg.ContentImageUrl,
+		arg.AuthorName,
+		arg.AuthorEmail,
+		arg.AuthorHandle,
+		arg.AuthorTitle,
+		arg.Rating,
+		arg.SubmittedIpHash,
+	)
+	var i Proof
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.Status,
+		&i.CollectionMethod,
+		&i.SourcePlatform,
+		&i.SourceUrl,
+		&i.ContentType,
+		&i.ContentText,
+		&i.ContentImageUrl,
+		&i.AuthorName,
+		&i.AuthorTitle,
+		&i.AuthorAvatarUrl,
+		&i.ProofDate,
+		&i.LinkedVersionID,
+		&i.IsFeatured,
+		&i.DisplayOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AuthorEmail,
+		&i.AuthorHandle,
+		&i.Rating,
+		&i.VideoUrl,
+		&i.VideoDurationSeconds,
+		&i.SubmittedIpHash,
 	)
 	return i, err
 }
@@ -125,7 +218,7 @@ func (q *Queries) DeleteProof(ctx context.Context, id uuid.UUID) error {
 }
 
 const getProductBySlug = `-- name: GetProductBySlug :one
-SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url FROM products WHERE slug = $1
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding FROM products WHERE slug = $1
 `
 
 func (q *Queries) GetProductBySlug(ctx context.Context, slug string) (Product, error) {
@@ -143,12 +236,18 @@ func (q *Queries) GetProductBySlug(ctx context.Context, slug string) (Product, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LogoUrl,
+		&i.ProofPageTitle,
+		&i.ProofPageSubtitle,
+		&i.ProofPageTheme,
+		&i.ProofPageShowForm,
+		&i.ProofPageFormHeading,
+		&i.ProofPageShowBranding,
 	)
 	return i, err
 }
 
 const getProofByID = `-- name: GetProofByID :one
-SELECT id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at FROM proofs WHERE id = $1
+SELECT id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash FROM proofs WHERE id = $1
 `
 
 func (q *Queries) GetProofByID(ctx context.Context, id uuid.UUID) (Proof, error) {
@@ -173,12 +272,18 @@ func (q *Queries) GetProofByID(ctx context.Context, id uuid.UUID) (Proof, error)
 		&i.DisplayOrder,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AuthorEmail,
+		&i.AuthorHandle,
+		&i.Rating,
+		&i.VideoUrl,
+		&i.VideoDurationSeconds,
+		&i.SubmittedIpHash,
 	)
 	return i, err
 }
 
 const listApprovedProofsByProductID = `-- name: ListApprovedProofsByProductID :many
-SELECT id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at FROM proofs
+SELECT id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash FROM proofs
 WHERE product_id = $1 AND status = 'approved'
 ORDER BY is_featured DESC, display_order ASC, created_at DESC
 `
@@ -211,6 +316,12 @@ func (q *Queries) ListApprovedProofsByProductID(ctx context.Context, productID u
 			&i.DisplayOrder,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AuthorEmail,
+			&i.AuthorHandle,
+			&i.Rating,
+			&i.VideoUrl,
+			&i.VideoDurationSeconds,
+			&i.SubmittedIpHash,
 		); err != nil {
 			return nil, err
 		}
@@ -223,7 +334,7 @@ func (q *Queries) ListApprovedProofsByProductID(ctx context.Context, productID u
 }
 
 const listProofsByProductID = `-- name: ListProofsByProductID :many
-SELECT id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at FROM proofs
+SELECT id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash FROM proofs
 WHERE product_id = $1
 ORDER BY is_featured DESC, display_order ASC, created_at DESC
 `
@@ -256,6 +367,12 @@ func (q *Queries) ListProofsByProductID(ctx context.Context, productID uuid.UUID
 			&i.DisplayOrder,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AuthorEmail,
+			&i.AuthorHandle,
+			&i.Rating,
+			&i.VideoUrl,
+			&i.VideoDurationSeconds,
+			&i.SubmittedIpHash,
 		); err != nil {
 			return nil, err
 		}
@@ -267,10 +384,48 @@ func (q *Queries) ListProofsByProductID(ctx context.Context, productID uuid.UUID
 	return items, nil
 }
 
+const rejectProof = `-- name: RejectProof :one
+UPDATE proofs SET status = 'rejected', updated_at = now()
+WHERE id = $1
+RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash
+`
+
+func (q *Queries) RejectProof(ctx context.Context, id uuid.UUID) (Proof, error) {
+	row := q.db.QueryRow(ctx, rejectProof, id)
+	var i Proof
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.Status,
+		&i.CollectionMethod,
+		&i.SourcePlatform,
+		&i.SourceUrl,
+		&i.ContentType,
+		&i.ContentText,
+		&i.ContentImageUrl,
+		&i.AuthorName,
+		&i.AuthorTitle,
+		&i.AuthorAvatarUrl,
+		&i.ProofDate,
+		&i.LinkedVersionID,
+		&i.IsFeatured,
+		&i.DisplayOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AuthorEmail,
+		&i.AuthorHandle,
+		&i.Rating,
+		&i.VideoUrl,
+		&i.VideoDurationSeconds,
+		&i.SubmittedIpHash,
+	)
+	return i, err
+}
+
 const toggleProofFeatured = `-- name: ToggleProofFeatured :one
 UPDATE proofs SET is_featured = NOT is_featured, updated_at = now()
 WHERE id = $1
-RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at
+RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash
 `
 
 func (q *Queries) ToggleProofFeatured(ctx context.Context, id uuid.UUID) (Proof, error) {
@@ -295,6 +450,12 @@ func (q *Queries) ToggleProofFeatured(ctx context.Context, id uuid.UUID) (Proof,
 		&i.DisplayOrder,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AuthorEmail,
+		&i.AuthorHandle,
+		&i.Rating,
+		&i.VideoUrl,
+		&i.VideoDurationSeconds,
+		&i.SubmittedIpHash,
 	)
 	return i, err
 }
@@ -303,7 +464,7 @@ const updateProof = `-- name: UpdateProof :one
 UPDATE proofs
 SET content_text = $2, content_image_url = $3, author_name = $4, author_title = $5, author_avatar_url = $6, source_platform = $7, source_url = $8, linked_version_id = $9, updated_at = now()
 WHERE id = $1
-RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at
+RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at, author_email, author_handle, rating, video_url, video_duration_seconds, submitted_ip_hash
 `
 
 type UpdateProofParams struct {
@@ -350,6 +511,12 @@ func (q *Queries) UpdateProof(ctx context.Context, arg UpdateProofParams) (Proof
 		&i.DisplayOrder,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AuthorEmail,
+		&i.AuthorHandle,
+		&i.Rating,
+		&i.VideoUrl,
+		&i.VideoDurationSeconds,
+		&i.SubmittedIpHash,
 	)
 	return i, err
 }

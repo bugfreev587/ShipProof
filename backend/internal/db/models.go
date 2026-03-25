@@ -17,9 +17,10 @@ import (
 type CollectionMethod string
 
 const (
-	CollectionMethodManual    CollectionMethod = "manual"
-	CollectionMethodForm      CollectionMethod = "form"
-	CollectionMethodExtension CollectionMethod = "extension"
+	CollectionMethodManual     CollectionMethod = "manual"
+	CollectionMethodForm       CollectionMethod = "form"
+	CollectionMethodExtension  CollectionMethod = "extension"
+	CollectionMethodSubmission CollectionMethod = "submission"
 )
 
 func (e *CollectionMethod) Scan(src interface{}) error {
@@ -319,6 +320,45 @@ func (ns NullWidgetTheme) Value() (driver.Value, error) {
 	return string(ns.WidgetTheme), nil
 }
 
+type Embed struct {
+	ID               uuid.UUID          `json:"id"`
+	ProductID        uuid.UUID          `json:"product_id"`
+	Name             string             `json:"name"`
+	Slug             string             `json:"slug"`
+	Layout           string             `json:"layout"`
+	Theme            pgtype.Text        `json:"theme"`
+	BorderRadius     pgtype.Int4        `json:"border_radius"`
+	CardSpacing      pgtype.Int4        `json:"card_spacing"`
+	ShowPlatformIcon pgtype.Bool        `json:"show_platform_icon"`
+	ShowBranding     pgtype.Bool        `json:"show_branding"`
+	BgColor          pgtype.Text        `json:"bg_color"`
+	TransparentBg    pgtype.Bool        `json:"transparent_bg"`
+	ShowHeader       pgtype.Bool        `json:"show_header"`
+	HeaderTextColor  pgtype.Text        `json:"header_text_color"`
+	Subtitle         pgtype.Text        `json:"subtitle"`
+	MaxItems         pgtype.Int4        `json:"max_items"`
+	VisibleCount     pgtype.Int4        `json:"visible_count"`
+	CardSize         pgtype.Int4        `json:"card_size"`
+	CardHeight       pgtype.Int4        `json:"card_height"`
+	TextFontSize     pgtype.Int4        `json:"text_font_size"`
+	TextFont         pgtype.Text        `json:"text_font"`
+	TextBold         pgtype.Bool        `json:"text_bold"`
+	BgOpacity        pgtype.Int4        `json:"bg_opacity"`
+	Rows             pgtype.Int4        `json:"rows"`
+	WidthPercent     pgtype.Int4        `json:"width_percent"`
+	AutoScroll       pgtype.Bool        `json:"auto_scroll"`
+	ScrollDirection  pgtype.Text        `json:"scroll_direction"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EmbedProof struct {
+	ID           uuid.UUID   `json:"id"`
+	EmbedID      uuid.UUID   `json:"embed_id"`
+	ProofID      uuid.UUID   `json:"proof_id"`
+	DisplayOrder pgtype.Int4 `json:"display_order"`
+}
+
 type LaunchDraft struct {
 	ID          uuid.UUID       `json:"id"`
 	ProductID   uuid.UUID       `json:"product_id"`
@@ -355,38 +395,57 @@ type PageView struct {
 }
 
 type Product struct {
-	ID              uuid.UUID   `json:"id"`
-	UserID          uuid.UUID   `json:"user_id"`
-	Name            string      `json:"name"`
-	Slug            string      `json:"slug"`
-	Url             pgtype.Text `json:"url"`
-	Description     pgtype.Text `json:"description"`
-	DescriptionLong pgtype.Text `json:"description_long"`
-	TargetAudience  pgtype.Text `json:"target_audience"`
-	CreatedAt       time.Time   `json:"created_at"`
-	UpdatedAt       time.Time   `json:"updated_at"`
-	LogoUrl         pgtype.Text `json:"logo_url"`
+	ID                    uuid.UUID   `json:"id"`
+	UserID                uuid.UUID   `json:"user_id"`
+	Name                  string      `json:"name"`
+	Slug                  string      `json:"slug"`
+	Url                   pgtype.Text `json:"url"`
+	Description           pgtype.Text `json:"description"`
+	DescriptionLong       pgtype.Text `json:"description_long"`
+	TargetAudience        pgtype.Text `json:"target_audience"`
+	CreatedAt             time.Time   `json:"created_at"`
+	UpdatedAt             time.Time   `json:"updated_at"`
+	LogoUrl               pgtype.Text `json:"logo_url"`
+	ProofPageTitle        pgtype.Text `json:"proof_page_title"`
+	ProofPageSubtitle     pgtype.Text `json:"proof_page_subtitle"`
+	ProofPageTheme        pgtype.Text `json:"proof_page_theme"`
+	ProofPageShowForm     pgtype.Bool `json:"proof_page_show_form"`
+	ProofPageFormHeading  pgtype.Text `json:"proof_page_form_heading"`
+	ProofPageShowBranding pgtype.Bool `json:"proof_page_show_branding"`
 }
 
 type Proof struct {
-	ID               uuid.UUID        `json:"id"`
-	ProductID        uuid.UUID        `json:"product_id"`
-	Status           ProofStatus      `json:"status"`
-	CollectionMethod CollectionMethod `json:"collection_method"`
-	SourcePlatform   SourcePlatform   `json:"source_platform"`
-	SourceUrl        pgtype.Text      `json:"source_url"`
-	ContentType      ContentType      `json:"content_type"`
-	ContentText      pgtype.Text      `json:"content_text"`
-	ContentImageUrl  pgtype.Text      `json:"content_image_url"`
-	AuthorName       string           `json:"author_name"`
-	AuthorTitle      pgtype.Text      `json:"author_title"`
-	AuthorAvatarUrl  pgtype.Text      `json:"author_avatar_url"`
-	ProofDate        pgtype.Date      `json:"proof_date"`
-	LinkedVersionID  pgtype.UUID      `json:"linked_version_id"`
-	IsFeatured       bool             `json:"is_featured"`
-	DisplayOrder     int32            `json:"display_order"`
-	CreatedAt        time.Time        `json:"created_at"`
-	UpdatedAt        time.Time        `json:"updated_at"`
+	ID                   uuid.UUID        `json:"id"`
+	ProductID            uuid.UUID        `json:"product_id"`
+	Status               ProofStatus      `json:"status"`
+	CollectionMethod     CollectionMethod `json:"collection_method"`
+	SourcePlatform       SourcePlatform   `json:"source_platform"`
+	SourceUrl            pgtype.Text      `json:"source_url"`
+	ContentType          ContentType      `json:"content_type"`
+	ContentText          pgtype.Text      `json:"content_text"`
+	ContentImageUrl      pgtype.Text      `json:"content_image_url"`
+	AuthorName           string           `json:"author_name"`
+	AuthorTitle          pgtype.Text      `json:"author_title"`
+	AuthorAvatarUrl      pgtype.Text      `json:"author_avatar_url"`
+	ProofDate            pgtype.Date      `json:"proof_date"`
+	LinkedVersionID      pgtype.UUID      `json:"linked_version_id"`
+	IsFeatured           bool             `json:"is_featured"`
+	DisplayOrder         int32            `json:"display_order"`
+	CreatedAt            time.Time        `json:"created_at"`
+	UpdatedAt            time.Time        `json:"updated_at"`
+	AuthorEmail          pgtype.Text      `json:"author_email"`
+	AuthorHandle         pgtype.Text      `json:"author_handle"`
+	Rating               pgtype.Int4      `json:"rating"`
+	VideoUrl             pgtype.Text      `json:"video_url"`
+	VideoDurationSeconds pgtype.Int4      `json:"video_duration_seconds"`
+	SubmittedIpHash      pgtype.Text      `json:"submitted_ip_hash"`
+}
+
+type ProofPageProof struct {
+	ID           uuid.UUID   `json:"id"`
+	ProductID    uuid.UUID   `json:"product_id"`
+	ProofID      uuid.UUID   `json:"proof_id"`
+	DisplayOrder pgtype.Int4 `json:"display_order"`
 }
 
 type ProofTag struct {

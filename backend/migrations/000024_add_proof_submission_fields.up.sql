@@ -1,0 +1,8 @@
+ALTER TABLE proofs ADD COLUMN IF NOT EXISTS author_email TEXT;
+ALTER TABLE proofs ADD COLUMN IF NOT EXISTS author_handle TEXT;
+ALTER TABLE proofs ADD COLUMN IF NOT EXISTS rating INTEGER CHECK (rating >= 1 AND rating <= 5);
+ALTER TABLE proofs ADD COLUMN IF NOT EXISTS video_url TEXT;
+ALTER TABLE proofs ADD COLUMN IF NOT EXISTS video_duration_seconds INTEGER;
+ALTER TABLE proofs ADD COLUMN IF NOT EXISTS submitted_ip_hash TEXT;
+
+ALTER TYPE collection_method ADD VALUE IF NOT EXISTS 'submission';

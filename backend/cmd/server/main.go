@@ -20,6 +20,7 @@ import (
 	db "github.com/xiaobo/shipproof/internal/db"
 	"github.com/xiaobo/shipproof/internal/handler"
 	"github.com/xiaobo/shipproof/internal/middleware"
+	"github.com/xiaobo/shipproof/internal/ratelimit"
 	"github.com/xiaobo/shipproof/internal/service"
 )
 
@@ -97,6 +98,11 @@ func main() {
 		wallHandler := handler.NewWallHandler(queries, userService, planService)
 		spaceHandler := handler.NewSpaceHandler(queries, userService, planService)
 		publicHandler := handler.NewPublicHandler(queries)
+		embedHandler := handler.NewEmbedHandler(queries, userService, planService)
+		proofPageHandler := handler.NewProofPageHandler(queries, userService, planService)
+		rateLimiter := ratelimit.New()
+		publicSubmitHandler := handler.NewPublicSubmitHandler(queries, planService, rateLimiter)
+		publicProofPageHandler := handler.NewPublicProofPageHandler(queries)
 		analyticsHandler := handler.NewAnalyticsHandler(queries, userService)
 		adminHandler := handler.NewAdminHandler(queries)
 		// Stripe config: prod + optional sandbox
@@ -133,6 +139,9 @@ func main() {
 		r.Get("/api/public/walls/{slug}/proofs", publicHandler.GetWallProofs)
 		r.Get("/api/public/spaces/{slug}/proofs", publicHandler.GetSpaceProofs)
 		r.Post("/api/public/views", publicHandler.RecordView)
+		r.Post("/api/public/products/{slug}/submit-proof", publicSubmitHandler.SubmitProof)
+		r.Get("/api/public/products/{slug}/proof-page", publicProofPageHandler.GetProofPage)
+		r.Get("/api/public/embeds/{slug}/proofs", publicProofPageHandler.GetEmbedProofs)
 		r.Post("/api/analytics/pageview", adminHandler.RecordPageView)
 
 		settingsHandler := handler.NewSettingsHandler(queries, userService)
@@ -180,6 +189,7 @@ func main() {
 			r.Put("/api/proofs/{pid}", proofHandler.Update)
 			r.Delete("/api/proofs/{pid}", proofHandler.Delete)
 			r.Put("/api/proofs/{pid}/approve", proofHandler.Approve)
+			r.Put("/api/proofs/{pid}/reject", proofHandler.Reject)
 			r.Put("/api/proofs/{pid}/featured", proofHandler.ToggleFeatured)
 			r.Put("/api/proofs/{pid}/order", proofHandler.UpdateOrder)
 			r.Get("/api/products/{id}/tags", proofHandler.ListProductTags)
@@ -191,6 +201,26 @@ func main() {
 			// Widget Config
 			r.Get("/api/products/{id}/widget", widgetHandler.Get)
 			r.Put("/api/products/{id}/widget", widgetHandler.Update)
+
+			// Proof Page
+			r.Get("/api/products/{id}/proof-page", proofPageHandler.GetConfig)
+			r.Put("/api/products/{id}/proof-page", proofPageHandler.UpdateConfig)
+			r.Get("/api/products/{id}/proof-page/proofs", proofPageHandler.ListProofs)
+			r.Post("/api/products/{id}/proof-page/proofs", proofPageHandler.AddProof)
+			r.Delete("/api/products/{id}/proof-page/proofs/{pid}", proofPageHandler.RemoveProof)
+			r.Put("/api/products/{id}/proof-page/proofs/order", proofPageHandler.ReorderProofs)
+
+			// Embeds
+			r.Get("/api/products/{id}/embeds", embedHandler.List)
+			r.Post("/api/products/{id}/embeds", embedHandler.Create)
+			r.Get("/api/embeds/{eid}", embedHandler.Get)
+			r.Put("/api/embeds/{eid}", embedHandler.Update)
+			r.Delete("/api/embeds/{eid}", embedHandler.Delete)
+			r.Put("/api/embeds/{eid}/config", embedHandler.UpdateConfig)
+			r.Get("/api/embeds/{eid}/proofs", embedHandler.ListProofs)
+			r.Post("/api/embeds/{eid}/proofs", embedHandler.AddProof)
+			r.Delete("/api/embeds/{eid}/proofs/{pid}", embedHandler.RemoveProof)
+			r.Put("/api/embeds/{eid}/proofs/order", embedHandler.UpdateProofOrder)
 
 			// Walls
 			r.Get("/api/products/{id}/walls", wallHandler.List)

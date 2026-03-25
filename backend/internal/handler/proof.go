@@ -443,6 +443,28 @@ func (h *ProofHandler) Approve(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(updated)
 }
 
+func (h *ProofHandler) Reject(w http.ResponseWriter, r *http.Request) {
+	proofID, err := uuid.Parse(chi.URLParam(r, "pid"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid proof id"}`, http.StatusBadRequest)
+		return
+	}
+
+	_, ok := h.verifyProofOwnership(w, r, proofID)
+	if !ok {
+		return
+	}
+
+	updated, err := h.queries.RejectProof(r.Context(), proofID)
+	if err != nil {
+		http.Error(w, `{"error":"failed to reject proof"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updated)
+}
+
 func (h *ProofHandler) ToggleFeatured(w http.ResponseWriter, r *http.Request) {
 	proofID, err := uuid.Parse(chi.URLParam(r, "pid"))
 	if err != nil {

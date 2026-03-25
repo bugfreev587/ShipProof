@@ -12,11 +12,15 @@ import (
 )
 
 type Querier interface {
+	AddProofToEmbed(ctx context.Context, arg AddProofToEmbedParams) (EmbedProof, error)
+	AddProofToProofPage(ctx context.Context, arg AddProofToProofPageParams) error
 	AddProofToSpace(ctx context.Context, arg AddProofToSpaceParams) (SpaceProof, error)
 	AddProofToWall(ctx context.Context, arg AddProofToWallParams) (WallProof, error)
 	AddTagToProof(ctx context.Context, arg AddTagToProofParams) (ProofTag, error)
 	ApproveProof(ctx context.Context, id uuid.UUID) (Proof, error)
 	CountDraftsThisMonth(ctx context.Context, userID uuid.UUID) (int64, error)
+	CountEmbedsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
+	CountPendingProofsByProduct(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountProductsByUserID(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountProofsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountSpacesByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
@@ -27,25 +31,32 @@ type Querier interface {
 	CountViewsByProductGrouped(ctx context.Context, productID uuid.UUID) ([]CountViewsByProductGroupedRow, error)
 	CountWallsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CreateDefaultWidgetConfig(ctx context.Context, productID uuid.UUID) (WidgetConfig, error)
+	CreateEmbed(ctx context.Context, arg CreateEmbedParams) (Embed, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
 	CreateProof(ctx context.Context, arg CreateProofParams) (Proof, error)
+	CreatePublicProof(ctx context.Context, arg CreatePublicProofParams) (Proof, error)
 	CreateSpace(ctx context.Context, arg CreateSpaceParams) (Space, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVersion(ctx context.Context, arg CreateVersionParams) (LaunchVersion, error)
 	CreateWall(ctx context.Context, arg CreateWallParams) (Wall, error)
 	DeleteDraftByProductID(ctx context.Context, productID uuid.UUID) error
+	DeleteEmbed(ctx context.Context, id uuid.UUID) error
 	DeleteProduct(ctx context.Context, id uuid.UUID) error
 	DeleteProof(ctx context.Context, id uuid.UUID) error
 	DeleteSpace(ctx context.Context, id uuid.UUID) error
 	DeleteVersion(ctx context.Context, id uuid.UUID) error
 	DeleteWall(ctx context.Context, id uuid.UUID) error
 	GetDraftByProductID(ctx context.Context, productID uuid.UUID) (LaunchDraft, error)
+	GetEmbedByID(ctx context.Context, id uuid.UUID) (Embed, error)
+	GetEmbedBySlug(ctx context.Context, slug string) (Embed, error)
 	GetMaxVersionNumber(ctx context.Context, productID uuid.UUID) (int32, error)
 	GetPageViewsByDay(ctx context.Context, period pgtype.Interval) ([]GetPageViewsByDayRow, error)
 	GetPeriodPageViews(ctx context.Context, period pgtype.Interval) (int32, error)
 	GetProductByID(ctx context.Context, id uuid.UUID) (Product, error)
 	GetProductBySlug(ctx context.Context, slug string) (Product, error)
 	GetProofByID(ctx context.Context, id uuid.UUID) (Proof, error)
+	GetProofPageConfig(ctx context.Context, id uuid.UUID) (GetProofPageConfigRow, error)
+	GetPublicProofPageData(ctx context.Context, slug string) (GetPublicProofPageDataRow, error)
 	GetRecentSignups(ctx context.Context) ([]GetRecentSignupsRow, error)
 	GetSpaceByID(ctx context.Context, id uuid.UUID) (Space, error)
 	GetSpaceBySlug(ctx context.Context, slug string) (Space, error)
@@ -69,10 +80,14 @@ type Querier interface {
 	IsUserAdmin(ctx context.Context, clerkID string) (bool, error)
 	ListApprovedProofsByProductID(ctx context.Context, productID uuid.UUID) ([]Proof, error)
 	ListDistinctTagsByProductID(ctx context.Context, productID uuid.UUID) ([]string, error)
+	ListEmbedsByProductID(ctx context.Context, productID uuid.UUID) ([]Embed, error)
 	ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([]Product, error)
+	ListProofPageProofs(ctx context.Context, productID uuid.UUID) ([]ListProofPageProofsRow, error)
+	ListProofsByEmbedID(ctx context.Context, embedID uuid.UUID) ([]ListProofsByEmbedIDRow, error)
 	ListProofsByProductID(ctx context.Context, productID uuid.UUID) ([]Proof, error)
 	ListProofsBySpaceID(ctx context.Context, spaceID uuid.UUID) ([]ListProofsBySpaceIDRow, error)
 	ListProofsByWallID(ctx context.Context, wallID uuid.UUID) ([]ListProofsByWallIDRow, error)
+	ListPublicProofPageProofs(ctx context.Context, productID uuid.UUID) ([]Proof, error)
 	ListSpacesByProductID(ctx context.Context, productID uuid.UUID) ([]Space, error)
 	ListTagsByProofID(ctx context.Context, proofID uuid.UUID) ([]ProofTag, error)
 	ListUsersAdmin(ctx context.Context, arg ListUsersAdminParams) ([]ListUsersAdminRow, error)
@@ -81,16 +96,24 @@ type Querier interface {
 	MarkTrialUsed(ctx context.Context, arg MarkTrialUsedParams) error
 	RecordPageView(ctx context.Context, arg RecordPageViewParams) error
 	RecordView(ctx context.Context, arg RecordViewParams) error
+	RejectProof(ctx context.Context, id uuid.UUID) (Proof, error)
+	RemoveProofFromEmbed(ctx context.Context, arg RemoveProofFromEmbedParams) error
+	RemoveProofFromProofPage(ctx context.Context, arg RemoveProofFromProofPageParams) error
 	RemoveProofFromSpace(ctx context.Context, arg RemoveProofFromSpaceParams) error
 	RemoveProofFromWall(ctx context.Context, arg RemoveProofFromWallParams) error
 	RemoveTagFromProof(ctx context.Context, arg RemoveTagFromProofParams) error
 	SetUserApiKey(ctx context.Context, arg SetUserApiKeyParams) (User, error)
 	ToggleProofFeatured(ctx context.Context, id uuid.UUID) (Proof, error)
 	UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) (LaunchDraft, error)
+	UpdateEmbed(ctx context.Context, arg UpdateEmbedParams) (Embed, error)
+	UpdateEmbedConfig(ctx context.Context, arg UpdateEmbedConfigParams) (Embed, error)
+	UpdateEmbedProofOrder(ctx context.Context, arg UpdateEmbedProofOrderParams) error
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateProof(ctx context.Context, arg UpdateProofParams) (Proof, error)
 	UpdateProofExtractedContent(ctx context.Context, arg UpdateProofExtractedContentParams) error
 	UpdateProofOrder(ctx context.Context, arg UpdateProofOrderParams) error
+	UpdateProofPageConfig(ctx context.Context, arg UpdateProofPageConfigParams) error
+	UpdateProofPageProofOrder(ctx context.Context, arg UpdateProofPageProofOrderParams) error
 	UpdateSpace(ctx context.Context, arg UpdateSpaceParams) (Space, error)
 	UpdateSpaceConfig(ctx context.Context, arg UpdateSpaceConfigParams) (Space, error)
 	UpdateSpaceProofOrder(ctx context.Context, arg UpdateSpaceProofOrderParams) error

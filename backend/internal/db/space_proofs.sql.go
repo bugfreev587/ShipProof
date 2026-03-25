@@ -39,32 +39,38 @@ func (q *Queries) AddProofToSpace(ctx context.Context, arg AddProofToSpaceParams
 }
 
 const listProofsBySpaceID = `-- name: ListProofsBySpaceID :many
-SELECT p.id, p.product_id, p.status, p.collection_method, p.source_platform, p.source_url, p.content_type, p.content_text, p.content_image_url, p.author_name, p.author_title, p.author_avatar_url, p.proof_date, p.linked_version_id, p.is_featured, p.display_order, p.created_at, p.updated_at, sp.display_order as space_display_order FROM space_proofs sp
+SELECT p.id, p.product_id, p.status, p.collection_method, p.source_platform, p.source_url, p.content_type, p.content_text, p.content_image_url, p.author_name, p.author_title, p.author_avatar_url, p.proof_date, p.linked_version_id, p.is_featured, p.display_order, p.created_at, p.updated_at, p.author_email, p.author_handle, p.rating, p.video_url, p.video_duration_seconds, p.submitted_ip_hash, sp.display_order as space_display_order FROM space_proofs sp
 JOIN proofs p ON p.id = sp.proof_id
 WHERE sp.space_id = $1
 ORDER BY sp.display_order ASC, p.created_at DESC
 `
 
 type ListProofsBySpaceIDRow struct {
-	ID                uuid.UUID        `json:"id"`
-	ProductID         uuid.UUID        `json:"product_id"`
-	Status            ProofStatus      `json:"status"`
-	CollectionMethod  CollectionMethod `json:"collection_method"`
-	SourcePlatform    SourcePlatform   `json:"source_platform"`
-	SourceUrl         pgtype.Text      `json:"source_url"`
-	ContentType       ContentType      `json:"content_type"`
-	ContentText       pgtype.Text      `json:"content_text"`
-	ContentImageUrl   pgtype.Text      `json:"content_image_url"`
-	AuthorName        string           `json:"author_name"`
-	AuthorTitle       pgtype.Text      `json:"author_title"`
-	AuthorAvatarUrl   pgtype.Text      `json:"author_avatar_url"`
-	ProofDate         pgtype.Date      `json:"proof_date"`
-	LinkedVersionID   pgtype.UUID      `json:"linked_version_id"`
-	IsFeatured        bool             `json:"is_featured"`
-	DisplayOrder      int32            `json:"display_order"`
-	CreatedAt         time.Time        `json:"created_at"`
-	UpdatedAt         time.Time        `json:"updated_at"`
-	SpaceDisplayOrder int32            `json:"space_display_order"`
+	ID                   uuid.UUID        `json:"id"`
+	ProductID            uuid.UUID        `json:"product_id"`
+	Status               ProofStatus      `json:"status"`
+	CollectionMethod     CollectionMethod `json:"collection_method"`
+	SourcePlatform       SourcePlatform   `json:"source_platform"`
+	SourceUrl            pgtype.Text      `json:"source_url"`
+	ContentType          ContentType      `json:"content_type"`
+	ContentText          pgtype.Text      `json:"content_text"`
+	ContentImageUrl      pgtype.Text      `json:"content_image_url"`
+	AuthorName           string           `json:"author_name"`
+	AuthorTitle          pgtype.Text      `json:"author_title"`
+	AuthorAvatarUrl      pgtype.Text      `json:"author_avatar_url"`
+	ProofDate            pgtype.Date      `json:"proof_date"`
+	LinkedVersionID      pgtype.UUID      `json:"linked_version_id"`
+	IsFeatured           bool             `json:"is_featured"`
+	DisplayOrder         int32            `json:"display_order"`
+	CreatedAt            time.Time        `json:"created_at"`
+	UpdatedAt            time.Time        `json:"updated_at"`
+	AuthorEmail          pgtype.Text      `json:"author_email"`
+	AuthorHandle         pgtype.Text      `json:"author_handle"`
+	Rating               pgtype.Int4      `json:"rating"`
+	VideoUrl             pgtype.Text      `json:"video_url"`
+	VideoDurationSeconds pgtype.Int4      `json:"video_duration_seconds"`
+	SubmittedIpHash      pgtype.Text      `json:"submitted_ip_hash"`
+	SpaceDisplayOrder    int32            `json:"space_display_order"`
 }
 
 func (q *Queries) ListProofsBySpaceID(ctx context.Context, spaceID uuid.UUID) ([]ListProofsBySpaceIDRow, error) {
@@ -95,6 +101,12 @@ func (q *Queries) ListProofsBySpaceID(ctx context.Context, spaceID uuid.UUID) ([
 			&i.DisplayOrder,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AuthorEmail,
+			&i.AuthorHandle,
+			&i.Rating,
+			&i.VideoUrl,
+			&i.VideoDurationSeconds,
+			&i.SubmittedIpHash,
 			&i.SpaceDisplayOrder,
 		); err != nil {
 			return nil, err

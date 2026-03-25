@@ -55,3 +55,24 @@ SELECT * FROM products WHERE slug = $1;
 SELECT * FROM proofs
 WHERE product_id = $1 AND status = 'approved'
 ORDER BY is_featured DESC, display_order ASC, created_at DESC;
+
+-- name: RejectProof :one
+UPDATE proofs SET status = 'rejected', updated_at = now()
+WHERE id = $1
+RETURNING *;
+
+-- name: CreatePublicProof :one
+INSERT INTO proofs (
+  product_id, status, collection_method, source_platform,
+  content_type, content_text, content_image_url,
+  author_name, author_email, author_handle, author_title,
+  rating, submitted_ip_hash
+) VALUES (
+  $1, 'pending', 'submission', $2,
+  'text', $3, $4,
+  $5, $6, $7, $8,
+  $9, $10
+) RETURNING *;
+
+-- name: CountPendingProofsByProduct :one
+SELECT COUNT(*) FROM proofs WHERE product_id = $1 AND status = 'pending';

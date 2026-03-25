@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS embed_proofs;
+DROP TABLE IF EXISTS embeds;
