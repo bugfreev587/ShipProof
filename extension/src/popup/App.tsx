@@ -10,6 +10,7 @@ export default function App() {
   const [view, setView] = useState<View>("login");
   const [apiKey, setApiKeyState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [captureKey, setCaptureKey] = useState(0);
 
   useEffect(() => {
     getApiKey().then((key) => {
@@ -43,13 +44,17 @@ export default function App() {
   if (view === "success") {
     return (
       <SuccessView
-        onCaptureAnother={() => setView("capture")}
+        onCaptureAnother={() => {
+          setCaptureKey((k) => k + 1);
+          setView("capture");
+        }}
       />
     );
   }
 
   return (
     <CaptureView
+      key={captureKey}
       apiKey={apiKey}
       onSuccess={() => setView("success")}
       onLogout={() => {
