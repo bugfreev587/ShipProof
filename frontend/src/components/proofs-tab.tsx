@@ -437,9 +437,9 @@ function ProofCard({
                 e.stopPropagation();
                 setMenuOpen(!menuOpen);
               }}
-              className="text-[#55555C] hover:text-white p-1 transition-colors text-sm"
+              className="text-[#8B8B92] hover:text-white p-1 transition-colors text-lg leading-none font-bold"
             >
-              ···
+              ⋯
             </button>
             {menuOpen && (
               <div className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-lg border border-[#2A2A30] bg-[#1A1A1F] shadow-xl py-1">
