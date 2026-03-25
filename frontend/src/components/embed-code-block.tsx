@@ -15,7 +15,7 @@ export default function EmbedCodeBlock() {
   };
 
   return (
-    <div className="relative rounded-xl border border-border bg-background p-6 text-left">
+    <div className="relative rounded-2xl border border-white/5 bg-[#0C0C0E] p-6 text-left">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-full bg-[#FF5F56]" />
@@ -24,7 +24,7 @@ export default function EmbedCodeBlock() {
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-lg bg-card border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:opacity-80 transition-all"
+          className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-[#D1D5DB] hover:bg-white/10 transition-all"
         >
           {copied ? (
             <>
@@ -43,7 +43,7 @@ export default function EmbedCodeBlock() {
           )}
         </button>
       </div>
-      <pre className="overflow-x-auto text-sm leading-relaxed">
+      <pre className="overflow-x-auto font-mono text-[13px] leading-relaxed">
         <code>
           <span className="text-[#6B7280]">&lt;</span>
           <span className="text-[#F59E0B]">script</span>
