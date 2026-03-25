@@ -27,7 +27,7 @@ const planLimits: Record<
   string,
   { products: string; proofs: string; generations: string; versions: string }
 > = {
-  free: { products: "1", proofs: "1 / product", generations: "3 / month", versions: "3 / product" },
+  free: { products: "1", proofs: "5 / product", generations: "3 / month", versions: "3 / product" },
   pro: { products: "1", proofs: "Unlimited", generations: "Unlimited", versions: "Unlimited" },
   business: { products: "10", proofs: "Unlimited", generations: "Unlimited", versions: "Unlimited" },
 };

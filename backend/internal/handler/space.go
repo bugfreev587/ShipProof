@@ -211,6 +211,13 @@ func (h *SpaceHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Force show_branding for plans that don't allow removal
+	clerkID := middleware.GetClerkUserID(r.Context())
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
+	if err == nil && h.planService.ForceShowBranding(user.Plan) {
+		req.ShowBranding = true
+	}
+
 	// Defaults
 	if req.Rows < 1 || req.Rows > 4 {
 		req.Rows = 1

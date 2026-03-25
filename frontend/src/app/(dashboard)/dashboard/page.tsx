@@ -8,7 +8,7 @@ import { listProducts, listProofs, createProduct, uploadAvatar, getCurrentUser, 
 import UpgradeNudgeModal from "@/components/upgrade-nudge-modal";
 
 const PLAN_LIMITS: Record<string, { products: number; proofs: string }> = {
-  free: { products: 1, proofs: "1" },
+  free: { products: 1, proofs: "5" },
   pro: { products: 1, proofs: "Unlimited" },
   business: { products: 10, proofs: "Unlimited" },
 };

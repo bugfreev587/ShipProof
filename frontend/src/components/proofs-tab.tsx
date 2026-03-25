@@ -19,6 +19,7 @@ import {
   listProductTags,
   extractScreenshot,
   uploadAvatar,
+  getCurrentUser,
   type Proof,
   type Product,
   type Space,
@@ -63,13 +64,21 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
   const [filterTag, setFilterTag] = useState("");
   const [allTags, setAllTags] = useState<string[]>([]);
   const [addToSpaceProof, setAddToSpaceProof] = useState<Proof | null>(null);
+  const [userPlan, setUserPlan] = useState<"free" | "pro" | "business">("free");
+  const [proofLimit, setProofLimit] = useState<number>(5);
 
   const fetchProofs = useCallback(async () => {
     try {
       const token = await getToken();
       if (!token) return;
-      const data = await listProofs(product.id, token);
+      const [data, user] = await Promise.all([
+        listProofs(product.id, token),
+        getCurrentUser(token),
+      ]);
       setProofs(data);
+      setUserPlan(user.plan);
+      const planLimits: Record<string, number> = { free: 5, pro: 0, business: 0 };
+      setProofLimit(planLimits[user.plan] ?? 5);
 
       // Collect all unique tags
       const tags = new Set<string>();
@@ -144,6 +153,36 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
         </div>
       )}
 
+      {/* Proof limit nudge for free plan */}
+      {userPlan === "free" && proofLimit > 0 && (
+        <div
+          className={`mb-4 rounded-lg border px-4 py-3 text-sm flex items-center justify-between ${
+            proofs.length >= proofLimit
+              ? "bg-red-500/10 border-red-500/20 text-red-400"
+              : proofs.length >= proofLimit - 1
+                ? "bg-[#F59E0B]/10 border-[#F59E0B]/20 text-[#F59E0B]"
+                : "bg-[var(--bg-surface)] border-[var(--border)] text-[var(--text-secondary)]"
+          }`}
+        >
+          <span>
+            {proofs.length}/{proofLimit} proofs used.
+            {proofs.length >= proofLimit
+              ? " Upgrade to Pro for unlimited proofs."
+              : proofs.length >= proofLimit - 1
+                ? " Almost at limit. Upgrade to Pro for unlimited proofs."
+                : ""}
+          </span>
+          {proofs.length >= proofLimit - 1 && (
+            <a
+              href="/#pricing"
+              className="ml-3 rounded-lg bg-[#6366F1] px-3 py-1 text-xs font-medium text-white hover:bg-[#818CF8] transition-colors whitespace-nowrap"
+            >
+              Upgrade
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Action Bar */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <input
@@ -184,7 +223,8 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="ml-auto rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors"
+          disabled={userPlan === "free" && proofLimit > 0 && proofs.length >= proofLimit}
+          className="ml-auto rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           + Add Proof
         </button>

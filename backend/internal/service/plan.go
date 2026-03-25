@@ -16,7 +16,7 @@ type PlanLimits struct {
 	MaxGenerations    int  // per month; -1 = unlimited
 	MaxVersions       int  // per product; -1 = unlimited
 	MaxSpaces         int  // per product; 0 = none, -1 = unlimited
-	CanCreateWall     bool
+	MaxWalls          int  // per product; -1 = unlimited
 	CanRemoveBranding bool
 }
 
@@ -30,7 +30,7 @@ func LimitsFor(plan db.UserPlan) PlanLimits {
 			MaxGenerations:    -1,
 			MaxVersions:       -1,
 			MaxSpaces:         1,
-			CanCreateWall:     true,
+			MaxWalls:          -1,
 			CanRemoveBranding: false,
 		}
 	case db.UserPlanBusiness:
@@ -40,17 +40,17 @@ func LimitsFor(plan db.UserPlan) PlanLimits {
 			MaxGenerations:    -1,
 			MaxVersions:       -1,
 			MaxSpaces:         10,
-			CanCreateWall:     true,
+			MaxWalls:          -1,
 			CanRemoveBranding: true,
 		}
 	default: // free
 		return PlanLimits{
 			MaxProducts:       1,
-			MaxProofs:         1,
+			MaxProofs:         5,
 			MaxGenerations:    3,
 			MaxVersions:       3,
-			MaxSpaces:         0,
-			CanCreateWall:     false,
+			MaxSpaces:         1,
+			MaxWalls:          1,
 			CanRemoveBranding: false,
 		}
 	}
@@ -154,11 +154,18 @@ func (s *PlanService) CheckSpaceLimit(ctx context.Context, productID uuid.UUID, 
 	return nil
 }
 
-func (s *PlanService) CheckWallLimit(plan db.UserPlan) error {
+func (s *PlanService) CheckWallLimit(ctx context.Context, productID uuid.UUID, plan db.UserPlan) error {
 	limits := LimitsFor(plan)
-	if !limits.CanCreateWall {
+	if limits.MaxWalls < 0 {
+		return nil
+	}
+	count, err := s.queries.CountWallsByProductID(ctx, productID)
+	if err != nil {
+		return fmt.Errorf("failed to check wall limit: %w", err)
+	}
+	if int(count) >= limits.MaxWalls {
 		return &PlanLimitError{
-			Message: "Wall of Love is a Pro feature. Upgrade to create walls.",
+			Message: fmt.Sprintf("Wall limit reached (%d). Upgrade to Pro for unlimited walls.", limits.MaxWalls),
 		}
 	}
 	return nil

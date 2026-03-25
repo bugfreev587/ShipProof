@@ -4,7 +4,21 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { createCheckoutSession, getCurrentUser } from "@/lib/api";
 
-const plans = [
+type FeatureType = "included" | "excluded" | "info";
+
+const plans: {
+  name: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  badge: string | null;
+  borderColor: string;
+  badgeColor: string;
+  description?: string;
+  features: { text: string; type: FeatureType }[];
+  ctaText: string;
+  ctaLink?: string;
+  plan: string;
+}[] = [
   {
     name: "Free",
     monthlyPrice: 0,
@@ -13,13 +27,13 @@ const plans = [
     borderColor: "border-[#2A2A30]",
     badgeColor: "",
     features: [
-      { text: "1 product", included: true },
-      { text: "1 proof per product", included: true },
-      { text: "3 AI generations / month", included: true },
-      { text: "3 saved versions", included: true },
-      { text: "Embed widget", included: true },
-      { text: "Wall of Love pages", included: false },
-      { text: "Remove branding", included: false },
+      { text: "1 Product", type: "included" },
+      { text: "5 Proofs", type: "included" },
+      { text: "3 AI generations / month", type: "included" },
+      { text: "Wall of Love page", type: "included" },
+      { text: "Embeddable Widget", type: "included" },
+      { text: "Marquee & Carousel layouts", type: "included" },
+      { text: '"Powered by ShipProof" badge', type: "info" },
     ],
     ctaText: "Get Started Free",
     ctaLink: "/sign-up",
@@ -32,15 +46,14 @@ const plans = [
     badge: "Most Popular",
     borderColor: "border-[#6366F1]",
     badgeColor: "bg-[#6366F1]",
+    description: "Everything in Free, plus:",
     features: [
-      { text: "1 product", included: true },
-      { text: "1 space", included: true },
-      { text: "Unlimited proofs", included: true },
-      { text: "Unlimited AI generations", included: true },
-      { text: "Unlimited versions", included: true },
-      { text: "Embed widget", included: true },
-      { text: "Wall of Love pages", included: true },
-      { text: "Remove branding", included: false },
+      { text: "Unlimited Proofs", type: "included" },
+      { text: "Unlimited AI generations", type: "included" },
+      { text: "Unlimited Launch Versions", type: "included" },
+      { text: "Chrome Extension support", type: "included" },
+      { text: "Priority support", type: "included" },
+      { text: '"Powered by ShipProof" badge', type: "info" },
     ],
     ctaText: "Start Free Trial",
     plan: "pro",
@@ -52,15 +65,12 @@ const plans = [
     badge: null,
     borderColor: "border-[#2A2A30]",
     badgeColor: "",
+    description: "Everything in Pro, plus:",
     features: [
-      { text: "10 products", included: true },
-      { text: "Unlimited spaces", included: true },
-      { text: "Unlimited proofs", included: true },
-      { text: "Unlimited AI generations", included: true },
-      { text: "Unlimited versions", included: true },
-      { text: "Embed widget", included: true },
-      { text: "Wall of Love pages", included: true },
-      { text: "Remove branding", included: true },
+      { text: "Up to 10 Products", type: "included" },
+      { text: 'Remove "Powered by" badge', type: "included" },
+      { text: "Custom branding", type: "included" },
+      { text: "Team features (coming soon)", type: "included" },
     ],
     ctaText: "Start Free Trial",
     plan: "business",
@@ -208,10 +218,14 @@ export default function PricingCards() {
               )}
             </div>
 
+            {plan.description && (
+              <p className="text-xs text-[#9CA3AF] mb-2">{plan.description}</p>
+            )}
+
             <ul className="flex-1 space-y-2">
               {plan.features.map((feature) => (
                 <li key={feature.text} className="flex items-center gap-2 text-sm">
-                  {feature.included ? (
+                  {feature.type === "included" ? (
                     <svg
                       className="h-4 w-4 shrink-0 text-[#10B981]"
                       fill="none"
@@ -223,6 +237,20 @@ export default function PricingCards() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  ) : feature.type === "info" ? (
+                    <svg
+                      className="h-4 w-4 shrink-0 text-[#6366F1]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
                   ) : (
@@ -242,7 +270,7 @@ export default function PricingCards() {
                   )}
                   <span
                     className={
-                      feature.included ? "text-[#F1F1F3]" : "text-[#6B7280]"
+                      feature.type === "excluded" ? "text-[#6B7280]" : "text-[#F1F1F3]"
                     }
                   >
                     {feature.text}

@@ -114,7 +114,7 @@ func (h *WallHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Plan limit check
-	if err := h.planService.CheckWallLimit(user.Plan); err != nil {
+	if err := h.planService.CheckWallLimit(r.Context(), productID, user.Plan); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusPaymentRequired)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
@@ -224,6 +224,13 @@ func (h *WallHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Layout = "masonry"
+
+	// Force show_branding for plans that don't allow removal
+	clerkID := middleware.GetClerkUserID(r.Context())
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
+	if err == nil && h.planService.ForceShowBranding(user.Plan) {
+		req.ShowBranding = true
+	}
 
 	wall, err := h.queries.UpdateWallConfig(r.Context(), db.UpdateWallConfigParams{
 		ID:               wallID,

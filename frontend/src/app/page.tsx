@@ -63,7 +63,7 @@ const faqs = [
   },
   {
     q: "Can I customize the embed widget?",
-    a: "Yes! Choose dark or light theme, adjust border radius, card spacing, max items displayed, and toggle platform icons. Business plan users can also remove ShipProof branding.",
+    a: "Yes! Choose dark or light theme, adjust border radius, card spacing, max items displayed, and toggle platform icons. Business plan users can remove the \"Powered by ShipProof\" badge.",
   },
   {
     q: "What is a Wall of Love?",
@@ -71,7 +71,7 @@ const faqs = [
   },
   {
     q: "Is there a free plan?",
-    a: "Yes! The free plan includes 1 product, 1 proof, 3 AI generations per month, and the embed widget with branding. Upgrade to Pro for unlimited usage.",
+    a: "Yes! The free plan includes 1 product, 5 proofs, 3 AI generations per month, Wall of Love page, and the embed widget — everything you need to experience the full Ship → Collect → Display flow. Upgrade to Pro for unlimited proofs and generations.",
   },
 ];
 

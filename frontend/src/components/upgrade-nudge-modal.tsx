@@ -34,8 +34,8 @@ export default function UpgradeNudgeModal({
             <tbody>
               {[
                 { label: "Products", free: "1", pro: "1", biz: "10" },
-                { label: "Proofs", free: "1", pro: "Unlimited", biz: "Unlimited" },
-                { label: "Spaces", free: "—", pro: "1", biz: "10" },
+                { label: "Proofs", free: "5", pro: "Unlimited", biz: "Unlimited" },
+                { label: "Wall of Love", free: "✓", pro: "Unlimited", biz: "Unlimited" },
                 { label: "Content Gen", free: "3/mo", pro: "Unlimited", biz: "Unlimited" },
                 { label: "Remove Branding", free: "—", pro: "—", biz: "✓" },
               ].map((row, i) => (
