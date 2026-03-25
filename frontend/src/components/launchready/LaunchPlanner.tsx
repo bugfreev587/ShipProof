@@ -75,12 +75,12 @@ function DayPicker({
 }) {
   return (
     <div className="mb-10">
-      <h3 className="text-base font-medium text-[#EDEDEF] mb-1 text-center">
+      <h3 className="text-lg font-medium text-[#EDEDEF] mb-1 text-center">
         {hasPH
           ? "When is your Product Hunt launch day?"
           : "Pick any day as your main launch day"}
       </h3>
-      <p className="text-xs text-[#55555C] mb-4 text-center">
+      <p className="text-sm text-[#8B8B92] mb-4 text-center">
         We&apos;ll build your plan around this day
       </p>
       <div className="flex justify-center gap-2">
@@ -88,7 +88,7 @@ function DayPicker({
           <div key={d.id} className="flex flex-col items-center">
             <button
               onClick={() => onChange(d.id)}
-              className={`w-14 h-10 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer
+              className={`w-16 h-11 rounded-lg text-base font-medium transition-all duration-150 cursor-pointer
                 ${
                   launchDay === d.id
                     ? "bg-[#6366F1] text-white"
@@ -98,7 +98,7 @@ function DayPicker({
               {d.label}
             </button>
             {d.recommended && (
-              <span className="text-[10px] text-[#55555C] mt-1">recommended</span>
+              <span className="text-xs text-[#6B6B73] mt-1">recommended</span>
             )}
           </div>
         ))}
@@ -120,10 +120,10 @@ function CheckboxItem({
     <div className="flex items-start gap-3 py-3 border-b border-[#1E1E24] last:border-b-0 group">
       <button onClick={onToggle} aria-checked={checked} role="checkbox" className="mt-0.5 shrink-0 cursor-pointer">
         <div
-          className={`w-[18px] h-[18px] rounded flex items-center justify-center transition-all duration-150
+          className={`w-5 h-5 rounded flex items-center justify-center transition-all duration-150
             ${checked
               ? "bg-[#6366F1] border-[#6366F1]"
-              : "border-[1.5px] border-[#2A2A32] group-hover:border-[#55555C]"
+              : "border-[1.5px] border-[#3F3F46] group-hover:border-[#6B6B73]"
             }`}
         >
           {checked && (
@@ -136,13 +136,13 @@ function CheckboxItem({
 
       <div className="flex-1 min-w-0">
         {item.time && (
-          <span className="font-mono text-xs text-[#55555C] mr-2">{item.time}</span>
+          <span className="font-mono text-sm text-[#8B8B92] mr-2">{item.time}</span>
         )}
-        <span className={`text-sm leading-relaxed transition-all duration-150 ${checked ? "text-[#55555C] line-through" : "text-[#EDEDEF]"}`}>
+        <span className={`text-base leading-relaxed transition-all duration-150 ${checked ? "text-[#6B6B73] line-through" : "text-[#EDEDEF]"}`}>
           {item.text}
         </span>
         {item.hint && (
-          <p className="text-xs text-[#55555C] mt-0.5 leading-relaxed">
+          <p className="text-sm text-[#8B8B92] mt-0.5 leading-relaxed">
             {item.hint}
             {item.cta && (
               <>
@@ -155,7 +155,7 @@ function CheckboxItem({
           </p>
         )}
         {!item.hint && item.cta && (
-          <p className="text-xs mt-0.5">
+          <p className="text-sm mt-0.5">
             <Link href={item.cta.href} className="text-[#818CF8] hover:text-[#6366F1] transition-colors duration-150">
               {item.cta.text}
             </Link>
@@ -166,7 +166,7 @@ function CheckboxItem({
       {item.platforms && (
         <div className="flex gap-1.5 shrink-0 mt-0.5">
           {item.platforms.map((pid) => (
-            <span key={pid} className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#1E1E24] text-[#8B8B92]">
+            <span key={pid} className="text-xs font-medium px-1.5 py-0.5 rounded bg-[#1E1E24] text-[#A1A1AA]">
               {platformBadgeLabels[pid]}
             </span>
           ))}
@@ -254,10 +254,10 @@ function PhaseCard({
             }}
           />
           <div>
-            <h3 className={`font-medium ${isLaunch ? "text-lg text-[#EDEDEF]" : "text-sm text-[#EDEDEF]"}`}>
+            <h3 className={`font-medium ${isLaunch ? "text-xl text-[#EDEDEF]" : "text-base text-[#EDEDEF]"}`}>
               {phase.label}
             </h3>
-            <p className="text-xs text-[#55555C]">{phaseSubtitle(phase, launchDay)}</p>
+            <p className="text-sm text-[#8B8B92]">{phaseSubtitle(phase, launchDay)}</p>
           </div>
         </div>
 
@@ -265,7 +265,7 @@ function PhaseCard({
         {groups.map((group, gi) => (
           <div key={gi}>
             {group.label && (
-              <h4 className="text-xs font-semibold text-[#8B8B92] uppercase tracking-wider mt-4 mb-1 first:mt-0">
+              <h4 className="text-sm font-semibold text-[#A1A1AA] uppercase tracking-wider mt-4 mb-1 first:mt-0">
                 {group.label}
               </h4>
             )}

@@ -34,11 +34,11 @@ function PlatformSelector({
           <button
             key={p.id}
             onClick={() => onToggle(p.id)}
-            className={`flex items-center gap-2 px-5 py-3 rounded-full border text-sm font-medium transition-all duration-150 cursor-pointer
+            className={`flex items-center gap-2 px-5 py-3 rounded-full border text-base font-medium transition-all duration-150 cursor-pointer
               ${
                 active
                   ? "bg-[#6366F1]/10 border-[#6366F1]/50 text-[#818CF8]"
-                  : "bg-transparent border-[#1E1E24] text-[#8B8B92] hover:border-[#2A2A32] hover:text-[#EDEDEF]"
+                  : "bg-transparent border-[#2A2A32] text-[#A1A1AA] hover:border-[#3F3F46] hover:text-[#EDEDEF]"
               }`}
           >
             <span className="text-base leading-none">{p.icon}</span>
@@ -122,7 +122,7 @@ function ProgressBar({
   return (
     <div className="mb-8">
       <div className="flex items-baseline justify-between mb-2 text-sm">
-        <span className="text-[#8B8B92]">
+        <span className="text-[#A1A1AA]">
           {checked} of {total} completed
           {done && (
             <span className="text-[#22C55E] ml-2">
@@ -130,7 +130,7 @@ function ProgressBar({
             </span>
           )}
           {!done && (
-            <span className="text-[#8B8B92] ml-2">{pct}%</span>
+            <span className="text-[#A1A1AA] ml-2">{pct}%</span>
           )}
         </span>
         <button
@@ -271,11 +271,11 @@ export function LaunchReadyApp() {
           <Link href="/" className="flex items-center gap-2.5">
             <LogoIcon size={24} />
           </Link>
-          <h1 className="text-[28px] font-semibold tracking-[-0.5px]">
+          <h1 className="text-[34px] font-semibold tracking-[-0.5px]">
             LaunchReady
           </h1>
         </div>
-        <p className="text-base text-[#8B8B92] max-w-md mx-auto leading-relaxed">
+        <p className="text-lg text-[#A1A1AA] max-w-lg mx-auto leading-relaxed">
           Your launch day co-pilot.
           <br />
           Plan your multi-platform launch in minutes. Free forever.
@@ -285,10 +285,10 @@ export function LaunchReadyApp() {
       <main className="max-w-4xl mx-auto px-4 pb-24">
         {/* Step 1: Platform selector */}
         <section ref={step1Ref} className="mb-12">
-          <h2 className="text-lg font-medium tracking-[-0.5px] mb-1 text-center">
+          <h2 className="text-xl font-medium tracking-[-0.5px] mb-1 text-center">
             Where are you launching?
           </h2>
-          <p className="text-sm text-[#8B8B92] mb-6 text-center">
+          <p className="text-base text-[#A1A1AA] mb-6 text-center">
             Select the platforms you&apos;re targeting. We&apos;ll customize
             your plan.
           </p>
@@ -318,14 +318,14 @@ export function LaunchReadyApp() {
             {/* CTA section */}
             <section className="mt-20 text-center">
               <div className="border-t border-[#1E1E24] mb-12" />
-              <p className="text-lg font-medium tracking-[-0.5px] mb-2">
+              <p className="text-xl font-medium tracking-[-0.5px] mb-2">
                 <span className="text-[#6366F1]">Ship</span>
                 <span className="text-[#55555C] mx-2">&rarr;</span>
                 <span className="text-[#22C55E]">Collect</span>
                 <span className="text-[#55555C] mx-2">&rarr;</span>
                 <span className="text-[#F59E0B]">Display</span>
               </p>
-              <p className="text-[#8B8B92] text-sm mb-6 max-w-md mx-auto leading-relaxed">
+              <p className="text-[#A1A1AA] text-base mb-6 max-w-lg mx-auto leading-relaxed">
                 LaunchReady helps you plan. ShipProof helps you execute.
                 <br />
                 Generate launch copy for all 5 platforms with AI.
@@ -354,7 +354,7 @@ export function LaunchReadyApp() {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-8 text-xs text-[#55555C]">
+      <footer className="text-center py-8 text-sm text-[#6B6B73]">
         Built by{" "}
         <Link href="/" className="hover:text-[#8B8B92] transition-colors">
           ShipProof
