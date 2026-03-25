@@ -203,7 +203,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
           {filtered.filter((p) => p.status === "pending").length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-sm font-medium text-[#F59E0B]">Pending Review</h3>
+                <h3 className="text-lg font-semibold text-[#F59E0B]">Pending Review</h3>
                 <span className="rounded-full bg-[#F59E0B]/10 px-2 py-0.5 text-xs font-medium text-[#F59E0B]">
                   {filtered.filter((p) => p.status === "pending").length}
                 </span>
@@ -233,11 +233,16 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
             </div>
           )}
 
+          {/* Divider between sections */}
+          {filtered.some((p) => p.status === "pending") && filtered.some((p) => p.status !== "pending") && (
+            <div className="border-t border-[var(--border)]" />
+          )}
+
           {/* Approved Section */}
           {filtered.filter((p) => p.status !== "pending").length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-sm font-medium text-[var(--text-secondary)]">Approved</h3>
+                <h3 className="text-lg font-semibold text-[var(--text-secondary)]">Approved</h3>
                 <span className="rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
                   {filtered.filter((p) => p.status !== "pending").length}
                 </span>
