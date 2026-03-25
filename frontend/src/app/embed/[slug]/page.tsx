@@ -324,8 +324,8 @@ export default async function EmbedPage({
 .marquee-container {
   overflow: hidden;
   width: 100%;
-  mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  mask-image: none;
+  -webkit-mask-image: none;
 }
 .marquee-track {
   display: flex;

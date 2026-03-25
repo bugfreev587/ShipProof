@@ -19,8 +19,12 @@ export function PlatformBadge({ platform }: { platform: string }) {
   const info = getPlatformInfo(platform);
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
-      style={{ backgroundColor: info.color }}
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+      style={{
+        backgroundColor: `${info.color}15`,
+        color: info.color,
+        border: `1px solid ${info.color}30`,
+      }}
     >
       {info.label}
     </span>

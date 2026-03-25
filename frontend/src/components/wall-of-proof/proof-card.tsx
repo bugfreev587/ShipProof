@@ -1,5 +1,5 @@
 import type { WallProof, ThemeColors } from "./types";
-import { PlatformBadge, PlatformAvatarBadge, getLaunchTimeLabel, getPlatformInfo } from "./platform-badge";
+import { PlatformBadge, getLaunchTimeLabel, getPlatformInfo } from "./platform-badge";
 import { getCompanyLogoUrl } from "@/lib/company-logo";
 import { CompanyLogoImg } from "@/components/company-logo";
 
@@ -75,13 +75,10 @@ export default function ProofCard({
           ) : (
             <span
               className="inline-flex items-center justify-center w-9 h-9 rounded-full text-xs font-bold text-white"
-              style={{ backgroundColor: platformInfo.color }}
+              style={{ backgroundColor: "#6366F1" }}
             >
               {proof.author_name.charAt(0).toUpperCase()}
             </span>
-          )}
-          {showSourceBadges && proof.source_platform && (
-            <PlatformAvatarBadge platform={proof.source_platform} />
           )}
         </div>
         <div className="min-w-0">
