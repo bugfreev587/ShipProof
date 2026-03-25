@@ -59,7 +59,13 @@ export default function CaptureView({
       // Get tab info
       const tabInfo = await getTabInfo();
       setSourceUrl(tabInfo.url);
-      setPlatform(detectPlatform(tabInfo.url));
+
+      // Check auto-detect setting
+      const settings = await chrome.storage.local.get(["autoDetectPlatform"]);
+      const shouldAutoDetect = settings.autoDetectPlatform !== false;
+      if (shouldAutoDetect) {
+        setPlatform(detectPlatform(tabInfo.url));
+      }
 
       // Check for pending data from context menus or area capture
       const stored = await chrome.storage.local.get([
@@ -79,12 +85,13 @@ export default function CaptureView({
         if (stored.pendingUrl) setSourceUrl(stored.pendingUrl as string);
         if (stored.pendingPlatform)
           setPlatform(stored.pendingPlatform as string);
-        // Clear pending
+        // Clear pending + badge
         await chrome.storage.local.remove([
           "pendingText",
           "pendingUrl",
           "pendingPlatform",
         ]);
+        chrome.action.setBadgeText({ text: "" });
         return;
       }
 
@@ -100,6 +107,7 @@ export default function CaptureView({
           "pendingUrl",
           "pendingPlatform",
         ]);
+        chrome.action.setBadgeText({ text: "" });
         return;
       }
 
@@ -122,6 +130,7 @@ export default function CaptureView({
           "capturedRect",
           "capturedDpr",
         ]);
+        chrome.action.setBadgeText({ text: "" });
         return;
       }
 

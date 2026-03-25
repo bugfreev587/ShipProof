@@ -96,16 +96,18 @@ func (h *ProofHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 type createProofRequest struct {
-	SourcePlatform  string   `json:"source_platform"`
-	SourceURL       string   `json:"source_url"`
-	ContentType     string   `json:"content_type"`
-	ContentText     string   `json:"content_text"`
-	ContentImageURL string   `json:"content_image_url"`
-	AuthorName      string   `json:"author_name"`
-	AuthorTitle     string   `json:"author_title"`
-	AuthorAvatarURL string   `json:"author_avatar_url"`
-	LinkedVersionID string   `json:"linked_version_id"`
-	Tags            []string `json:"tags"`
+	SourcePlatform   string   `json:"source_platform"`
+	SourceURL        string   `json:"source_url"`
+	ContentType      string   `json:"content_type"`
+	ContentText      string   `json:"content_text"`
+	ContentImageURL  string   `json:"content_image_url"`
+	AuthorName       string   `json:"author_name"`
+	AuthorTitle      string   `json:"author_title"`
+	AuthorAvatarURL  string   `json:"author_avatar_url"`
+	LinkedVersionID  string   `json:"linked_version_id"`
+	Tags             []string `json:"tags"`
+	Status           string   `json:"status"`
+	CollectionMethod string   `json:"collection_method"`
 }
 
 func (h *ProofHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -145,6 +147,8 @@ func (h *ProofHandler) Create(w http.ResponseWriter, r *http.Request) {
 		req.AuthorTitle = r.FormValue("author_title")
 		req.AuthorAvatarURL = r.FormValue("author_avatar_url")
 		req.LinkedVersionID = r.FormValue("linked_version_id")
+		req.Status = r.FormValue("status")
+		req.CollectionMethod = r.FormValue("collection_method")
 
 		if tags := r.FormValue("tags"); tags != "" {
 			json.Unmarshal([]byte(tags), &req.Tags)
@@ -184,6 +188,17 @@ func (h *ProofHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if req.SourcePlatform == "" {
 		req.SourcePlatform = "other"
 	}
+	if req.CollectionMethod == "" {
+		req.CollectionMethod = "manual"
+	}
+	if req.Status == "" {
+		switch req.CollectionMethod {
+		case "extension", "form":
+			req.Status = "pending"
+		default:
+			req.Status = "approved"
+		}
+	}
 
 	var linkedVersionID pgtype.UUID
 	if req.LinkedVersionID != "" {
@@ -194,16 +209,18 @@ func (h *ProofHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	proof, err := h.queries.CreateProof(r.Context(), db.CreateProofParams{
-		ProductID:       productID,
-		SourcePlatform:  db.SourcePlatform(req.SourcePlatform),
-		SourceUrl:       pgtype.Text{String: req.SourceURL, Valid: req.SourceURL != ""},
-		ContentType:     db.ContentType(req.ContentType),
-		ContentText:     pgtype.Text{String: req.ContentText, Valid: req.ContentText != ""},
-		ContentImageUrl: pgtype.Text{String: req.ContentImageURL, Valid: req.ContentImageURL != ""},
-		AuthorName:      req.AuthorName,
-		AuthorTitle:     pgtype.Text{String: req.AuthorTitle, Valid: req.AuthorTitle != ""},
-		AuthorAvatarUrl: pgtype.Text{String: req.AuthorAvatarURL, Valid: req.AuthorAvatarURL != ""},
-		LinkedVersionID: linkedVersionID,
+		ProductID:        productID,
+		Status:           db.ProofStatus(req.Status),
+		CollectionMethod: db.CollectionMethod(req.CollectionMethod),
+		SourcePlatform:   db.SourcePlatform(req.SourcePlatform),
+		SourceUrl:        pgtype.Text{String: req.SourceURL, Valid: req.SourceURL != ""},
+		ContentType:      db.ContentType(req.ContentType),
+		ContentText:      pgtype.Text{String: req.ContentText, Valid: req.ContentText != ""},
+		ContentImageUrl:  pgtype.Text{String: req.ContentImageURL, Valid: req.ContentImageURL != ""},
+		AuthorName:       req.AuthorName,
+		AuthorTitle:      pgtype.Text{String: req.AuthorTitle, Valid: req.AuthorTitle != ""},
+		AuthorAvatarUrl:  pgtype.Text{String: req.AuthorAvatarURL, Valid: req.AuthorAvatarURL != ""},
+		LinkedVersionID:  linkedVersionID,
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to create proof"}`, http.StatusInternalServerError)

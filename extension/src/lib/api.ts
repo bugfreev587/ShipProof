@@ -73,6 +73,8 @@ export async function createTextProof(
       author_name: params.authorName || "Anonymous",
       source_platform: params.sourcePlatform,
       source_url: params.sourceUrl,
+      status: "pending",
+      collection_method: "extension",
     },
   }) as Promise<Proof>;
 }

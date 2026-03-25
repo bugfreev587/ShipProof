@@ -22,6 +22,31 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+function showPageToast(tabId: number, text: string) {
+  chrome.scripting.executeScript({
+    target: { tabId },
+    func: (msg: string) => {
+      const toast = document.createElement("div");
+      toast.style.cssText = `
+        position:fixed;bottom:24px;right:24px;
+        background:#141418;border:1px solid #6366F1;
+        color:#EDEDEF;font-family:Inter,system-ui,sans-serif;
+        font-size:13px;padding:12px 20px;border-radius:12px;
+        z-index:2147483647;box-shadow:0 4px 20px rgba(0,0,0,0.5);
+        opacity:0;transition:opacity 200ms ease;
+      `;
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      requestAnimationFrame(() => { toast.style.opacity = "1"; });
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 200);
+      }, 3000);
+    },
+    args: [text],
+  });
+}
+
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "save-text-to-shipproof") {
     chrome.storage.local.set({
@@ -29,6 +54,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       pendingUrl: tab?.url || "",
       pendingPlatform: detectPlatform(tab?.url || ""),
     });
+    chrome.action.setBadgeText({ text: "1" });
+    chrome.action.setBadgeBackgroundColor({ color: "#6366F1" });
+    if (tab?.id) {
+      showPageToast(tab.id, "\u2713 Text captured! Click the ShipProof icon to save.");
+    }
   }
   if (info.menuItemId === "save-image-to-shipproof") {
     chrome.storage.local.set({
@@ -36,6 +66,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       pendingUrl: tab?.url || "",
       pendingPlatform: detectPlatform(tab?.url || ""),
     });
+    chrome.action.setBadgeText({ text: "1" });
+    chrome.action.setBadgeBackgroundColor({ color: "#6366F1" });
+    if (tab?.id) {
+      showPageToast(tab.id, "\u2713 Image captured! Click the ShipProof icon to save.");
+    }
   }
 });
 
@@ -109,6 +144,8 @@ chrome.runtime.onMessage.addListener(
           formData.append("author_name", "Screenshot");
           formData.append("source_platform", sourcePlatform);
           formData.append("source_url", sourceUrl);
+          formData.append("status", "pending");
+          formData.append("collection_method", "extension");
 
           return fetch(apiUrl, {
             method: "POST",
@@ -185,6 +222,9 @@ chrome.runtime.onMessage.addListener(
             capturedRect: rect,
             capturedDpr: devicePixelRatio,
           });
+          // Show badge to prompt user to click icon
+          chrome.action.setBadgeText({ text: "1" });
+          chrome.action.setBadgeBackgroundColor({ color: "#22C55E" });
           sendResponse({ success: true });
         },
       );

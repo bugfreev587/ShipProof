@@ -1,6 +1,6 @@
 -- name: CreateProof :one
 INSERT INTO proofs (product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, linked_version_id, is_featured, display_order)
-VALUES ($1, 'approved', 'manual', $2, $3, $4, $5, $6, $7, $8, $9, $10, false, 0)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, 0)
 RETURNING *;
 
 -- name: ListProofsByProductID :many

@@ -5,12 +5,26 @@ export default function SuccessView({
 }: {
   onCaptureAnother: () => void;
 }) {
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [afterSave, setAfterSave] = useState<"auto-close" | "stay-open">(
+    "auto-close",
+  );
 
   useEffect(() => {
+    chrome.storage.local.get(["afterSave"], (result) => {
+      const mode = (result.afterSave as string) || "auto-close";
+      setAfterSave(mode as "auto-close" | "stay-open");
+      if (mode === "auto-close") {
+        setCountdown(3);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (countdown === null) return;
     const timer = setInterval(() => {
       setCountdown((prev) => {
-        if (prev <= 1) {
+        if (prev === null || prev <= 1) {
           clearInterval(timer);
           window.close();
           return 0;
@@ -19,14 +33,16 @@ export default function SuccessView({
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [countdown]);
 
   return (
     <div className="min-h-[480px] bg-[#0C0C0E] flex flex-col items-center justify-center px-8">
       {/* Animated check */}
       <div
         className="w-16 h-16 rounded-full bg-[#22C55E]/10 flex items-center justify-center"
-        style={{ animation: "checkPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+        style={{
+          animation: "checkPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+        }}
       >
         <svg
           width="32"
@@ -65,9 +81,11 @@ export default function SuccessView({
         </button>
       </div>
 
-      <p className="mt-4 text-xs text-[#55555C]">
-        Closing in {countdown}s...
-      </p>
+      {afterSave === "auto-close" && countdown !== null && countdown > 0 && (
+        <p className="mt-4 text-xs text-[#55555C]">
+          Closing in {countdown}s...
+        </p>
+      )}
 
       <style>{`
         @keyframes checkPop {

@@ -91,6 +91,9 @@ function startAreaCapture() {
       rect,
       devicePixelRatio: window.devicePixelRatio,
     });
+
+    // Show toast notification
+    showToast("\u2713 Area captured! Click the ShipProof icon to continue.");
   });
 
   const onKeydown = (e: KeyboardEvent) => {
@@ -105,4 +108,25 @@ function startAreaCapture() {
     sizeLabel.remove();
     document.removeEventListener("keydown", onKeydown);
   }
+}
+
+function showToast(text: string) {
+  const toast = document.createElement("div");
+  toast.style.cssText = `
+    position:fixed;bottom:24px;right:24px;
+    background:#141418;border:1px solid #22C55E;
+    color:#EDEDEF;font-family:Inter,system-ui,sans-serif;
+    font-size:13px;padding:12px 20px;border-radius:12px;
+    z-index:2147483647;box-shadow:0 4px 20px rgba(0,0,0,0.5);
+    opacity:0;transition:opacity 200ms ease;
+  `;
+  toast.textContent = text;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+  });
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 200);
+  }, 3000);
 }

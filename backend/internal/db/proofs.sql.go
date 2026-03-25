@@ -57,26 +57,30 @@ func (q *Queries) CountProofsByProductID(ctx context.Context, productID uuid.UUI
 
 const createProof = `-- name: CreateProof :one
 INSERT INTO proofs (product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, linked_version_id, is_featured, display_order)
-VALUES ($1, 'approved', 'manual', $2, $3, $4, $5, $6, $7, $8, $9, $10, false, 0)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, 0)
 RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at
 `
 
 type CreateProofParams struct {
-	ProductID       uuid.UUID      `json:"product_id"`
-	SourcePlatform  SourcePlatform `json:"source_platform"`
-	SourceUrl       pgtype.Text    `json:"source_url"`
-	ContentType     ContentType    `json:"content_type"`
-	ContentText     pgtype.Text    `json:"content_text"`
-	ContentImageUrl pgtype.Text    `json:"content_image_url"`
-	AuthorName      string         `json:"author_name"`
-	AuthorTitle     pgtype.Text    `json:"author_title"`
-	AuthorAvatarUrl pgtype.Text    `json:"author_avatar_url"`
-	LinkedVersionID pgtype.UUID    `json:"linked_version_id"`
+	ProductID        uuid.UUID        `json:"product_id"`
+	Status           ProofStatus      `json:"status"`
+	CollectionMethod CollectionMethod `json:"collection_method"`
+	SourcePlatform   SourcePlatform   `json:"source_platform"`
+	SourceUrl        pgtype.Text      `json:"source_url"`
+	ContentType      ContentType      `json:"content_type"`
+	ContentText      pgtype.Text      `json:"content_text"`
+	ContentImageUrl  pgtype.Text      `json:"content_image_url"`
+	AuthorName       string           `json:"author_name"`
+	AuthorTitle      pgtype.Text      `json:"author_title"`
+	AuthorAvatarUrl  pgtype.Text      `json:"author_avatar_url"`
+	LinkedVersionID  pgtype.UUID      `json:"linked_version_id"`
 }
 
 func (q *Queries) CreateProof(ctx context.Context, arg CreateProofParams) (Proof, error) {
 	row := q.db.QueryRow(ctx, createProof,
 		arg.ProductID,
+		arg.Status,
+		arg.CollectionMethod,
 		arg.SourcePlatform,
 		arg.SourceUrl,
 		arg.ContentType,
