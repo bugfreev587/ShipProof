@@ -6,9 +6,9 @@ import { Footer } from "@/components/footer";
 import { ScrollFadeIn } from "@/components/scroll-fade-in";
 
 export const metadata: Metadata = {
-  title: "ShipProof — Turn every launch into lasting social proof",
+  title: "ShipProof — Social proof that converts visitors into customers",
   description:
-    "AI-generated launch copy, community praise collection, and embeddable social proof widgets. The flywheel for indie hackers.",
+    "Collect community praise from every platform. Display it on your site with two lines of code. The social proof engine for indie hackers.",
 };
 
 /* ─── Data ─── */
@@ -17,20 +17,11 @@ const painPoints = [
   {
     icon: (
       <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    title: "5 platforms, 5 different writing styles",
-    description: "Each platform has its own culture. Writing for all of them takes hours — time you'd rather spend building.",
-  },
-  {
-    icon: (
-      <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25-2.25M12 13.875V7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    title: "Great feedback buried in comment threads",
-    description: "Someone praised your product on Twitter. You screenshot it. Then lose the file. Repeat for every platform.",
+    title: "Great feedback lost in browser tabs",
+    description: "Someone praised your product on Twitter. You screenshot it. Then lose the file. A PH comment? Buried in a thread. Real praise, scattered everywhere.",
   },
   {
     icon: (
@@ -39,7 +30,16 @@ const painPoints = [
       </svg>
     ),
     title: "No social proof on your landing page",
-    description: "Visitors leave because there's no proof anyone else uses your product. You know it's great — but they don't.",
+    description: "Visitors leave because there's no proof anyone else uses your product. You know it's great — but they don't. Zero testimonials = zero trust.",
+  },
+  {
+    icon: (
+      <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    ),
+    title: "Embedding testimonials is a pain",
+    description: "Building a testimonial section from scratch means custom components, manual updates, and maintenance. You need a solution that works in two lines of code.",
   },
 ];
 
@@ -47,22 +47,25 @@ const howItWorks = [
   {
     step: "01",
     title: "Ship",
-    description: "Generate platform-ready launch copy for Product Hunt, Reddit, Hacker News, Twitter/X, and IndieHackers — powered by AI.",
-    quote: "One click. Five platforms. All the copy you need.",
+    badge: "Free",
+    description: "Generate platform-ready launch copy for Product Hunt, Reddit, HN, Twitter/X, and IndieHackers. Completely free — no signup required.",
+    quote: "Free AI launch tools to get you started.",
     color: "#6366F1",
   },
   {
     step: "02",
     title: "Collect",
-    description: "Gather testimonials, tweets, and reviews. Paste a URL, capture a screenshot, or use our Chrome Extension.",
-    quote: "Never lose a great comment again.",
+    badge: null,
+    description: "After you launch, praise comes in from everywhere. Paste a URL from any platform — ShipProof pulls the content, attributes the source, and organizes it automatically.",
+    quote: "Never lose a great comment again. Every mention, captured.",
     color: "#F59E0B",
   },
   {
     step: "03",
     title: "Display",
-    description: "Embed a widget on your site or share a Wall of Love page. Auto-scrolling marquee or carousel — your pick.",
-    quote: "Social proof that converts visitors into customers.",
+    badge: null,
+    description: "Embed a Wall of Love on your landing page with two lines of code. Auto-scrolling marquee, masonry grid, or carousel — visitors see real feedback from real users.",
+    quote: "The social proof that turns visitors into paying customers.",
     color: "#3B82F6",
   },
 ];
@@ -86,7 +89,7 @@ const faqs = [
   },
   {
     q: "Is there a free plan?",
-    a: "Yes! The free plan includes 1 product, 5 proofs, 3 AI generations per month, Wall of Love page, and the embed widget — everything you need to experience the full Ship → Collect → Display flow. Upgrade to Pro for unlimited proofs and generations.",
+    a: "Yes! The free plan includes 1 product, 5 proofs, unlimited AI launch copy generation, Wall of Love page, and the embed widget. All our launch tools are free with no signup. Upgrade to Pro for unlimited proofs and priority support.",
   },
 ];
 
@@ -128,18 +131,18 @@ function HeroSection() {
       <div className="mx-auto max-w-4xl text-center">
         {/* Overline */}
         <p className="text-[13px] font-medium tracking-[0.5px] uppercase text-[#6366F1] mb-6">
-          Launch Content + Social Proof
+          Social Proof for Indie Hackers
         </p>
 
         <h1 className="text-[40px] md:text-[64px] font-bold tracking-[-1.5px] leading-[1.1] text-foreground">
-          Turn every launch into{" "}
+          Social proof that converts{" "}
           <br className="hidden md:block" />
-          lasting social proof
+          visitors into customers
         </h1>
 
         <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-          Generate platform-ready launch copy with AI. Collect community praise.
-          Display it everywhere. All in one place.
+          Collect praise from every platform. Display it on your site with two lines of code.
+          Launch copy generation is free — the real magic is what happens after.
         </p>
 
         {/* CTAs */}
@@ -148,7 +151,7 @@ function HeroSection() {
             href="/sign-up"
             className="rounded-xl bg-[#6366F1] px-8 py-4 text-base font-semibold text-white hover:bg-[#818CF8] transition-colors"
           >
-            Get Started Free &rarr;
+            Start Collecting Proof &rarr;
           </a>
           <a
             href="#how-it-works"
@@ -216,11 +219,11 @@ function PainPointSection() {
               The Problem
             </p>
             <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.8px] leading-[1.2] text-foreground">
-              Launching is the hardest part of building
+              You&apos;re leaving social proof on the table
             </h2>
             <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-[600px] mx-auto">
-              You built something great. Now you need to tell the world.
-              But writing launch posts for 5 platforms, collecting feedback, and displaying social proof? That&apos;s a full-time job.
+              Users love your product. They say so on Twitter, PH, Reddit, and HN.
+              But that praise never makes it to your landing page — where it actually converts visitors.
             </p>
           </div>
 
@@ -263,10 +266,10 @@ function HowItWorksSection() {
               How It Works
             </p>
             <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.8px] leading-[1.2] text-foreground">
-              Three steps. One flywheel.
+              From launch to social proof in three steps
             </h2>
             <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-[600px] mx-auto">
-              Each cycle makes your next launch stronger.
+              Ship for free. Collect the praise. Display it where it converts.
             </p>
           </div>
         </ScrollFadeIn>
@@ -283,8 +286,13 @@ function HowItWorksSection() {
                   >
                     {item.step}
                   </span>
-                  <h3 className="text-[28px] md:text-[32px] font-semibold text-foreground mb-4">
+                  <h3 className="text-[28px] md:text-[32px] font-semibold text-foreground mb-4 flex items-center gap-3">
                     {item.title}
+                    {item.badge && (
+                      <span className="text-xs font-medium bg-[#059669]/10 text-[#059669] px-2.5 py-1 rounded-full">
+                        {item.badge}
+                      </span>
+                    )}
                   </h3>
                   <p className="text-base text-muted-foreground leading-[1.7] mb-6">
                     {item.description}
@@ -457,17 +465,20 @@ function FinalCTA() {
       <ScrollFadeIn>
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-[28px] md:text-[36px] font-semibold tracking-[-0.8px] text-foreground">
-            Ready to ship your next launch?
+            Your users already love your product.
+            <br className="hidden md:block" />
+            Show it.
           </h2>
           <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-            Join indie hackers who are turning launches into lasting social proof.
+            Stop losing conversions because visitors can&apos;t see what your users think.
+            Start collecting proof today.
           </p>
           <div className="mt-10">
             <a
               href="/sign-up"
               className="inline-block rounded-xl bg-foreground text-background px-8 py-4 text-base font-semibold hover:opacity-90 transition-opacity"
             >
-              Get Started Free &rarr;
+              Start Collecting Proof &rarr;
             </a>
           </div>
           <p className="mt-6 text-[13px] text-muted-foreground">
