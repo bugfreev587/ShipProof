@@ -282,7 +282,7 @@ export function LaunchReadyApp() {
         </p>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 pb-24">
+      <main className="max-w-4xl mx-auto px-4 pb-24">
         {/* Step 1: Platform selector */}
         <section ref={step1Ref} className="mb-12">
           <h2 className="text-lg font-medium tracking-[-0.5px] mb-1 text-center">
