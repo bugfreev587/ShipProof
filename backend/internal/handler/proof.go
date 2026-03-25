@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -236,6 +239,63 @@ func (h *ProofHandler) Create(w http.ResponseWriter, r *http.Request) {
 				Tag:     tag,
 			})
 		}
+	}
+
+	// Async: extract text from screenshot proofs using Vision API
+	if proof.ContentType == "image" && proof.ContentImageUrl.Valid && proof.ContentImageUrl.String != "" && h.extractService != nil {
+		imageURL := proof.ContentImageUrl.String
+		proofID := proof.ID
+		contentText := proof.ContentText.String
+		authorName := proof.AuthorName
+		sourcePlatform := string(proof.SourcePlatform)
+		authorTitle := proof.AuthorTitle.String
+
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			extracted, err := h.extractService.ExtractFromURL(ctx, imageURL)
+			if err != nil {
+				slog.Error("failed to extract text from screenshot",
+					"proof_id", proofID,
+					"error", err,
+				)
+				return
+			}
+
+			// Only update if we extracted something useful and fields are empty/default
+			if (extracted.ContentText != "" && contentText == "") ||
+				(extracted.AuthorName != "" && (authorName == "" || authorName == "Screenshot" || authorName == "Anonymous")) ||
+				(extracted.AuthorTitle != "" && authorTitle == "") ||
+				(extracted.Platform != "" && sourcePlatform == "other") {
+
+				extractedPlatform := extracted.Platform
+				if extractedPlatform == "" {
+					extractedPlatform = "other"
+				}
+
+				err = h.queries.UpdateProofExtractedContent(context.Background(), db.UpdateProofExtractedContentParams{
+					ID:             proofID,
+					ContentText:    pgtype.Text{String: extracted.ContentText, Valid: extracted.ContentText != ""},
+					AuthorName:     extracted.AuthorName,
+					AuthorTitle:    pgtype.Text{String: extracted.AuthorTitle, Valid: extracted.AuthorTitle != ""},
+					SourcePlatform: db.SourcePlatform(extractedPlatform),
+				})
+				if err != nil {
+					slog.Error("failed to update proof with extracted content",
+						"proof_id", proofID,
+						"error", err,
+					)
+					return
+				}
+				slog.Info("extracted text from screenshot proof",
+					"proof_id", proofID,
+					"content_text_length", len(extracted.ContentText),
+					"author_name", extracted.AuthorName,
+					"source_platform", extracted.Platform,
+				)
+			}
+		}()
 	}
 
 	w.Header().Set("Content-Type", "application/json")

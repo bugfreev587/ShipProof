@@ -149,3 +149,29 @@ If a field is not visible, use an empty string.`,
 
 	return &result, nil
 }
+
+// ExtractFromURL downloads an image from a URL and extracts content using Vision API.
+func (s *ProofExtractService) ExtractFromURL(ctx context.Context, imageURL string) (*ExtractResult, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", imageURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("create download request: %w", err)
+	}
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("download image: %w", err)
+	}
+	defer resp.Body.Close()
+
+	imageBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read image: %w", err)
+	}
+
+	mediaType := resp.Header.Get("Content-Type")
+	if mediaType == "" {
+		mediaType = "image/png"
+	}
+
+	return s.ExtractFromScreenshot(ctx, imageBytes, mediaType)
+}

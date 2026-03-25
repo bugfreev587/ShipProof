@@ -37,6 +37,15 @@ WHERE id = $1;
 -- name: CountProofsByProductID :one
 SELECT COUNT(*) FROM proofs WHERE product_id = $1;
 
+-- name: UpdateProofExtractedContent :exec
+UPDATE proofs
+SET content_text = CASE WHEN content_text IS NULL OR content_text = '' THEN $2 ELSE content_text END,
+    author_name = CASE WHEN author_name IN ('', 'Screenshot', 'Anonymous') THEN $3 ELSE author_name END,
+    author_title = CASE WHEN author_title IS NULL OR author_title = '' THEN $4 ELSE author_title END,
+    source_platform = CASE WHEN source_platform = 'other' THEN $5 ELSE source_platform END,
+    updated_at = NOW()
+WHERE id = $1;
+
 -- name: GetProductBySlug :one
 SELECT * FROM products WHERE slug = $1;
 

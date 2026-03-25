@@ -354,6 +354,35 @@ func (q *Queries) UpdateProof(ctx context.Context, arg UpdateProofParams) (Proof
 	return i, err
 }
 
+const updateProofExtractedContent = `-- name: UpdateProofExtractedContent :exec
+UPDATE proofs
+SET content_text = CASE WHEN content_text IS NULL OR content_text = '' THEN $2 ELSE content_text END,
+    author_name = CASE WHEN author_name IN ('', 'Screenshot', 'Anonymous') THEN $3 ELSE author_name END,
+    author_title = CASE WHEN author_title IS NULL OR author_title = '' THEN $4 ELSE author_title END,
+    source_platform = CASE WHEN source_platform = 'other' THEN $5 ELSE source_platform END,
+    updated_at = NOW()
+WHERE id = $1
+`
+
+type UpdateProofExtractedContentParams struct {
+	ID             uuid.UUID      `json:"id"`
+	ContentText    pgtype.Text    `json:"content_text"`
+	AuthorName     string         `json:"author_name"`
+	AuthorTitle    pgtype.Text    `json:"author_title"`
+	SourcePlatform SourcePlatform `json:"source_platform"`
+}
+
+func (q *Queries) UpdateProofExtractedContent(ctx context.Context, arg UpdateProofExtractedContentParams) error {
+	_, err := q.db.Exec(ctx, updateProofExtractedContent,
+		arg.ID,
+		arg.ContentText,
+		arg.AuthorName,
+		arg.AuthorTitle,
+		arg.SourcePlatform,
+	)
+	return err
+}
+
 const updateProofOrder = `-- name: UpdateProofOrder :exec
 UPDATE proofs SET display_order = $2, updated_at = now()
 WHERE id = $1

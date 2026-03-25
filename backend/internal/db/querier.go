@@ -89,6 +89,7 @@ type Querier interface {
 	UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) (LaunchDraft, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateProof(ctx context.Context, arg UpdateProofParams) (Proof, error)
+	UpdateProofExtractedContent(ctx context.Context, arg UpdateProofExtractedContentParams) error
 	UpdateProofOrder(ctx context.Context, arg UpdateProofOrderParams) error
 	UpdateSpace(ctx context.Context, arg UpdateSpaceParams) (Space, error)
 	UpdateSpaceConfig(ctx context.Context, arg UpdateSpaceConfigParams) (Space, error)
