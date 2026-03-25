@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
-import { copyFileSync, mkdirSync, existsSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync } from "fs";
 
 export default defineConfig({
   plugins: [
@@ -37,11 +37,20 @@ export default defineConfig({
     rollupOptions: {
       input: {
         popup: resolve(__dirname, "src/popup/index.html"),
-        "service-worker": resolve(__dirname, "src/background/service-worker.ts"),
+        "service-worker": resolve(
+          __dirname,
+          "src/background/service-worker.ts",
+        ),
+        "content/area-selector": resolve(
+          __dirname,
+          "src/content/area-selector.ts",
+        ),
       },
       output: {
         entryFileNames: (chunk) => {
           if (chunk.name === "service-worker") return "service-worker.js";
+          if (chunk.name === "content/area-selector")
+            return "content/area-selector.js";
           return "assets/[name]-[hash].js";
         },
       },

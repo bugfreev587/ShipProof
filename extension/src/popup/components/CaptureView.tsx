@@ -7,11 +7,16 @@ import {
   createImageProof,
   type Product,
 } from "../../lib/api";
-import { getDefaultProductId, setDefaultProductId, clearAll } from "../../lib/storage";
+import {
+  getDefaultProductId,
+  setDefaultProductId,
+  clearAll,
+} from "../../lib/storage";
 import { detectPlatform } from "../../lib/platform-detect";
 import ScreenshotTab from "./ScreenshotTab";
 import TextTab from "./TextTab";
 import InfoFields from "./InfoFields";
+import SettingsView from "./SettingsView";
 
 type Tab = "screenshot" | "text";
 
@@ -35,6 +40,7 @@ export default function CaptureView({
   const [selectedProductId, setSelectedProductId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
 
   const init = useCallback(async () => {
     try {
@@ -55,7 +61,71 @@ export default function CaptureView({
       setSourceUrl(tabInfo.url);
       setPlatform(detectPlatform(tabInfo.url));
 
-      // Get selection
+      // Check for pending data from context menus or area capture
+      const stored = await chrome.storage.local.get([
+        "pendingText",
+        "pendingImageUrl",
+        "pendingUrl",
+        "pendingPlatform",
+        "capturedImage",
+        "capturedRect",
+        "capturedDpr",
+      ]);
+
+      if (stored.pendingText) {
+        setText(stored.pendingText as string);
+        setHasSelection(true);
+        setActiveTab("text");
+        if (stored.pendingUrl) setSourceUrl(stored.pendingUrl as string);
+        if (stored.pendingPlatform)
+          setPlatform(stored.pendingPlatform as string);
+        // Clear pending
+        await chrome.storage.local.remove([
+          "pendingText",
+          "pendingUrl",
+          "pendingPlatform",
+        ]);
+        return;
+      }
+
+      if (stored.pendingImageUrl) {
+        // Use the image URL directly as screenshot
+        setScreenshot(stored.pendingImageUrl as string);
+        setActiveTab("screenshot");
+        if (stored.pendingUrl) setSourceUrl(stored.pendingUrl as string);
+        if (stored.pendingPlatform)
+          setPlatform(stored.pendingPlatform as string);
+        await chrome.storage.local.remove([
+          "pendingImageUrl",
+          "pendingUrl",
+          "pendingPlatform",
+        ]);
+        return;
+      }
+
+      if (stored.capturedImage && stored.capturedRect) {
+        // Crop the captured image using Canvas
+        const cropped = await cropImage(
+          stored.capturedImage as string,
+          stored.capturedRect as {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          (stored.capturedDpr as number) || 1,
+        );
+        setScreenshot(cropped);
+        setActiveTab("screenshot");
+        await chrome.storage.local.remove([
+          "capturedImage",
+          "capturedRect",
+          "capturedDpr",
+        ]);
+        return;
+      }
+
+      // Get selection (normal flow)
       const sel = await getSelection();
       if (sel) {
         setText(sel);
@@ -104,6 +174,8 @@ export default function CaptureView({
           sourceUrl,
         });
       }
+      // Show success badge
+      chrome.runtime.sendMessage({ type: "SHOW_SUCCESS_BADGE" });
       onSuccess();
     } catch {
       setError("Failed to save. Please try again.");
@@ -116,6 +188,19 @@ export default function CaptureView({
     await clearAll();
     onLogout();
   };
+
+  if (showSettings) {
+    return (
+      <SettingsView
+        apiKey={apiKey}
+        products={products}
+        selectedProductId={selectedProductId}
+        setSelectedProductId={setSelectedProductId}
+        onBack={() => setShowSettings(false)}
+        onDisconnect={handleLogout}
+      />
+    );
+  }
 
   return (
     <div className="min-h-[480px] bg-[#0C0C0E] flex flex-col">
@@ -132,10 +217,23 @@ export default function CaptureView({
           <span className="text-sm font-medium text-[#EDEDEF]">ShipProof</span>
         </div>
         <button
-          onClick={handleLogout}
-          className="text-xs text-[#55555C] hover:text-[#8B8B92] transition-colors"
+          onClick={() => setShowSettings(true)}
+          className="text-[#55555C] hover:text-[#8B8B92] transition-colors p-1"
+          title="Settings"
         >
-          Logout
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+          </svg>
         </button>
       </div>
 
@@ -146,10 +244,15 @@ export default function CaptureView({
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-2.5 text-sm font-medium transition-colors capitalize ${
-              activeTab === tab ? "text-[#EDEDEF]" : "text-[#55555C] hover:text-[#8B8B92]"
+              activeTab === tab
+                ? "text-[#EDEDEF]"
+                : "text-[#55555C] hover:text-[#8B8B92]"
             }`}
             style={{
-              borderBottom: activeTab === tab ? "2px solid #6366F1" : "2px solid transparent",
+              borderBottom:
+                activeTab === tab
+                  ? "2px solid #6366F1"
+                  : "2px solid transparent",
             }}
           >
             {tab === "screenshot" ? "Screenshot" : "Text"}
@@ -176,9 +279,7 @@ export default function CaptureView({
           setAuthorName={setAuthorName}
         />
 
-        {error && (
-          <p className="text-xs text-red-400">{error}</p>
-        )}
+        {error && <p className="text-xs text-red-400">{error}</p>}
 
         {/* Save button */}
         <button
@@ -200,4 +301,39 @@ export default function CaptureView({
       </div>
     </div>
   );
+}
+
+// Crop image using Canvas (runs in popup context which has DOM access)
+function cropImage(
+  dataUrl: string,
+  rect: { x: number; y: number; width: number; height: number },
+  dpr: number,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas context unavailable"));
+        return;
+      }
+      ctx.drawImage(
+        img,
+        rect.x * dpr,
+        rect.y * dpr,
+        rect.width * dpr,
+        rect.height * dpr,
+        0,
+        0,
+        rect.width * dpr,
+        rect.height * dpr,
+      );
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => reject(new Error("Failed to load image"));
+    img.src = dataUrl;
+  });
 }

@@ -1,3 +1,56 @@
+function detectPlatform(url: string): string {
+  if (url.includes("twitter.com") || url.includes("x.com")) return "twitter";
+  if (url.includes("reddit.com")) return "reddit";
+  if (url.includes("producthunt.com")) return "product_hunt";
+  if (url.includes("news.ycombinator.com")) return "hackernews";
+  if (url.includes("indiehackers.com")) return "indiehackers";
+  return "other";
+}
+
+// --- Context Menus ---
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: "save-text-to-shipproof",
+    title: "Save text to ShipProof",
+    contexts: ["selection"],
+  });
+  chrome.contextMenus.create({
+    id: "save-image-to-shipproof",
+    title: "Save image to ShipProof",
+    contexts: ["image"],
+  });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "save-text-to-shipproof") {
+    chrome.storage.local.set({
+      pendingText: info.selectionText || "",
+      pendingUrl: tab?.url || "",
+      pendingPlatform: detectPlatform(tab?.url || ""),
+    });
+  }
+  if (info.menuItemId === "save-image-to-shipproof") {
+    chrome.storage.local.set({
+      pendingImageUrl: info.srcUrl || "",
+      pendingUrl: tab?.url || "",
+      pendingPlatform: detectPlatform(tab?.url || ""),
+    });
+  }
+});
+
+// --- Success Badge ---
+
+function showSuccessBadge() {
+  chrome.action.setBadgeText({ text: "\u2713" });
+  chrome.action.setBadgeBackgroundColor({ color: "#22C55E" });
+  setTimeout(() => {
+    chrome.action.setBadgeText({ text: "" });
+  }, 2000);
+}
+
+// --- Message Handler ---
+
 chrome.runtime.onMessage.addListener(
   (
     message: Record<string, unknown>,
@@ -34,7 +87,7 @@ chrome.runtime.onMessage.addListener(
           sendResponse({ success: false, error: (err as Error).message });
         });
 
-      return true; // async response
+      return true;
     }
 
     if (message.type === "UPLOAD_IMAGE_PROOF") {
@@ -47,7 +100,6 @@ chrome.runtime.onMessage.addListener(
           sourceUrl: string;
         };
 
-      // Convert data URL to blob
       fetch(imageDataUrl)
         .then((r) => r.blob())
         .then((blob) => {
@@ -72,6 +124,7 @@ chrome.runtime.onMessage.addListener(
               error: data.error || `HTTP ${res.status}`,
             });
           } else {
+            showSuccessBadge();
             sendResponse({ success: true, data });
           }
         })
@@ -110,6 +163,64 @@ chrome.runtime.onMessage.addListener(
       return true;
     }
 
+    if (message.type === "CAPTURE_AND_CROP") {
+      const { rect, devicePixelRatio } = message as {
+        rect: { x: number; y: number; width: number; height: number };
+        devicePixelRatio: number;
+      };
+
+      chrome.tabs.captureVisibleTab(
+        { format: "png" },
+        (dataUrl) => {
+          if (chrome.runtime.lastError || !dataUrl) {
+            sendResponse({
+              success: false,
+              error: chrome.runtime.lastError?.message || "Capture failed",
+            });
+            return;
+          }
+          // Store full screenshot + rect for popup to crop via Canvas
+          chrome.storage.local.set({
+            capturedImage: dataUrl,
+            capturedRect: rect,
+            capturedDpr: devicePixelRatio,
+          });
+          sendResponse({ success: true });
+        },
+      );
+      return true;
+    }
+
+    if (message.type === "START_AREA_CAPTURE") {
+      // Inject content script and send message to it
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs[0]?.id) {
+          sendResponse({ success: false, error: "No active tab" });
+          return;
+        }
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tabs[0].id },
+            files: ["content/area-selector.js"],
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              sendResponse({
+                success: false,
+                error: chrome.runtime.lastError.message,
+              });
+              return;
+            }
+            chrome.tabs.sendMessage(tabs[0].id!, {
+              type: "START_AREA_CAPTURE",
+            });
+            sendResponse({ success: true });
+          },
+        );
+      });
+      return true;
+    }
+
     if (message.type === "GET_SELECTION") {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (!tabs[0]?.id) {
@@ -133,6 +244,12 @@ chrome.runtime.onMessage.addListener(
           },
         );
       });
+      return true;
+    }
+
+    if (message.type === "SHOW_SUCCESS_BADGE") {
+      showSuccessBadge();
+      sendResponse({ success: true });
       return true;
     }
 
