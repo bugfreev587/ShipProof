@@ -12,6 +12,38 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const approveProof = `-- name: ApproveProof :one
+UPDATE proofs SET status = 'approved', updated_at = now()
+WHERE id = $1
+RETURNING id, product_id, status, collection_method, source_platform, source_url, content_type, content_text, content_image_url, author_name, author_title, author_avatar_url, proof_date, linked_version_id, is_featured, display_order, created_at, updated_at
+`
+
+func (q *Queries) ApproveProof(ctx context.Context, id uuid.UUID) (Proof, error) {
+	row := q.db.QueryRow(ctx, approveProof, id)
+	var i Proof
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.Status,
+		&i.CollectionMethod,
+		&i.SourcePlatform,
+		&i.SourceUrl,
+		&i.ContentType,
+		&i.ContentText,
+		&i.ContentImageUrl,
+		&i.AuthorName,
+		&i.AuthorTitle,
+		&i.AuthorAvatarUrl,
+		&i.ProofDate,
+		&i.LinkedVersionID,
+		&i.IsFeatured,
+		&i.DisplayOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const countProofsByProductID = `-- name: CountProofsByProductID :one
 SELECT COUNT(*) FROM proofs WHERE product_id = $1
 `

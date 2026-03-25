@@ -15,6 +15,7 @@ type Querier interface {
 	AddProofToSpace(ctx context.Context, arg AddProofToSpaceParams) (SpaceProof, error)
 	AddProofToWall(ctx context.Context, arg AddProofToWallParams) (WallProof, error)
 	AddTagToProof(ctx context.Context, arg AddTagToProofParams) (ProofTag, error)
+	ApproveProof(ctx context.Context, id uuid.UUID) (Proof, error)
 	CountDraftsThisMonth(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountProductsByUserID(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountProofsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)

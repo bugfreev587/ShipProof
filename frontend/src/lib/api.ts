@@ -508,6 +508,14 @@ export function updateProof(
   );
 }
 
+export function approveProof(proofId: string, token: string) {
+  return fetchApi<Proof>(
+    `/api/proofs/${proofId}/approve`,
+    { method: "PUT" },
+    token,
+  );
+}
+
 export function deleteProof(proofId: string, token: string) {
   return fetchApi<void>(`/api/proofs/${proofId}`, { method: "DELETE" }, token);
 }

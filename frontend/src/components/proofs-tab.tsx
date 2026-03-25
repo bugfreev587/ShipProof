@@ -9,6 +9,7 @@ import {
   createProof,
   updateProof,
   deleteProof,
+  approveProof,
   toggleProofFeatured,
   addProofTag,
   removeProofTag,
@@ -101,6 +102,23 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
     fetchProofs();
   };
 
+  const handleApprove = async (proofId: string) => {
+    const token = await getToken();
+    if (!token) return;
+    await approveProof(proofId, token);
+    fetchProofs();
+  };
+
+  const handleApproveAll = async () => {
+    const token = await getToken();
+    if (!token) return;
+    const pending = proofs.filter((p) => p.status === "pending");
+    for (const p of pending) {
+      await approveProof(p.id, token);
+    }
+    fetchProofs();
+  };
+
   // Filter proofs
   const filtered = proofs.filter((p) => {
     if (filterTag && !p.tags?.includes(filterTag)) return false;
@@ -172,7 +190,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
         </button>
       </div>
 
-      {/* Proof Cards */}
+      {/* Proof Cards — split into Pending and Approved */}
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-8 text-center text-[var(--text-secondary)]">
           {proofs.length === 0
@@ -180,163 +198,69 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
             : "No proofs match your filters."}
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((proof) => {
-            const isExpanded = expandedProofId === proof.id;
-            return (
-              <div
-                key={proof.id}
-                className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-4"
-              >
-                <div className="flex items-start gap-3">
-                  {/* Avatar or Platform badge */}
-                  {proof.author_avatar_url ? (
-                    <img
-                      src={proof.author_avatar_url}
-                      alt={proof.author_name}
-                      className="h-8 w-8 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <PlatformBadge platform={proof.source_platform} />
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    {/* Author */}
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-[var(--text-primary)]">
-                        {proof.author_name}
-                      </span>
-                      {proof.author_title && (
-                        <span className="text-xs text-[var(--text-tertiary)]">
-                          {proof.author_title}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    {proof.content_text && (
-                      <p className="text-sm text-[var(--text-secondary)] mb-2 line-clamp-3">
-                        {proof.content_text}
-                      </p>
-                    )}
-
-                    {proof.content_image_url && (
-                      <div className="mb-2">
-                        <img
-                          src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
-                          alt="Proof screenshot"
-                          className="max-h-40 rounded-lg border border-[var(--border)]"
-                        />
-                      </div>
-                    )}
-
-                    {/* Tags */}
-                    {proof.tags && proof.tags.length > 0 && (
-                      <div className="flex gap-1 flex-wrap mb-2">
-                        {proof.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-secondary)]"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Source URL */}
-                    {proof.source_url && (
-                      <a
-                        href={proof.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-[#6366F1] hover:text-[#818CF8]"
-                      >
-                        View source
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Featured toggle */}
+        <div className="space-y-6">
+          {/* Pending Review Section */}
+          {filtered.filter((p) => p.status === "pending").length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-sm font-medium text-[#F59E0B]">Pending Review</h3>
+                <span className="rounded-full bg-[#F59E0B]/10 px-2 py-0.5 text-xs font-medium text-[#F59E0B]">
+                  {filtered.filter((p) => p.status === "pending").length}
+                </span>
+                {filtered.filter((p) => p.status === "pending").length > 1 && (
                   <button
-                    onClick={() => handleToggleFeatured(proof.id)}
-                    className={`text-lg ${
-                      proof.is_featured
-                        ? "text-yellow-400"
-                        : "text-[var(--text-tertiary)] hover:text-yellow-400"
-                    } transition-colors`}
-                    title={
-                      proof.is_featured ? "Unfeature" : "Feature this proof"
-                    }
+                    onClick={handleApproveAll}
+                    className="ml-auto text-sm text-[#22C55E] hover:text-[#16A34A] transition-colors"
                   >
-                    ★
+                    Approve All
                   </button>
-                </div>
-
-                {/* Expanded action bar */}
-                {isExpanded && (
-                  <div className="mt-3 flex items-center justify-end gap-4 border-t border-[var(--border)] pt-3">
-                    <button
-                      onClick={() => {
-                        setEditingProof(proof);
-                        setExpandedProofId(null);
-                      }}
-                      className="flex items-center gap-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
-                    >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDeletingProof(proof);
-                        setExpandedProofId(null);
-                      }}
-                      className="flex items-center gap-1.5 rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
-                    >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAddToSpaceProof(proof);
-                        setExpandedProofId(null);
-                      }}
-                      className="flex items-center gap-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
-                    >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
-                      </svg>
-                      Add to Space
-                    </button>
-                  </div>
                 )}
-
-                {/* Chevron toggle */}
-                <div className="flex justify-end mt-2">
-                  <button
-                    onClick={() =>
-                      setExpandedProofId(isExpanded ? null : proof.id)
-                    }
-                    className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
-                  >
-                    <svg
-                      className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
               </div>
-            );
-          })}
+              <div className="space-y-3">
+                {filtered.filter((p) => p.status === "pending").map((proof) => (
+                  <ProofCard
+                    key={proof.id}
+                    proof={proof}
+                    isPending
+                    isExpanded={expandedProofId === proof.id}
+                    onToggleExpand={() => setExpandedProofId(expandedProofId === proof.id ? null : proof.id)}
+                    onToggleFeatured={() => handleToggleFeatured(proof.id)}
+                    onEdit={() => { setEditingProof(proof); setExpandedProofId(null); }}
+                    onDelete={() => { setDeletingProof(proof); setExpandedProofId(null); }}
+                    onAddToSpace={() => { setAddToSpaceProof(proof); setExpandedProofId(null); }}
+                    onApprove={() => handleApprove(proof.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Approved Section */}
+          {filtered.filter((p) => p.status !== "pending").length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-sm font-medium text-[var(--text-secondary)]">Approved</h3>
+                <span className="rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
+                  {filtered.filter((p) => p.status !== "pending").length}
+                </span>
+              </div>
+              <div className="space-y-3">
+                {filtered.filter((p) => p.status !== "pending").map((proof) => (
+                  <ProofCard
+                    key={proof.id}
+                    proof={proof}
+                    isPending={false}
+                    isExpanded={expandedProofId === proof.id}
+                    onToggleExpand={() => setExpandedProofId(expandedProofId === proof.id ? null : proof.id)}
+                    onToggleFeatured={() => handleToggleFeatured(proof.id)}
+                    onEdit={() => { setEditingProof(proof); setExpandedProofId(null); }}
+                    onDelete={() => { setDeletingProof(proof); setExpandedProofId(null); }}
+                    onAddToSpace={() => { setAddToSpaceProof(proof); setExpandedProofId(null); }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -395,6 +319,191 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
           onClose={() => setAddToSpaceProof(null)}
         />
       )}
+    </div>
+  );
+}
+
+// --- Proof Card ---
+
+const COLLECTION_METHOD_LABELS: Record<string, string> = {
+  extension: "via Extension",
+  form: "via Form",
+  manual: "manual",
+};
+
+function ProofCard({
+  proof,
+  isPending,
+  isExpanded,
+  onToggleExpand,
+  onToggleFeatured,
+  onEdit,
+  onDelete,
+  onAddToSpace,
+  onApprove,
+}: {
+  proof: Proof;
+  isPending: boolean;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onToggleFeatured: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onAddToSpace: () => void;
+  onApprove?: () => void;
+}) {
+  return (
+    <div
+      className={`rounded-xl border bg-[var(--bg-surface)] p-4 ${
+        isPending
+          ? "border-l-2 border-l-[#F59E0B] border-[var(--border)]"
+          : "border-[var(--border)]"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        {/* Pending indicator */}
+        {isPending && (
+          <div className="w-2 h-2 rounded-full bg-[#F59E0B] mt-2 flex-shrink-0" />
+        )}
+
+        {/* Avatar or Platform badge */}
+        {!isPending && (proof.author_avatar_url ? (
+          <img
+            src={proof.author_avatar_url}
+            alt={proof.author_name}
+            className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <PlatformBadge platform={proof.source_platform} />
+        ))}
+
+        <div className="flex-1 min-w-0">
+          {/* Author + collection method */}
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-medium text-[var(--text-primary)]">
+              {proof.author_name}
+            </span>
+            {proof.author_title && (
+              <span className="text-xs text-[var(--text-tertiary)]">
+                {proof.author_title}
+              </span>
+            )}
+            {isPending && proof.collection_method && (
+              <span className="text-xs text-[#55555C]">
+                {COLLECTION_METHOD_LABELS[proof.collection_method] || proof.collection_method}
+              </span>
+            )}
+          </div>
+
+          {/* Content */}
+          {proof.content_text && (
+            <p className="text-sm text-[var(--text-secondary)] mb-2 line-clamp-3">
+              {proof.content_text}
+            </p>
+          )}
+
+          {proof.content_image_url && (
+            <div className="mb-2">
+              <img
+                src={proof.content_image_url.replace(/^https?:\/\/https?:\/\//, "https://")}
+                alt="Proof screenshot"
+                className="max-h-40 rounded-lg border border-[var(--border)]"
+              />
+            </div>
+          )}
+
+          {/* Tags */}
+          {proof.tags && proof.tags.length > 0 && (
+            <div className="flex gap-1 flex-wrap mb-2">
+              {proof.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-secondary)]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Source URL */}
+          {proof.source_url && (
+            <a
+              href={proof.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-[#6366F1] hover:text-[#818CF8]"
+            >
+              View source
+            </a>
+          )}
+        </div>
+
+        {/* Featured toggle (only for approved) */}
+        {!isPending && (
+          <button
+            onClick={onToggleFeatured}
+            className={`text-lg ${
+              proof.is_featured
+                ? "text-yellow-400"
+                : "text-[var(--text-tertiary)] hover:text-yellow-400"
+            } transition-colors`}
+            title={proof.is_featured ? "Unfeature" : "Feature this proof"}
+          >
+            ★
+          </button>
+        )}
+      </div>
+
+      {/* Expanded action bar */}
+      {isExpanded && (
+        <div className="mt-3 flex items-center justify-end gap-2 border-t border-[var(--border)] pt-3 flex-wrap">
+          {isPending && onApprove && (
+            <button
+              onClick={onApprove}
+              className="flex items-center gap-1.5 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/20 px-3 py-1.5 text-xs font-medium text-[#22C55E] hover:bg-[#22C55E]/20 transition-all"
+            >
+              Approve
+            </button>
+          )}
+          <button
+            onClick={onEdit}
+            className="flex items-center gap-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
+          >
+            Edit
+          </button>
+          <button
+            onClick={onDelete}
+            className="flex items-center gap-1.5 rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-medium text-white hover:opacity-85 transition-all"
+          >
+            Delete
+          </button>
+          <button
+            onClick={onAddToSpace}
+            className="flex items-center gap-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:opacity-80 transition-all"
+          >
+            Add to Space
+          </button>
+        </div>
+      )}
+
+      {/* Chevron toggle */}
+      <div className="flex justify-end mt-2">
+        <button
+          onClick={onToggleExpand}
+          className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
+        >
+          <svg
+            className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

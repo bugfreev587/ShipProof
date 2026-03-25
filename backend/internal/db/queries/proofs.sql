@@ -17,6 +17,11 @@ SET content_text = $2, content_image_url = $3, author_name = $4, author_title = 
 WHERE id = $1
 RETURNING *;
 
+-- name: ApproveProof :one
+UPDATE proofs SET status = 'approved', updated_at = now()
+WHERE id = $1
+RETURNING *;
+
 -- name: DeleteProof :exec
 DELETE FROM proofs WHERE id = $1;
 

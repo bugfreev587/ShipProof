@@ -178,6 +178,7 @@ func main() {
 			r.Get("/api/products/{id}/proofs", proofHandler.List)
 			r.Put("/api/proofs/{pid}", proofHandler.Update)
 			r.Delete("/api/proofs/{pid}", proofHandler.Delete)
+			r.Put("/api/proofs/{pid}/approve", proofHandler.Approve)
 			r.Put("/api/proofs/{pid}/featured", proofHandler.ToggleFeatured)
 			r.Put("/api/proofs/{pid}/order", proofHandler.UpdateOrder)
 			r.Get("/api/products/{id}/tags", proofHandler.ListProductTags)
