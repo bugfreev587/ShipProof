@@ -199,7 +199,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
       )}
 
       {/* Status filter pills */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-6">
         {(["all", "pending", "approved", "rejected"] as const).map((status) => {
           const count = status === "all"
             ? proofs.length
@@ -209,14 +209,14 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all ${
                 statusFilter === status
                   ? "bg-[#6366F1] text-white"
-                  : "bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  : "bg-[#1f1f23] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
-              <span className={`ml-1.5 ${statusFilter === status ? "text-white/70" : "text-[var(--text-tertiary)]"}`}>
+              <span className={`ml-1.5 ${statusFilter === status ? "text-white/60" : "text-[var(--text-tertiary)]"}`}>
                 {count}
               </span>
             </button>
@@ -225,13 +225,13 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
       </div>
 
       {/* Action Bar */}
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <input
           type="text"
           placeholder="Search proofs..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none"
+          className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:border-[#6366F1] focus:outline-none transition-colors"
         />
 
         {allTags.length > 0 && (
@@ -241,7 +241,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 filterTag === ""
                   ? "bg-[#6366F1] text-white"
-                  : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  : "bg-[#1f1f23] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
               All
@@ -253,7 +253,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                   filterTag === tag
                     ? "bg-[#6366F1] text-white"
-                    : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                    : "bg-[#1f1f23] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 {tag}
@@ -265,7 +265,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
         <button
           onClick={() => setShowAddModal(true)}
           disabled={userPlan === "free" && proofLimit > 0 && proofs.length >= proofLimit}
-          className="ml-auto rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white hover:bg-[#818CF8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ml-auto rounded-[10px] bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] px-4 py-2.5 text-sm font-medium text-white hover:from-[#818cf8] hover:to-[#a78bfa] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           + Add Proof
         </button>
@@ -273,7 +273,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
       {/* Proof Cards — split into Pending and Approved */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-8 text-center text-[var(--text-secondary)]">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-12 text-center text-[var(--text-secondary)]">
           {proofs.length === 0
             ? "No proofs yet. Add your first proof!"
             : "No proofs match your filters."}
@@ -283,8 +283,8 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
           {/* Pending Review Section */}
           {filtered.filter((p) => p.status === "pending").length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-lg font-semibold text-[#F59E0B]">Pending Review</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="text-base font-medium text-[#F59E0B]">Pending Review</h3>
                 <span className="rounded-full bg-[#F59E0B]/10 px-2 py-0.5 text-xs font-medium text-[#F59E0B]">
                   {filtered.filter((p) => p.status === "pending").length}
                 </span>
@@ -297,7 +297,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.filter((p) => p.status === "pending").map((proof) => (
                   <ProofCard
                     key={proof.id}
@@ -315,21 +315,21 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
             </div>
           )}
 
-          {/* Divider between sections */}
+          {/* Spacer between sections — whitespace instead of divider */}
           {filtered.some((p) => p.status === "pending") && filtered.some((p) => p.status !== "pending") && (
-            <div className="border-t border-[var(--border)]" />
+            <div className="h-2" />
           )}
 
           {/* Approved Section */}
           {filtered.filter((p) => p.status !== "pending").length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-lg font-semibold text-[var(--text-secondary)]">Approved</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="text-base font-medium text-[var(--text-secondary)]">Approved</h3>
                 <span className="rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
                   {filtered.filter((p) => p.status !== "pending").length}
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.filter((p) => p.status !== "pending").map((proof) => (
                   <ProofCard
                     key={proof.id}
