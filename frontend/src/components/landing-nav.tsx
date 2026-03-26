@@ -15,13 +15,13 @@ export default function LandingNav() {
           <LogoFull size={32} />
         </a>
         <div className="hidden items-center gap-8 text-base text-muted-foreground md:flex">
-          <a href="#features" className="hover:text-foreground transition-colors">
+          <a href="/#features" className="hover:text-foreground transition-colors">
             Features
           </a>
-          <a href="#pricing" className="hover:text-foreground transition-colors">
+          <a href="/#pricing" className="hover:text-foreground transition-colors">
             Pricing
           </a>
-          <a href="#faq" className="hover:text-foreground transition-colors">
+          <a href="/#faq" className="hover:text-foreground transition-colors">
             FAQ
           </a>
           <a href="/tools" className="hover:text-foreground transition-colors flex items-center">
