@@ -18,6 +18,7 @@ type Querier interface {
 	AddProofToWall(ctx context.Context, arg AddProofToWallParams) (WallProof, error)
 	AddTagToProof(ctx context.Context, arg AddTagToProofParams) (ProofTag, error)
 	ApproveProof(ctx context.Context, id uuid.UUID) (Proof, error)
+	CheckProofPageSlugAvailable(ctx context.Context, arg CheckProofPageSlugAvailableParams) (int64, error)
 	CountDraftsThisMonth(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountEmbedsByProductID(ctx context.Context, productID uuid.UUID) (int64, error)
 	CountPendingProofsByProduct(ctx context.Context, productID uuid.UUID) (int64, error)
@@ -53,10 +54,11 @@ type Querier interface {
 	GetPageViewsByDay(ctx context.Context, period pgtype.Interval) ([]GetPageViewsByDayRow, error)
 	GetPeriodPageViews(ctx context.Context, period pgtype.Interval) (int32, error)
 	GetProductByID(ctx context.Context, id uuid.UUID) (Product, error)
+	GetProductByProofPageSlug(ctx context.Context, proofPageSlug string) (Product, error)
 	GetProductBySlug(ctx context.Context, slug string) (Product, error)
 	GetProofByID(ctx context.Context, id uuid.UUID) (Proof, error)
 	GetProofPageConfig(ctx context.Context, id uuid.UUID) (GetProofPageConfigRow, error)
-	GetPublicProofPageData(ctx context.Context, slug string) (GetPublicProofPageDataRow, error)
+	GetPublicProofPageData(ctx context.Context, proofPageSlug string) (GetPublicProofPageDataRow, error)
 	GetRecentSignups(ctx context.Context) ([]GetRecentSignupsRow, error)
 	GetSpaceByID(ctx context.Context, id uuid.UUID) (Space, error)
 	GetSpaceBySlug(ctx context.Context, slug string) (Space, error)
@@ -114,6 +116,7 @@ type Querier interface {
 	UpdateProofOrder(ctx context.Context, arg UpdateProofOrderParams) error
 	UpdateProofPageConfig(ctx context.Context, arg UpdateProofPageConfigParams) error
 	UpdateProofPageProofOrder(ctx context.Context, arg UpdateProofPageProofOrderParams) error
+	UpdateProofPageSlug(ctx context.Context, arg UpdateProofPageSlugParams) error
 	UpdateSpace(ctx context.Context, arg UpdateSpaceParams) (Space, error)
 	UpdateSpaceConfig(ctx context.Context, arg UpdateSpaceConfigParams) (Space, error)
 	UpdateSpaceProofOrder(ctx context.Context, arg UpdateSpaceProofOrderParams) error

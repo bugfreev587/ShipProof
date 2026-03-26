@@ -51,7 +51,7 @@ export function ProofPageForm({ productSlug, productName, theme }: ProofPageForm
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-      const res = await fetch(`${apiUrl}/api/public/products/${productSlug}/submit-proof`, {
+      const res = await fetch(`${apiUrl}/api/public/proof-page/${productSlug}/submit-proof`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

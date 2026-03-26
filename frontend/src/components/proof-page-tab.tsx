@@ -10,6 +10,8 @@ import {
   removeProofFromProofPage,
   reorderProofPageProofs,
   listProofs,
+  updateProofPageSlug,
+  checkProofPageSlug,
   type Product,
   type Proof,
   type ProofPageConfig,
@@ -44,13 +46,19 @@ export default function ProofPageTab({ product }: Props) {
   const [pageProofs, setPageProofs] = useState<Proof[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Copy state
+  // Copy + slug state
   const [copied, setCopied] = useState(false);
+  const [currentSlug, setCurrentSlug] = useState("");
+  const [editingSlug, setEditingSlug] = useState(false);
+  const [slugInput, setSlugInput] = useState("");
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  const [slugSaving, setSlugSaving] = useState(false);
+  const [slugCheckTimer, setSlugCheckTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const pageUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/p/${product.slug}`
-      : `/p/${product.slug}`;
+      ? `${window.location.origin}/p/${currentSlug || product.slug}`
+      : `/p/${currentSlug || product.slug}`;
 
   const fetchData = useCallback(async () => {
     try {
@@ -62,6 +70,7 @@ export default function ProofPageTab({ product }: Props) {
         listProofPageProofs(product.id, token),
       ]);
       setConfig(cfg);
+      if (cfg.proof_page_slug) setCurrentSlug(cfg.proof_page_slug);
       setAllProofs(proofs.filter((p) => p.status === "approved"));
       setPageProofs(ppProofs);
     } catch {
@@ -195,8 +204,9 @@ export default function ProofPageTab({ product }: Props) {
       <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-3">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">Proof Page Link</h3>
         <div className="flex items-center gap-2">
-          <div className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[#6366F1] truncate font-mono">
-            shipproof.io/p/{product.slug}
+          <div className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm truncate font-mono flex items-center">
+            <span className="text-[var(--text-tertiary)]">shipproof.io/p/</span>
+            <span className="text-[#6366F1] font-semibold">{currentSlug || product.slug}</span>
           </div>
           <button
             onClick={handleCopy}
@@ -213,6 +223,87 @@ export default function ProofPageTab({ product }: Props) {
             Preview
           </a>
         </div>
+
+        {/* Slug customization */}
+        {!editingSlug ? (
+          <button
+            onClick={() => { setEditingSlug(true); setSlugInput(currentSlug || product.slug); setSlugAvailable(null); }}
+            className="text-xs text-[#6366F1] hover:text-[#818CF8] font-medium transition-colors"
+          >
+            Customize link
+          </button>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[var(--text-tertiary)]">shipproof.io/p/</span>
+              <input
+                type="text"
+                value={slugInput}
+                onChange={(e) => {
+                  const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                  setSlugInput(val);
+                  setSlugAvailable(null);
+                  if (slugCheckTimer) clearTimeout(slugCheckTimer);
+                  if (val.length >= 3) {
+                    const timer = setTimeout(async () => {
+                      try {
+                        const token = await getToken();
+                        if (!token) return;
+                        const res = await checkProofPageSlug(product.id, val, token);
+                        setSlugAvailable(res.available);
+                      } catch { setSlugAvailable(null); }
+                    }, 500);
+                    setSlugCheckTimer(timer);
+                  }
+                }}
+                placeholder="myapp"
+                className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-sm text-[var(--text-primary)] font-mono focus:border-[#6366F1] focus:outline-none"
+              />
+              <button
+                onClick={async () => {
+                  if (slugInput.length < 3 || slugAvailable === false) return;
+                  setSlugSaving(true);
+                  try {
+                    const token = await getToken();
+                    if (!token) return;
+                    await updateProofPageSlug(product.id, slugInput, token);
+                    setCurrentSlug(slugInput);
+                    setEditingSlug(false);
+                  } catch {
+                    setError("Failed to update slug.");
+                  } finally {
+                    setSlugSaving(false);
+                  }
+                }}
+                disabled={slugSaving || slugInput.length < 3 || slugAvailable === false}
+                className="rounded-lg bg-[#6366F1] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#818CF8] disabled:opacity-50 transition-colors"
+              >
+                {slugSaving ? "..." : "Save"}
+              </button>
+              <button
+                onClick={() => setEditingSlug(false)}
+                className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+              >
+                Cancel
+              </button>
+            </div>
+            <div className="text-xs">
+              {slugInput.length > 0 && slugInput.length < 3 && (
+                <span className="text-[var(--text-tertiary)]">Min 3 characters</span>
+              )}
+              {slugAvailable === true && (
+                <span className="text-[#22C55E]">Available!</span>
+              )}
+              {slugAvailable === false && (
+                <span className="text-[#EF4444]">Already taken</span>
+              )}
+            </div>
+            <p className="text-[11px] text-[var(--text-tertiary)]">
+              3-20 chars, lowercase letters, numbers, and hyphens only.
+            </p>
+          </div>
+        )}
+
         <p className="text-xs text-[var(--text-tertiary)]">
           Share this link anywhere — Twitter bio, email, PH maker comment.
         </p>

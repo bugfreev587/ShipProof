@@ -12,19 +12,36 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkProofPageSlugAvailable = `-- name: CheckProofPageSlugAvailable :one
+SELECT COUNT(*) FROM products WHERE proof_page_slug = $1 AND id != $2
+`
+
+type CheckProofPageSlugAvailableParams struct {
+	ProofPageSlug string    `json:"proof_page_slug"`
+	ID            uuid.UUID `json:"id"`
+}
+
+func (q *Queries) CheckProofPageSlugAvailable(ctx context.Context, arg CheckProofPageSlugAvailableParams) (int64, error) {
+	row := q.db.QueryRow(ctx, checkProofPageSlugAvailable, arg.ProofPageSlug, arg.ID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createProduct = `-- name: CreateProduct :one
-INSERT INTO products (user_id, name, slug, url, description, logo_url)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url
+INSERT INTO products (user_id, name, slug, url, description, logo_url, proof_page_slug)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url, proof_page_slug
 `
 
 type CreateProductParams struct {
-	UserID      uuid.UUID   `json:"user_id"`
-	Name        string      `json:"name"`
-	Slug        string      `json:"slug"`
-	Url         pgtype.Text `json:"url"`
-	Description pgtype.Text `json:"description"`
-	LogoUrl     pgtype.Text `json:"logo_url"`
+	UserID        uuid.UUID   `json:"user_id"`
+	Name          string      `json:"name"`
+	Slug          string      `json:"slug"`
+	Url           pgtype.Text `json:"url"`
+	Description   pgtype.Text `json:"description"`
+	LogoUrl       pgtype.Text `json:"logo_url"`
+	ProofPageSlug string      `json:"proof_page_slug"`
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
@@ -35,6 +52,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		arg.Url,
 		arg.Description,
 		arg.LogoUrl,
+		arg.ProofPageSlug,
 	)
 	var i Product
 	err := row.Scan(
@@ -57,6 +75,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.ProofPageShowBranding,
 		&i.ProofPageCtaText,
 		&i.ProofPageCtaUrl,
+		&i.ProofPageSlug,
 	)
 	return i, err
 }
@@ -71,7 +90,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) error {
 }
 
 const getProductByID = `-- name: GetProductByID :one
-SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url FROM products WHERE id = $1
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url, proof_page_slug FROM products WHERE id = $1
 `
 
 func (q *Queries) GetProductByID(ctx context.Context, id uuid.UUID) (Product, error) {
@@ -97,12 +116,45 @@ func (q *Queries) GetProductByID(ctx context.Context, id uuid.UUID) (Product, er
 		&i.ProofPageShowBranding,
 		&i.ProofPageCtaText,
 		&i.ProofPageCtaUrl,
+		&i.ProofPageSlug,
+	)
+	return i, err
+}
+
+const getProductByProofPageSlug = `-- name: GetProductByProofPageSlug :one
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url, proof_page_slug FROM products WHERE proof_page_slug = $1
+`
+
+func (q *Queries) GetProductByProofPageSlug(ctx context.Context, proofPageSlug string) (Product, error) {
+	row := q.db.QueryRow(ctx, getProductByProofPageSlug, proofPageSlug)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Slug,
+		&i.Url,
+		&i.Description,
+		&i.DescriptionLong,
+		&i.TargetAudience,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LogoUrl,
+		&i.ProofPageTitle,
+		&i.ProofPageSubtitle,
+		&i.ProofPageTheme,
+		&i.ProofPageShowForm,
+		&i.ProofPageFormHeading,
+		&i.ProofPageShowBranding,
+		&i.ProofPageCtaText,
+		&i.ProofPageCtaUrl,
+		&i.ProofPageSlug,
 	)
 	return i, err
 }
 
 const listProductsByUserID = `-- name: ListProductsByUserID :many
-SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url FROM products WHERE user_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url, proof_page_slug FROM products WHERE user_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([]Product, error) {
@@ -134,6 +186,7 @@ func (q *Queries) ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([
 			&i.ProofPageShowBranding,
 			&i.ProofPageCtaText,
 			&i.ProofPageCtaUrl,
+			&i.ProofPageSlug,
 		); err != nil {
 			return nil, err
 		}
@@ -149,7 +202,7 @@ const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
 SET name = $2, url = $3, description = $4, description_long = $5, target_audience = $6, logo_url = $7, updated_at = now()
 WHERE id = $1
-RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url
+RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url, proof_page_slug
 `
 
 type UpdateProductParams struct {
@@ -193,6 +246,22 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.ProofPageShowBranding,
 		&i.ProofPageCtaText,
 		&i.ProofPageCtaUrl,
+		&i.ProofPageSlug,
 	)
 	return i, err
+}
+
+const updateProofPageSlug = `-- name: UpdateProofPageSlug :exec
+UPDATE products SET proof_page_slug = $2, updated_at = NOW()
+WHERE id = $1
+`
+
+type UpdateProofPageSlugParams struct {
+	ID            uuid.UUID `json:"id"`
+	ProofPageSlug string    `json:"proof_page_slug"`
+}
+
+func (q *Queries) UpdateProofPageSlug(ctx context.Context, arg UpdateProofPageSlugParams) error {
+	_, err := q.db.Exec(ctx, updateProofPageSlug, arg.ID, arg.ProofPageSlug)
+	return err
 }

@@ -114,6 +114,45 @@ func (h *PublicProofPageHandler) GetProofPage(w http.ResponseWriter, r *http.Req
 	})
 }
 
+func (h *PublicProofPageHandler) GetProofPageByShortSlug(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+	if slug == "" {
+		http.Error(w, `{"error":"slug is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	data, err := h.queries.GetPublicProofPageData(r.Context(), slug)
+	if err != nil {
+		http.Error(w, `{"error":"proof page not found"}`, http.StatusNotFound)
+		return
+	}
+
+	proofs, err := h.queries.ListPublicProofPageProofs(r.Context(), data.ID)
+	if err != nil {
+		proofs2, _ := h.queries.ListApprovedProofsByProductID(r.Context(), data.ID)
+		if proofs2 == nil {
+			proofs2 = []db.Proof{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"product": data,
+			"config":  data,
+			"proofs":  proofs2,
+		})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"product": data,
+		"config":  data,
+		"proofs":  proofs,
+	})
+}
+
 func (h *PublicProofPageHandler) GetEmbedProofs(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	if slug == "" {

@@ -1010,6 +1010,7 @@ export interface ProofPageConfig {
   proof_page_show_branding: boolean;
   proof_page_cta_text: string;
   proof_page_cta_url: string;
+  proof_page_slug?: string;
 }
 
 export interface PublicProofPageData {
@@ -1055,7 +1056,23 @@ export interface SubmitProofResponse {
 
 export function fetchPublicProofPage(slug: string) {
   return fetchApi<PublicProofPageData>(
-    `/api/public/products/${slug}/proof-page`,
+    `/api/public/proof-page/${slug}`,
+  );
+}
+
+export function updateProofPageSlug(productId: string, slug: string, token: string) {
+  return fetchApi<{ slug: string }>(
+    `/api/products/${productId}/proof-page-slug`,
+    { method: "PUT", body: JSON.stringify({ slug }) },
+    token,
+  );
+}
+
+export function checkProofPageSlug(productId: string, slug: string, token: string) {
+  return fetchApi<{ available: boolean }>(
+    `/api/products/${productId}/proof-page-slug?slug=${encodeURIComponent(slug)}`,
+    {},
+    token,
   );
 }
 
@@ -1117,7 +1134,7 @@ export function rejectProof(proofId: string, token: string) {
 
 export function submitPublicProof(slug: string, data: SubmitProofRequest) {
   return fetchApi<SubmitProofResponse>(
-    `/api/public/products/${slug}/submit-proof`,
+    `/api/public/proof-page/${slug}/submit-proof`,
     { method: "POST", body: JSON.stringify(data) },
   );
 }

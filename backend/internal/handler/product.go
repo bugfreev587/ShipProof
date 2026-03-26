@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"math/rand"
 	"net/http"
 	"regexp"
 	"strings"
@@ -42,6 +43,23 @@ type updateProductRequest struct {
 }
 
 var slugRegex = regexp.MustCompile(`[^a-z0-9]+`)
+
+func generateShortSlug() string {
+	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+	b := make([]byte, 6)
+	for i := range b {
+		b[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(b)
+}
+
+var proofPageSlugRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$`)
+
+var reservedSlugs = map[string]bool{
+	"tools": true, "sign-in": true, "sign-up": true, "dashboard": true,
+	"admin": true, "api": true, "embed": true, "w": true, "p": true,
+	"launchready": true, "pricing": true, "terms": true, "privacy": true,
+}
 
 func generateSlug(name string) string {
 	slug := strings.ToLower(name)
@@ -103,12 +121,13 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	slug = slug + "-" + uuid.New().String()[:6]
 
 	product, err := h.queries.CreateProduct(r.Context(), db.CreateProductParams{
-		UserID:      user.ID,
-		Name:        req.Name,
-		Slug:        slug,
-		Url:         pgtype.Text{String: req.URL, Valid: req.URL != ""},
-		Description: pgtype.Text{String: req.Description, Valid: req.Description != ""},
-		LogoUrl:     pgtype.Text{String: req.LogoURL, Valid: req.LogoURL != ""},
+		UserID:        user.ID,
+		Name:          req.Name,
+		Slug:          slug,
+		Url:           pgtype.Text{String: req.URL, Valid: req.URL != ""},
+		Description:   pgtype.Text{String: req.Description, Valid: req.Description != ""},
+		LogoUrl:       pgtype.Text{String: req.LogoURL, Valid: req.LogoURL != ""},
+		ProofPageSlug: generateShortSlug(),
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to create product"}`, http.StatusInternalServerError)
@@ -215,4 +234,110 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *ProductHandler) UpdateProofPageSlug(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid product id"}`, http.StatusBadRequest)
+		return
+	}
+
+	product, err := h.queries.GetProductByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, `{"error":"product not found"}`, http.StatusNotFound)
+		return
+	}
+
+	clerkID := middleware.GetClerkUserID(r.Context())
+	user, err := h.userService.EnsureUser(r.Context(), clerkID)
+	if err != nil || user.ID != product.UserID {
+		http.Error(w, `{"error":"forbidden"}`, http.StatusForbidden)
+		return
+	}
+
+	var req struct {
+		Slug string `json:"slug"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
+		return
+	}
+
+	slug := strings.ToLower(strings.TrimSpace(req.Slug))
+
+	// Validate length
+	if len(slug) < 3 || len(slug) > 20 {
+		http.Error(w, `{"error":"Slug must be 3-20 characters"}`, http.StatusBadRequest)
+		return
+	}
+
+	// Validate format
+	if !proofPageSlugRegex.MatchString(slug) {
+		http.Error(w, `{"error":"Only lowercase letters, numbers, and hyphens allowed"}`, http.StatusBadRequest)
+		return
+	}
+
+	// Check reserved words
+	if reservedSlugs[slug] {
+		http.Error(w, `{"error":"This slug is reserved"}`, http.StatusConflict)
+		return
+	}
+
+	// Check availability
+	count, err := h.queries.CheckProofPageSlugAvailable(r.Context(), db.CheckProofPageSlugAvailableParams{
+		ProofPageSlug: slug,
+		ID:            id,
+	})
+	if err != nil {
+		http.Error(w, `{"error":"failed to check slug availability"}`, http.StatusInternalServerError)
+		return
+	}
+	if count > 0 {
+		http.Error(w, `{"error":"This slug is already taken"}`, http.StatusConflict)
+		return
+	}
+
+	if err := h.queries.UpdateProofPageSlug(r.Context(), db.UpdateProofPageSlugParams{
+		ID:            id,
+		ProofPageSlug: slug,
+	}); err != nil {
+		http.Error(w, `{"error":"failed to update slug"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"slug": slug})
+}
+
+func (h *ProductHandler) CheckProofPageSlug(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, `{"error":"invalid product id"}`, http.StatusBadRequest)
+		return
+	}
+
+	slug := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("slug")))
+	if slug == "" {
+		http.Error(w, `{"error":"slug is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	if reservedSlugs[slug] {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]bool{"available": false})
+		return
+	}
+
+	count, err := h.queries.CheckProofPageSlugAvailable(r.Context(), db.CheckProofPageSlugAvailableParams{
+		ProofPageSlug: slug,
+		ID:            id,
+	})
+	if err != nil {
+		http.Error(w, `{"error":"failed to check"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"available": count == 0})
 }

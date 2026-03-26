@@ -5,8 +5,8 @@ SELECT * FROM products WHERE user_id = $1 ORDER BY created_at DESC;
 SELECT * FROM products WHERE id = $1;
 
 -- name: CreateProduct :one
-INSERT INTO products (user_id, name, slug, url, description, logo_url)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO products (user_id, name, slug, url, description, logo_url, proof_page_slug)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: UpdateProduct :one
@@ -17,3 +17,13 @@ RETURNING *;
 
 -- name: DeleteProduct :exec
 DELETE FROM products WHERE id = $1;
+
+-- name: GetProductByProofPageSlug :one
+SELECT * FROM products WHERE proof_page_slug = $1;
+
+-- name: UpdateProofPageSlug :exec
+UPDATE products SET proof_page_slug = $2, updated_at = NOW()
+WHERE id = $1;
+
+-- name: CheckProofPageSlugAvailable :one
+SELECT COUNT(*) FROM products WHERE proof_page_slug = $1 AND id != $2;

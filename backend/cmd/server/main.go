@@ -141,6 +141,9 @@ func main() {
 		r.Post("/api/public/views", publicHandler.RecordView)
 		r.Post("/api/public/products/{slug}/submit-proof", publicSubmitHandler.SubmitProof)
 		r.Get("/api/public/products/{slug}/proof-page", publicProofPageHandler.GetProofPage)
+		// Short slug routes for Proof Page
+		r.Get("/api/public/proof-page/{slug}", publicProofPageHandler.GetProofPageByShortSlug)
+		r.Post("/api/public/proof-page/{slug}/submit-proof", publicSubmitHandler.SubmitProofByShortSlug)
 		r.Get("/api/public/embeds/{slug}/proofs", publicProofPageHandler.GetEmbedProofs)
 		r.Post("/api/analytics/pageview", adminHandler.RecordPageView)
 
@@ -209,6 +212,8 @@ func main() {
 			r.Post("/api/products/{id}/proof-page/proofs", proofPageHandler.AddProof)
 			r.Delete("/api/products/{id}/proof-page/proofs/{pid}", proofPageHandler.RemoveProof)
 			r.Put("/api/products/{id}/proof-page/proofs/order", proofPageHandler.ReorderProofs)
+			r.Put("/api/products/{id}/proof-page-slug", productHandler.UpdateProofPageSlug)
+			r.Get("/api/products/{id}/proof-page-slug", productHandler.CheckProofPageSlug)
 
 			// Embeds
 			r.Get("/api/products/{id}/embeds", embedHandler.List)

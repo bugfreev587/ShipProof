@@ -34,7 +34,7 @@ const getProofPageConfig = `-- name: GetProofPageConfig :one
 SELECT id, name, slug, url, description, logo_url,
        proof_page_title, proof_page_subtitle, proof_page_theme,
        proof_page_show_form, proof_page_form_heading, proof_page_show_branding,
-       proof_page_cta_text, proof_page_cta_url
+       proof_page_cta_text, proof_page_cta_url, proof_page_slug
 FROM products WHERE id = $1
 `
 
@@ -53,6 +53,7 @@ type GetProofPageConfigRow struct {
 	ProofPageShowBranding pgtype.Bool `json:"proof_page_show_branding"`
 	ProofPageCtaText      pgtype.Text `json:"proof_page_cta_text"`
 	ProofPageCtaUrl       pgtype.Text `json:"proof_page_cta_url"`
+	ProofPageSlug         string      `json:"proof_page_slug"`
 }
 
 func (q *Queries) GetProofPageConfig(ctx context.Context, id uuid.UUID) (GetProofPageConfigRow, error) {
@@ -73,6 +74,7 @@ func (q *Queries) GetProofPageConfig(ctx context.Context, id uuid.UUID) (GetProo
 		&i.ProofPageShowBranding,
 		&i.ProofPageCtaText,
 		&i.ProofPageCtaUrl,
+		&i.ProofPageSlug,
 	)
 	return i, err
 }
@@ -81,8 +83,8 @@ const getPublicProofPageData = `-- name: GetPublicProofPageData :one
 SELECT id, name, slug, url, description, logo_url,
        proof_page_title, proof_page_subtitle, proof_page_theme,
        proof_page_show_form, proof_page_form_heading, proof_page_show_branding,
-       proof_page_cta_text, proof_page_cta_url
-FROM products WHERE slug = $1
+       proof_page_cta_text, proof_page_cta_url, proof_page_slug
+FROM products WHERE proof_page_slug = $1
 `
 
 type GetPublicProofPageDataRow struct {
@@ -100,10 +102,11 @@ type GetPublicProofPageDataRow struct {
 	ProofPageShowBranding pgtype.Bool `json:"proof_page_show_branding"`
 	ProofPageCtaText      pgtype.Text `json:"proof_page_cta_text"`
 	ProofPageCtaUrl       pgtype.Text `json:"proof_page_cta_url"`
+	ProofPageSlug         string      `json:"proof_page_slug"`
 }
 
-func (q *Queries) GetPublicProofPageData(ctx context.Context, slug string) (GetPublicProofPageDataRow, error) {
-	row := q.db.QueryRow(ctx, getPublicProofPageData, slug)
+func (q *Queries) GetPublicProofPageData(ctx context.Context, proofPageSlug string) (GetPublicProofPageDataRow, error) {
+	row := q.db.QueryRow(ctx, getPublicProofPageData, proofPageSlug)
 	var i GetPublicProofPageDataRow
 	err := row.Scan(
 		&i.ID,
@@ -120,6 +123,7 @@ func (q *Queries) GetPublicProofPageData(ctx context.Context, slug string) (GetP
 		&i.ProofPageShowBranding,
 		&i.ProofPageCtaText,
 		&i.ProofPageCtaUrl,
+		&i.ProofPageSlug,
 	)
 	return i, err
 }

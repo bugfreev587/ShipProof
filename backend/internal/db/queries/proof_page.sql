@@ -2,7 +2,7 @@
 SELECT id, name, slug, url, description, logo_url,
        proof_page_title, proof_page_subtitle, proof_page_theme,
        proof_page_show_form, proof_page_form_heading, proof_page_show_branding,
-       proof_page_cta_text, proof_page_cta_url
+       proof_page_cta_text, proof_page_cta_url, proof_page_slug
 FROM products WHERE id = $1;
 
 -- name: UpdateProofPageConfig :exec
@@ -40,8 +40,8 @@ WHERE product_id = $1 AND proof_id = $2;
 SELECT id, name, slug, url, description, logo_url,
        proof_page_title, proof_page_subtitle, proof_page_theme,
        proof_page_show_form, proof_page_form_heading, proof_page_show_branding,
-       proof_page_cta_text, proof_page_cta_url
-FROM products WHERE slug = $1;
+       proof_page_cta_text, proof_page_cta_url, proof_page_slug
+FROM products WHERE proof_page_slug = $1;
 
 -- name: ListPublicProofPageProofs :many
 SELECT p.* FROM proofs p
