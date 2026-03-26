@@ -46,41 +46,41 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* ShipProof Design System */
-  --color-bg-base: #0F0F10;
-  --color-bg-surface: #1A1A1F;
-  --color-bg-elevated: #242429;
-  --color-bg-hover: #2A2A30;
+  /* ShipProof Design System — 3-level depth */
+  --color-bg-base: #0a0a0b;
+  --color-bg-surface: #111113;
+  --color-bg-elevated: #18181b;
+  --color-bg-hover: #1f1f23;
   --color-brand-primary: #6366F1;
   --color-brand-primary-hover: #818CF8;
-  --color-text-primary: #F1F1F3;
-  --color-text-secondary: #9CA3AF;
-  --color-text-tertiary: #6B7280;
-  --color-border-default: #2A2A30;
-  --color-border-hover: #3F3F46;
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-tertiary: #71717a;
+  --color-border-default: #27272a;
+  --color-border-hover: #3f3f46;
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
 }
 
 :root {
-  --background: #0F0F10;
-  --foreground: #F1F1F3;
-  --card: #1A1A1F;
-  --card-foreground: #F1F1F3;
-  --popover: #242429;
-  --popover-foreground: #F1F1F3;
+  --background: #0a0a0b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
   --primary: #6366F1;
   --primary-foreground: #FFFFFF;
-  --secondary: #1A1A1F;
-  --secondary-foreground: #F1F1F3;
-  --muted: #242429;
-  --muted-foreground: #9CA3AF;
-  --accent: #242429;
-  --accent-foreground: #F1F1F3;
+  --secondary: #18181b;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #1f1f23;
+  --accent-foreground: #fafafa;
   --destructive: #EF4444;
-  --border: #2A2A30;
-  --input: #2A2A30;
+  --border: #27272a;
+  --input: #27272a;
   --ring: #6366F1;
   --chart-1: #6366F1;
   --chart-2: #818CF8;
@@ -92,13 +92,13 @@
   --landing-panel: rgba(20, 20, 24, 0.5);
   --landing-panel-border: rgba(255, 255, 255, 0.03);
   --radius: 0.75rem;
-  --sidebar: #0F0F10;
-  --sidebar-foreground: #F1F1F3;
+  --sidebar: #0a0a0b;
+  --sidebar-foreground: #fafafa;
   --sidebar-primary: #6366F1;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1A1A1F;
-  --sidebar-accent-foreground: #F1F1F3;
-  --sidebar-border: #2A2A30;
+  --sidebar-accent: #18181b;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #27272a;
   --sidebar-ring: #6366F1;
 }
 
@@ -165,6 +165,22 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Premium card elevation */
+.card-elevated {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+.card-elevated:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Primary gradient button */
+.btn-gradient {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #818cf8, #a78bfa);
 }
 
 /* Hide scrollbar for carousel */

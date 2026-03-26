@@ -72,9 +72,9 @@ export default function DashboardPage() {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
           Overview
         </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Total Proofs */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-[var(--text-secondary)]">Total Proofs</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-tertiary)]">
@@ -87,7 +87,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Total Products */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-[var(--text-secondary)]">Total Products</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-tertiary)]">
@@ -101,7 +101,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Current Plan */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-[var(--text-secondary)]">Current Plan</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-tertiary)]">
@@ -133,9 +133,9 @@ export default function DashboardPage() {
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
             Performance
           </h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Space Views */}
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-[var(--text-secondary)]">Space Views</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-tertiary)]">
@@ -169,7 +169,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Wall Views */}
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-[var(--text-secondary)]">Wall Views</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-tertiary)]">
@@ -227,12 +227,12 @@ export default function DashboardPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {products.map((product) => (
             <Link
               key={product.id}
               href={`/dashboard/products/${product.id}`}
-              className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 hover:border-[var(--border-hover)] transition-colors"
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 hover:border-[var(--color-border-hover)] transition-all duration-200 hover:shadow-[0_10px_30px_rgba(0,0,0,0.4)]"
             >
               <div className="flex items-center gap-3">
                 {product.logo_url?.Valid ? (

@@ -201,7 +201,7 @@ export default function ProofPageTab({ product }: Props) {
       )}
 
       {/* 1. Proof Link */}
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-3">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 space-y-4 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">Proof Page Link</h3>
         <div className="flex items-center gap-2">
           <div className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 text-sm truncate font-mono flex items-center">
@@ -310,7 +310,7 @@ export default function ProofPageTab({ product }: Props) {
       </div>
 
       {/* 2. Page Settings */}
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-4">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 space-y-5 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">Page Settings</h3>
 
         <div>
@@ -417,7 +417,7 @@ export default function ProofPageTab({ product }: Props) {
       </div>
 
       {/* 3. Select Proofs — two-panel UI */}
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-4">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 space-y-5 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">Select Proofs</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

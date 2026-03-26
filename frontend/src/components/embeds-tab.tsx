@@ -275,7 +275,7 @@ function EmbedCard({
   const isStrip = embed.layout === "inline_strip";
 
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-3">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 space-y-4 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h4 className="text-sm font-medium text-[var(--text-primary)]">{embed.name}</h4>

@@ -18,14 +18,14 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           background: colors.bgBase,
         }}
       >
-        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-10">
+        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-12">
           <Link href="/dashboard">
             <LogoFull size={28} />
           </Link>
           <AvatarDropdown />
         </div>
       </nav>
-      <main className="mx-auto max-w-[1400px] px-10 py-8">{children}</main>
+      <main className="mx-auto max-w-[1400px] px-12 py-10">{children}</main>
       <Footer />
     </div>
   );

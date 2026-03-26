@@ -455,7 +455,7 @@ function ProofCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`rounded-xl bg-[#141418] border border-[#1E1E24] hover:border-[#2A2A32] p-4 h-[220px] cursor-pointer transition-all duration-150 hover:-translate-y-[2px] flex flex-col ${
+      className={`rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--color-border-hover)] p-5 h-[230px] cursor-pointer transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_30px_rgba(0,0,0,0.4)] flex flex-col ${
         isPending ? "border-l-[3px] border-l-[#F59E0B]" : ""
       }`}
     >
@@ -526,7 +526,7 @@ function ProofCard({
               ⋯
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-lg border border-[#2A2A30] bg-[#1A1A1F] shadow-xl py-1">
+              <div className="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-1">
                 {isPending && onApprove && (
                   <button
                     onClick={(e) => {

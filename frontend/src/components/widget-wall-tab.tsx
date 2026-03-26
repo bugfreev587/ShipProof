@@ -280,7 +280,7 @@ function SpaceCard({
   return (
     <div
       onClick={() => router.push(`/dashboard/products/${product.id}/spaces/${space.id}`)}
-      className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 cursor-pointer hover:border-[var(--border-hover)] transition-colors"
+      className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 cursor-pointer hover:border-[var(--color-border-hover)] transition-all duration-200 hover:shadow-[0_10px_30px_rgba(0,0,0,0.4)]"
     >
       <div className="flex items-center justify-between">
         <div>
@@ -578,7 +578,7 @@ function WallCard({
   };
 
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 space-y-4">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 space-y-5 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
       {/* Header: name + actions */}
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium text-[var(--text-primary)]">{wall.name}</h4>
