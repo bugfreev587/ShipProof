@@ -33,7 +33,8 @@ func (q *Queries) AddProofToProofPage(ctx context.Context, arg AddProofToProofPa
 const getProofPageConfig = `-- name: GetProofPageConfig :one
 SELECT id, name, slug, url, description, logo_url,
        proof_page_title, proof_page_subtitle, proof_page_theme,
-       proof_page_show_form, proof_page_form_heading, proof_page_show_branding
+       proof_page_show_form, proof_page_form_heading, proof_page_show_branding,
+       proof_page_cta_text, proof_page_cta_url
 FROM products WHERE id = $1
 `
 
@@ -50,6 +51,8 @@ type GetProofPageConfigRow struct {
 	ProofPageShowForm     pgtype.Bool `json:"proof_page_show_form"`
 	ProofPageFormHeading  pgtype.Text `json:"proof_page_form_heading"`
 	ProofPageShowBranding pgtype.Bool `json:"proof_page_show_branding"`
+	ProofPageCtaText      pgtype.Text `json:"proof_page_cta_text"`
+	ProofPageCtaUrl       pgtype.Text `json:"proof_page_cta_url"`
 }
 
 func (q *Queries) GetProofPageConfig(ctx context.Context, id uuid.UUID) (GetProofPageConfigRow, error) {
@@ -68,6 +71,8 @@ func (q *Queries) GetProofPageConfig(ctx context.Context, id uuid.UUID) (GetProo
 		&i.ProofPageShowForm,
 		&i.ProofPageFormHeading,
 		&i.ProofPageShowBranding,
+		&i.ProofPageCtaText,
+		&i.ProofPageCtaUrl,
 	)
 	return i, err
 }
@@ -75,7 +80,8 @@ func (q *Queries) GetProofPageConfig(ctx context.Context, id uuid.UUID) (GetProo
 const getPublicProofPageData = `-- name: GetPublicProofPageData :one
 SELECT id, name, slug, url, description, logo_url,
        proof_page_title, proof_page_subtitle, proof_page_theme,
-       proof_page_show_form, proof_page_form_heading, proof_page_show_branding
+       proof_page_show_form, proof_page_form_heading, proof_page_show_branding,
+       proof_page_cta_text, proof_page_cta_url
 FROM products WHERE slug = $1
 `
 
@@ -92,6 +98,8 @@ type GetPublicProofPageDataRow struct {
 	ProofPageShowForm     pgtype.Bool `json:"proof_page_show_form"`
 	ProofPageFormHeading  pgtype.Text `json:"proof_page_form_heading"`
 	ProofPageShowBranding pgtype.Bool `json:"proof_page_show_branding"`
+	ProofPageCtaText      pgtype.Text `json:"proof_page_cta_text"`
+	ProofPageCtaUrl       pgtype.Text `json:"proof_page_cta_url"`
 }
 
 func (q *Queries) GetPublicProofPageData(ctx context.Context, slug string) (GetPublicProofPageDataRow, error) {
@@ -110,6 +118,8 @@ func (q *Queries) GetPublicProofPageData(ctx context.Context, slug string) (GetP
 		&i.ProofPageShowForm,
 		&i.ProofPageFormHeading,
 		&i.ProofPageShowBranding,
+		&i.ProofPageCtaText,
+		&i.ProofPageCtaUrl,
 	)
 	return i, err
 }
@@ -269,6 +279,8 @@ UPDATE products SET
   proof_page_show_form = $5,
   proof_page_form_heading = $6,
   proof_page_show_branding = $7,
+  proof_page_cta_text = $8,
+  proof_page_cta_url = $9,
   updated_at = NOW()
 WHERE id = $1
 `
@@ -281,6 +293,8 @@ type UpdateProofPageConfigParams struct {
 	ProofPageShowForm     pgtype.Bool `json:"proof_page_show_form"`
 	ProofPageFormHeading  pgtype.Text `json:"proof_page_form_heading"`
 	ProofPageShowBranding pgtype.Bool `json:"proof_page_show_branding"`
+	ProofPageCtaText      pgtype.Text `json:"proof_page_cta_text"`
+	ProofPageCtaUrl       pgtype.Text `json:"proof_page_cta_url"`
 }
 
 func (q *Queries) UpdateProofPageConfig(ctx context.Context, arg UpdateProofPageConfigParams) error {
@@ -292,6 +306,8 @@ func (q *Queries) UpdateProofPageConfig(ctx context.Context, arg UpdateProofPage
 		arg.ProofPageShowForm,
 		arg.ProofPageFormHeading,
 		arg.ProofPageShowBranding,
+		arg.ProofPageCtaText,
+		arg.ProofPageCtaUrl,
 	)
 	return err
 }

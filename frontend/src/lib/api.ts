@@ -1008,6 +1008,8 @@ export interface ProofPageConfig {
   proof_page_show_form: boolean;
   proof_page_form_heading: string;
   proof_page_show_branding: boolean;
+  proof_page_cta_text: string;
+  proof_page_cta_url: string;
 }
 
 export interface PublicProofPageData {
@@ -1026,6 +1028,8 @@ export interface PublicProofPageData {
     proof_page_show_form: boolean;
     proof_page_form_heading: string;
     proof_page_show_branding: boolean;
+    proof_page_cta_text: string;
+    proof_page_cta_url: string;
   };
   proofs: Proof[];
 }

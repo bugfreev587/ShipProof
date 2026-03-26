@@ -412,6 +412,8 @@ type Product struct {
 	ProofPageShowForm     pgtype.Bool `json:"proof_page_show_form"`
 	ProofPageFormHeading  pgtype.Text `json:"proof_page_form_heading"`
 	ProofPageShowBranding pgtype.Bool `json:"proof_page_show_branding"`
+	ProofPageCtaText      pgtype.Text `json:"proof_page_cta_text"`
+	ProofPageCtaUrl       pgtype.Text `json:"proof_page_cta_url"`
 }
 
 type Proof struct {

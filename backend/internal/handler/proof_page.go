@@ -75,14 +75,14 @@ func (h *ProofPageHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var req struct {
-		Headline        string `json:"headline"`
-		Subtitle        string `json:"subtitle"`
-		Theme           string `json:"theme"`
-		Layout          string `json:"layout"`
-		ShowBranding    bool   `json:"show_branding"`
-		BgColor         string `json:"bg_color"`
-		HeaderTextColor string `json:"header_text_color"`
-		Enabled         bool   `json:"enabled"`
+		Title        string `json:"proof_page_title"`
+		Subtitle     string `json:"proof_page_subtitle"`
+		Theme        string `json:"proof_page_theme"`
+		ShowForm     bool   `json:"proof_page_show_form"`
+		FormHeading  string `json:"proof_page_form_heading"`
+		ShowBranding bool   `json:"proof_page_show_branding"`
+		CtaText      string `json:"proof_page_cta_text"`
+		CtaUrl       string `json:"proof_page_cta_url"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
@@ -96,12 +96,14 @@ func (h *ProofPageHandler) UpdateConfig(w http.ResponseWriter, r *http.Request) 
 
 	err = h.queries.UpdateProofPageConfig(r.Context(), db.UpdateProofPageConfigParams{
 		ID:                    productID,
-		ProofPageTitle:        pgtype.Text{String: req.Headline, Valid: true},
+		ProofPageTitle:        pgtype.Text{String: req.Title, Valid: true},
 		ProofPageSubtitle:     pgtype.Text{String: req.Subtitle, Valid: true},
 		ProofPageTheme:        pgtype.Text{String: req.Theme, Valid: true},
-		ProofPageShowForm:     pgtype.Bool{Bool: req.Enabled, Valid: true},
-		ProofPageFormHeading:  pgtype.Text{String: "", Valid: true},
+		ProofPageShowForm:     pgtype.Bool{Bool: req.ShowForm, Valid: true},
+		ProofPageFormHeading:  pgtype.Text{String: req.FormHeading, Valid: true},
 		ProofPageShowBranding: pgtype.Bool{Bool: req.ShowBranding, Valid: true},
+		ProofPageCtaText:      pgtype.Text{String: req.CtaText, Valid: true},
+		ProofPageCtaUrl:       pgtype.Text{String: req.CtaUrl, Valid: true},
 	})
 	if err != nil {
 		http.Error(w, `{"error":"failed to update proof page config"}`, http.StatusInternalServerError)

@@ -15,7 +15,7 @@ import (
 const createProduct = `-- name: CreateProduct :one
 INSERT INTO products (user_id, name, slug, url, description, logo_url)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding
+RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url
 `
 
 type CreateProductParams struct {
@@ -55,6 +55,8 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.ProofPageShowForm,
 		&i.ProofPageFormHeading,
 		&i.ProofPageShowBranding,
+		&i.ProofPageCtaText,
+		&i.ProofPageCtaUrl,
 	)
 	return i, err
 }
@@ -69,7 +71,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) error {
 }
 
 const getProductByID = `-- name: GetProductByID :one
-SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding FROM products WHERE id = $1
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url FROM products WHERE id = $1
 `
 
 func (q *Queries) GetProductByID(ctx context.Context, id uuid.UUID) (Product, error) {
@@ -93,12 +95,14 @@ func (q *Queries) GetProductByID(ctx context.Context, id uuid.UUID) (Product, er
 		&i.ProofPageShowForm,
 		&i.ProofPageFormHeading,
 		&i.ProofPageShowBranding,
+		&i.ProofPageCtaText,
+		&i.ProofPageCtaUrl,
 	)
 	return i, err
 }
 
 const listProductsByUserID = `-- name: ListProductsByUserID :many
-SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding FROM products WHERE user_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url FROM products WHERE user_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([]Product, error) {
@@ -128,6 +132,8 @@ func (q *Queries) ListProductsByUserID(ctx context.Context, userID uuid.UUID) ([
 			&i.ProofPageShowForm,
 			&i.ProofPageFormHeading,
 			&i.ProofPageShowBranding,
+			&i.ProofPageCtaText,
+			&i.ProofPageCtaUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -143,7 +149,7 @@ const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
 SET name = $2, url = $3, description = $4, description_long = $5, target_audience = $6, logo_url = $7, updated_at = now()
 WHERE id = $1
-RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding
+RETURNING id, user_id, name, slug, url, description, description_long, target_audience, created_at, updated_at, logo_url, proof_page_title, proof_page_subtitle, proof_page_theme, proof_page_show_form, proof_page_form_heading, proof_page_show_branding, proof_page_cta_text, proof_page_cta_url
 `
 
 type UpdateProductParams struct {
@@ -185,6 +191,8 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.ProofPageShowForm,
 		&i.ProofPageFormHeading,
 		&i.ProofPageShowBranding,
+		&i.ProofPageCtaText,
+		&i.ProofPageCtaUrl,
 	)
 	return i, err
 }

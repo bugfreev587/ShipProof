@@ -1,7 +1,8 @@
 -- name: GetProofPageConfig :one
 SELECT id, name, slug, url, description, logo_url,
        proof_page_title, proof_page_subtitle, proof_page_theme,
-       proof_page_show_form, proof_page_form_heading, proof_page_show_branding
+       proof_page_show_form, proof_page_form_heading, proof_page_show_branding,
+       proof_page_cta_text, proof_page_cta_url
 FROM products WHERE id = $1;
 
 -- name: UpdateProofPageConfig :exec
@@ -12,6 +13,8 @@ UPDATE products SET
   proof_page_show_form = $5,
   proof_page_form_heading = $6,
   proof_page_show_branding = $7,
+  proof_page_cta_text = $8,
+  proof_page_cta_url = $9,
   updated_at = NOW()
 WHERE id = $1;
 
@@ -36,7 +39,8 @@ WHERE product_id = $1 AND proof_id = $2;
 -- name: GetPublicProofPageData :one
 SELECT id, name, slug, url, description, logo_url,
        proof_page_title, proof_page_subtitle, proof_page_theme,
-       proof_page_show_form, proof_page_form_heading, proof_page_show_branding
+       proof_page_show_form, proof_page_form_heading, proof_page_show_branding,
+       proof_page_cta_text, proof_page_cta_url
 FROM products WHERE slug = $1;
 
 -- name: ListPublicProofPageProofs :many

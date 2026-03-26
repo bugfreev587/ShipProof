@@ -35,6 +35,8 @@ export default function ProofPageTab({ product }: Props) {
     proof_page_show_form: true,
     proof_page_form_heading: "",
     proof_page_show_branding: true,
+    proof_page_cta_text: "",
+    proof_page_cta_url: "",
   });
 
   // Proof lists
@@ -286,6 +288,31 @@ export default function ProofPageTab({ product }: Props) {
             />
           </div>
         )}
+
+        {/* CTA Button */}
+        <div>
+          <label className={labelCls}>CTA Button Text</label>
+          <input
+            type="text"
+            value={config.proof_page_cta_text}
+            onChange={(e) => setConfig({ ...config, proof_page_cta_text: e.target.value })}
+            placeholder='e.g. "Get Started", "Try it Free", "Visit Website"'
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls}>CTA Button Link</label>
+          <input
+            type="url"
+            value={config.proof_page_cta_url}
+            onChange={(e) => setConfig({ ...config, proof_page_cta_url: e.target.value })}
+            placeholder="https://yourproduct.com"
+            className={inputCls}
+          />
+          <p className="text-xs text-[var(--text-tertiary)] mt-1">
+            Add a call-to-action button so visitors can go directly to your product.
+          </p>
+        </div>
 
         <div className="flex justify-end">
           <button

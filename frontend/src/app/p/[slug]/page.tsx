@@ -209,6 +209,20 @@ export default async function ProofPage({
           >
             {subtitle}
           </p>
+          {config.proof_page_cta_text && config.proof_page_cta_url && (
+            <div className="mt-5">
+              <a
+                href={config.proof_page_cta_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: "#6366F1" }}
+              >
+                {config.proof_page_cta_text}
+                <span>&rarr;</span>
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Stats Bar */}
