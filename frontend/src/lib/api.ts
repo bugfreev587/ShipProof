@@ -1138,3 +1138,107 @@ export function submitPublicProof(slug: string, data: SubmitProofRequest) {
     { method: "POST", body: JSON.stringify(data) },
   );
 }
+
+// --- Embeds ---
+
+export interface Embed {
+  id: string;
+  product_id: string;
+  name: string;
+  slug: string;
+  layout: string;
+  theme: string;
+  border_radius: number;
+  card_spacing: number;
+  show_platform_icon: boolean;
+  show_branding: boolean;
+  bg_color: string;
+  transparent_bg: boolean;
+  show_header: boolean;
+  header_text_color: string;
+  subtitle: string;
+  max_items: number;
+  visible_count: number;
+  card_size: number;
+  card_height: number;
+  text_font_size: number;
+  text_font: string;
+  text_bold: boolean;
+  bg_opacity: number;
+  rows: number;
+  width_percent: number;
+  auto_scroll: boolean;
+  scroll_direction: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PublicEmbedData {
+  embed: Embed;
+  product: Product;
+  proofs: Proof[];
+}
+
+export function listEmbeds(productId: string, token: string) {
+  return fetchApi<Embed[]>(`/api/products/${productId}/embeds`, {}, token);
+}
+
+export function createEmbed(productId: string, data: { name: string; layout: string }, token: string) {
+  return fetchApi<Embed>(
+    `/api/products/${productId}/embeds`,
+    { method: "POST", body: JSON.stringify(data) },
+    token,
+  );
+}
+
+export function getEmbed(embedId: string, token: string) {
+  return fetchApi<Embed>(`/api/embeds/${embedId}`, {}, token);
+}
+
+export function updateEmbed(embedId: string, name: string, token: string) {
+  return fetchApi<Embed>(
+    `/api/embeds/${embedId}`,
+    { method: "PUT", body: JSON.stringify({ name }) },
+    token,
+  );
+}
+
+export function deleteEmbed(embedId: string, token: string) {
+  return fetchApi<void>(`/api/embeds/${embedId}`, { method: "DELETE" }, token);
+}
+
+export function updateEmbedConfig(embedId: string, config: Record<string, unknown>, token: string) {
+  return fetchApi<Embed>(
+    `/api/embeds/${embedId}/config`,
+    { method: "PUT", body: JSON.stringify(config) },
+    token,
+  );
+}
+
+export function listEmbedProofs(embedId: string, token: string) {
+  return fetchApi<Proof[]>(`/api/embeds/${embedId}/proofs`, {}, token);
+}
+
+export function addProofToEmbed(embedId: string, proofId: string, displayOrder: number, token: string) {
+  return fetchApi<void>(
+    `/api/embeds/${embedId}/proofs`,
+    { method: "POST", body: JSON.stringify({ proof_id: proofId, display_order: displayOrder }) },
+    token,
+  );
+}
+
+export function removeProofFromEmbed(embedId: string, proofId: string, token: string) {
+  return fetchApi<void>(`/api/embeds/${embedId}/proofs/${proofId}`, { method: "DELETE" }, token);
+}
+
+export function reorderEmbedProofs(embedId: string, orders: { proof_id: string; display_order: number }[], token: string) {
+  return fetchApi<void>(
+    `/api/embeds/${embedId}/proofs/order`,
+    { method: "PUT", body: JSON.stringify({ orders }) },
+    token,
+  );
+}
+
+export function fetchPublicEmbedProofs(slug: string) {
+  return fetchApi<PublicEmbedData>(`/api/public/embeds/${slug}/proofs`);
+}

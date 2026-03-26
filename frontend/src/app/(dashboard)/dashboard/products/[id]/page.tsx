@@ -6,12 +6,13 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { getProduct, type Product } from "@/lib/api";
 import LaunchContentTab from "@/components/launch-content-tab";
 import ProofsTab from "@/components/proofs-tab";
-import WidgetWallTab from "@/components/widget-wall-tab";
+import WidgetWallTab from "@/components/widget-wall-tab"; // DEPRECATED: kept for backward compat
 import ProofPageTab from "@/components/proof-page-tab";
+import EmbedsTab from "@/components/embeds-tab";
 import ProductInfoEditor from "@/components/product-info-editor";
 import UpgradeNudgeModal from "@/components/upgrade-nudge-modal";
 
-type TabKey = "content" | "proofs" | "proof-page" | "spaces" | "walls";
+type TabKey = "content" | "proofs" | "proof-page" | "embeds" | "spaces" | "walls";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +31,7 @@ export default function ProductDetailPage() {
 
   const tabParam = searchParams.get("tab");
   const activeTab: TabKey =
-    tabParam === "proofs" || tabParam === "proof-page" || tabParam === "spaces" || tabParam === "walls" || tabParam === "content"
+    tabParam === "proofs" || tabParam === "proof-page" || tabParam === "embeds" || tabParam === "spaces" || tabParam === "walls" || tabParam === "content"
       ? tabParam
       : "content";
 
@@ -155,73 +156,21 @@ export default function ProductDetailPage() {
             Proof Page
           </button>
 
-          {/* Embed Widgets — collapsible parent */}
-          <div>
-            <button
-              onClick={() => setEmbedExpanded(!embedExpanded)}
-              className={`flex items-center justify-between w-full rounded-lg px-3 py-2 text-sm transition-colors ${
-                activeTab === "spaces" || activeTab === "walls"
-                  ? "text-[var(--text-primary)] font-medium"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-              }`}
-            >
-              <span className="flex items-center gap-3">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="16 18 22 12 16 6" />
-                  <polyline points="8 6 2 12 8 18" />
-                </svg>
-                Embed Widgets
-              </span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`transition-transform duration-200 ${embedExpanded ? "rotate-0" : "-rotate-90"}`}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-
-            {/* Sub-items */}
-            {embedExpanded && (
-              <div className="ml-4 mt-1 flex flex-col gap-1 border-l border-[var(--border)] pl-3">
-                <button
-                  onClick={() => setActiveTab("spaces")}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                    activeTab === "spaces"
-                      ? "bg-[var(--bg-surface)] text-[var(--text-primary)] font-medium"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-                  }`}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                  </svg>
-                  Spaces
-                </button>
-                <button
-                  onClick={() => setActiveTab("walls")}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                    activeTab === "walls"
-                      ? "bg-[var(--bg-surface)] text-[var(--text-primary)] font-medium"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
-                  }`}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-                  </svg>
-                  Wall of Love
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Embeds */}
+          <button
+            onClick={() => setActiveTab("embeds")}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+              activeTab === "embeds"
+                ? "bg-[var(--bg-surface)] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
+            }`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+            Embeds
+          </button>
         </nav>
 
         {/* Mobile horizontal tabs */}
@@ -257,24 +206,14 @@ export default function ProductDetailPage() {
             Page
           </button>
           <button
-            onClick={() => setActiveTab("spaces")}
+            onClick={() => setActiveTab("embeds")}
             className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
-              activeTab === "spaces"
+              activeTab === "embeds"
                 ? "border-b-2 border-[#6366F1] text-[var(--text-primary)] font-medium"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
-            Spaces
-          </button>
-          <button
-            onClick={() => setActiveTab("walls")}
-            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
-              activeTab === "walls"
-                ? "border-b-2 border-[#6366F1] text-[var(--text-primary)] font-medium"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            Walls
+            Embeds
           </button>
         </div>
 
@@ -289,6 +228,10 @@ export default function ProductDetailPage() {
           {activeTab === "proof-page" && (
             <ProofPageTab product={product} onPlanLimit={handlePlanLimit} />
           )}
+          {activeTab === "embeds" && (
+            <EmbedsTab product={product} onPlanLimit={handlePlanLimit} />
+          )}
+          {/* DEPRECATED: kept for backward compat with old deep links */}
           {(activeTab === "spaces" || activeTab === "walls") && (
             <WidgetWallTab product={product} onPlanLimit={handlePlanLimit} activeSection={activeTab} />
           )}
