@@ -7,10 +7,11 @@ import { getProduct, type Product } from "@/lib/api";
 import LaunchContentTab from "@/components/launch-content-tab";
 import ProofsTab from "@/components/proofs-tab";
 import WidgetWallTab from "@/components/widget-wall-tab";
+import ProofPageTab from "@/components/proof-page-tab";
 import ProductInfoEditor from "@/components/product-info-editor";
 import UpgradeNudgeModal from "@/components/upgrade-nudge-modal";
 
-type TabKey = "content" | "proofs" | "spaces" | "walls";
+type TabKey = "content" | "proofs" | "proof-page" | "spaces" | "walls";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +30,7 @@ export default function ProductDetailPage() {
 
   const tabParam = searchParams.get("tab");
   const activeTab: TabKey =
-    tabParam === "proofs" || tabParam === "spaces" || tabParam === "walls" || tabParam === "content"
+    tabParam === "proofs" || tabParam === "proof-page" || tabParam === "spaces" || tabParam === "walls" || tabParam === "content"
       ? tabParam
       : "content";
 
@@ -138,6 +139,22 @@ export default function ProductDetailPage() {
             Proofs
           </button>
 
+          {/* Proof Page */}
+          <button
+            onClick={() => setActiveTab("proof-page")}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+              activeTab === "proof-page"
+                ? "bg-[var(--bg-surface)] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
+            }`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+            </svg>
+            Proof Page
+          </button>
+
           {/* Embed Widgets — collapsible parent */}
           <div>
             <button
@@ -230,6 +247,16 @@ export default function ProductDetailPage() {
             Proofs
           </button>
           <button
+            onClick={() => setActiveTab("proof-page")}
+            className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
+              activeTab === "proof-page"
+                ? "border-b-2 border-[#6366F1] text-[var(--text-primary)] font-medium"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            Page
+          </button>
+          <button
             onClick={() => setActiveTab("spaces")}
             className={`flex flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm transition-colors ${
               activeTab === "spaces"
@@ -258,6 +285,9 @@ export default function ProductDetailPage() {
           )}
           {activeTab === "proofs" && (
             <ProofsTab product={product} onPlanLimit={handlePlanLimit} />
+          )}
+          {activeTab === "proof-page" && (
+            <ProofPageTab product={product} onPlanLimit={handlePlanLimit} />
           )}
           {(activeTab === "spaces" || activeTab === "walls") && (
             <WidgetWallTab product={product} onPlanLimit={handlePlanLimit} activeSection={activeTab} />

@@ -363,6 +363,10 @@ export interface Proof {
   created_at: string;
   updated_at: string;
   tags?: string[];
+  author_email?: string;
+  author_handle?: string;
+  rating?: number;
+  video_url?: string;
 }
 
 export interface ProofTag {
@@ -993,4 +997,123 @@ export interface ViewAnalytics {
 
 export function getAnalytics(token: string) {
   return fetchApi<ViewAnalytics>("/api/analytics/views", {}, token);
+}
+
+// --- Proof Page Types ---
+
+export interface ProofPageConfig {
+  proof_page_title: string;
+  proof_page_subtitle: string;
+  proof_page_theme: string;
+  proof_page_show_form: boolean;
+  proof_page_form_heading: string;
+  proof_page_show_branding: boolean;
+}
+
+export interface PublicProofPageData {
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    url: string | null;
+    description: string | null;
+    logo_url: string | null;
+  };
+  config: {
+    proof_page_title: string;
+    proof_page_subtitle: string;
+    proof_page_theme: string;
+    proof_page_show_form: boolean;
+    proof_page_form_heading: string;
+    proof_page_show_branding: boolean;
+  };
+  proofs: Proof[];
+}
+
+export interface SubmitProofRequest {
+  author_name: string;
+  author_email: string;
+  author_handle?: string;
+  author_title?: string;
+  content_text: string;
+  rating?: number;
+  source_platform?: string;
+  content_image_url?: string;
+  honeypot_field?: string;
+}
+
+export interface SubmitProofResponse {
+  success: boolean;
+  message: string;
+}
+
+// --- Proof Page ---
+
+export function fetchPublicProofPage(slug: string) {
+  return fetchApi<PublicProofPageData>(
+    `/api/public/products/${slug}/proof-page`,
+  );
+}
+
+export function getProofPageConfig(productId: string, token: string) {
+  return fetchApi<ProofPageConfig>(
+    `/api/products/${productId}/proof-page`,
+    {},
+    token,
+  );
+}
+
+export function updateProofPageConfig(productId: string, config: ProofPageConfig, token: string) {
+  return fetchApi<void>(
+    `/api/products/${productId}/proof-page`,
+    { method: "PUT", body: JSON.stringify(config) },
+    token,
+  );
+}
+
+export function listProofPageProofs(productId: string, token: string) {
+  return fetchApi<Proof[]>(
+    `/api/products/${productId}/proof-page/proofs`,
+    {},
+    token,
+  );
+}
+
+export function addProofToProofPage(productId: string, proofId: string, displayOrder: number, token: string) {
+  return fetchApi<void>(
+    `/api/products/${productId}/proof-page/proofs`,
+    { method: "POST", body: JSON.stringify({ proof_id: proofId, display_order: displayOrder }) },
+    token,
+  );
+}
+
+export function removeProofFromProofPage(productId: string, proofId: string, token: string) {
+  return fetchApi<void>(
+    `/api/products/${productId}/proof-page/proofs/${proofId}`,
+    { method: "DELETE" },
+    token,
+  );
+}
+
+export function reorderProofPageProofs(productId: string, orders: { proof_id: string; display_order: number }[], token: string) {
+  return fetchApi<void>(
+    `/api/products/${productId}/proof-page/proofs/order`,
+    { method: "PUT", body: JSON.stringify({ orders }) },
+    token,
+  );
+}
+
+export function rejectProof(proofId: string, token: string) {
+  return fetchApi<Proof>(
+    `/api/proofs/${proofId}/reject`,
+    { method: "PUT" },
+    token,
+  );
+}
+
+export function submitPublicProof(slug: string, data: SubmitProofRequest) {
+  return fetchApi<SubmitProofResponse>(
+    `/api/public/products/${slug}/submit-proof`,
+    { method: "POST", body: JSON.stringify(data) },
+  );
 }

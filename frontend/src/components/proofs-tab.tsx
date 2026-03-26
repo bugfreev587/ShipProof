@@ -11,6 +11,7 @@ import {
   updateProof,
   deleteProof,
   approveProof,
+  rejectProof,
   toggleProofFeatured,
   addProofTag,
   removeProofTag,
@@ -62,6 +63,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
   const [deletingProof, setDeletingProof] = useState<Proof | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTag, setFilterTag] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
   const [allTags, setAllTags] = useState<string[]>([]);
   const [addToSpaceProof, setAddToSpaceProof] = useState<Proof | null>(null);
   const [userPlan, setUserPlan] = useState<"free" | "pro" | "business">("free");
@@ -118,6 +120,17 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
     fetchProofs();
   };
 
+  const handleReject = async (proofId: string) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await rejectProof(proofId, token);
+      fetchProofs();
+    } catch {
+      // ignore
+    }
+  };
+
   const handleApproveAll = async () => {
     const token = await getToken();
     if (!token) return;
@@ -130,6 +143,8 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
 
   // Filter proofs
   const filtered = proofs.filter((p) => {
+    // Add status filter check
+    if (statusFilter !== "all" && p.status !== statusFilter) return false;
     if (filterTag && !p.tags?.includes(filterTag)) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -182,6 +197,32 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
           )}
         </div>
       )}
+
+      {/* Status filter pills */}
+      <div className="flex gap-2 mb-4">
+        {(["all", "pending", "approved", "rejected"] as const).map((status) => {
+          const count = status === "all"
+            ? proofs.length
+            : proofs.filter(p => p.status === status).length;
+          if (status !== "all" && count === 0) return null;
+          return (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                statusFilter === status
+                  ? "bg-[#6366F1] text-white"
+                  : "bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+              <span className={`ml-1.5 ${statusFilter === status ? "text-white/70" : "text-[var(--text-tertiary)]"}`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Action Bar */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -267,6 +308,7 @@ export default function ProofsTab({ product, onPlanLimit }: Props) {
                     onEdit={() => setEditingProof(proof)}
                     onDelete={() => setDeletingProof(proof)}
                     onApprove={() => handleApprove(proof.id)}
+                    onReject={() => handleReject(proof.id)}
                   />
                 ))}
               </div>
@@ -374,6 +416,7 @@ function ProofCard({
   onEdit,
   onDelete,
   onApprove,
+  onReject,
 }: {
   proof: Proof;
   productId: string;
@@ -382,6 +425,7 @@ function ProofCard({
   onEdit: () => void;
   onDelete: () => void;
   onApprove?: () => void;
+  onReject?: () => void;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -495,6 +539,18 @@ function ProofCard({
                     Approve
                   </button>
                 )}
+                {isPending && onReject && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(false);
+                      onReject();
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-xs text-[#EF4444] hover:bg-[#242429] transition-colors"
+                  >
+                    Reject
+                  </button>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -554,6 +610,12 @@ function ProofCard({
             </span>
           )}
         </div>
+
+        {/* Source indicator */}
+        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-tertiary)]">
+          {proof.collection_method === "submission" ? "Submitted" :
+           proof.collection_method === "extension" ? "Extension" : "Manual"}
+        </span>
 
         {/* Platform badge */}
         <span
